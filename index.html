@@ -9,160 +9,87 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif;}
 
 body{
-font-family:'Inter',sans-serif;
-background:radial-gradient(circle at top,#0f172a,#05070f);
+background:#0b1020;
 color:#fff;
 padding:14px;
 }
 
-h1{font-size:30px;font-weight:800;margin-bottom:6px;}
-.sub{opacity:.6;margin-bottom:14px;font-size:13px;}
-
-.top{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:16px;}
+h1{font-size:28px;margin-bottom:10px;}
 
 .card{
 background:rgba(255,255,255,.06);
-backdrop-filter:blur(14px);
-padding:16px;
-border-radius:18px;
-border:1px solid rgba(255,255,255,.08);
-}
-
-.card span{font-size:12px;opacity:.6;}
-.card strong{font-size:22px;font-weight:800;}
-
-.panel{
-background:rgba(255,255,255,.05);
-backdrop-filter:blur(14px);
 padding:14px;
-border-radius:22px;
-border:1px solid rgba(255,255,255,.08);
+border-radius:14px;
+margin-bottom:10px;
 }
-
-form{display:grid;gap:10px;}
 
 input,select,button{
 width:100%;
-padding:14px;
-font-size:15px;
+padding:12px;
+margin-top:8px;
 border:none;
-border-radius:12px;
-outline:none;
+border-radius:10px;
+font-size:14px;
 }
 
-input,select{background:#fff;color:#111;}
+button{cursor:pointer;font-weight:700;}
 
-.primary{background:linear-gradient(135deg,#0ea5e9,#2563eb);color:#fff;font-weight:800;}
-.secondary{background:rgba(255,255,255,.12);color:#fff;font-weight:700;}
+.primary{background:#2563eb;color:#fff;}
+.secondary{background:rgba(255,255,255,.15);color:#fff;}
 
-.list{display:grid;gap:10px;margin-top:14px;}
+.list{margin-top:15px;display:grid;gap:10px;}
 
 .item{
 background:rgba(255,255,255,.05);
 padding:12px;
-border-radius:14px;
-position:relative;
-animation:fade .15s ease-in;
-}
-
-@keyframes fade{
-from{opacity:0;transform:translateY(4px);}
-to{opacity:1;transform:translateY(0);}
-}
-
-.item.ingreso::before,
-.item.gasto::before{
-content:"";
-position:absolute;
-left:0;top:0;bottom:0;width:4px;
-}
-
-.item.ingreso::before{background:#22c55e;}
-.item.gasto::before{background:#ef4444;}
-
-.title{font-weight:700;font-size:14px;}
-.price{font-weight:800;margin-top:4px;}
-
-.delete{
-margin-top:8px;
-background:rgba(239,68,68,.15);
-color:#fff;
-padding:8px;
-border-radius:10px;
-font-size:12px;
-}
-
-#dashboard{display:none;}
-
-canvas{
-background:rgba(255,255,255,.03);
-border-radius:16px;
-padding:10px;
-margin-top:12px;
-}
-
-.toast{
-position:fixed;
-bottom:20px;
-left:50%;
-transform:translateX(-50%);
-padding:12px 16px;
 border-radius:12px;
-font-weight:700;
-z-index:9999;
+}
+
+.ingreso{border-left:4px solid #22c55e;}
+.gasto{border-left:4px solid #ef4444;}
+
+.title{font-weight:700;}
+.price{margin-top:5px;font-weight:800;}
+
+.actions{
+margin-top:8px;
+display:flex;
+gap:8px;
+}
+
+.actions button{
+padding:6px;
+font-size:12px;
+flex:1;
+}
+
+.filter{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:8px;
+margin-bottom:10px;
 }
 </style>
 </head>
 
 <body>
 
-<div id="app">
-
 <h1>🏦 Banking PRO</h1>
-<div class="sub">UI ultra rápida optimizada</div>
 
-<button class="secondary" onclick="irDashboard()" style="margin-bottom:12px;">
-📊 Dashboard
-</button>
+<!-- FILTROS -->
+<div class="filter">
+<select id="filtroTiempo" onchange="aplicarFiltros()">
+<option value="all">Todos</option>
+<option value="today">Hoy</option>
+<option value="week">Semana</option>
+<option value="month">Mes</option>
+</select>
 
-<div class="top">
-
-<div class="card">
-<span>💸 Hoy</span>
-<strong id="hoy">$0</strong>
-</div>
-
-<div class="card">
-<span>📊 Registros</span>
-<strong id="registros">0</strong>
-</div>
-
-<div class="card">
-<span>🏦 Ahorro</span>
-<strong id="ahorro">$0</strong>
-</div>
-
-<div class="card">
-<span>⏳ Pendientes</span>
-<strong id="pendientes">0</strong>
-</div>
-
-</div>
-
-<div class="panel">
-
-<form id="formulario">
-
-<input type="date" id="fecha" required>
-<input type="text" id="descripcion" placeholder="Descripción" required>
-
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-<input type="text" id="monto" placeholder="4.000" required>
-
-<select id="categoria">
+<select id="filtroCategoria" onchange="aplicarFiltros()">
+<option value="all">Todas categorías</option>
 <option>💰 Ingreso</option>
 <option>🍔 Comida</option>
 <option>🏠 Vivienda</option>
@@ -173,182 +100,108 @@ z-index:9999;
 </select>
 </div>
 
-<button class="primary" id="btnSave" type="submit">Guardar</button>
+<!-- FORM -->
+<div class="card">
+<input type="date" id="fecha">
+<input type="text" id="descripcion" placeholder="Descripción">
+<input type="text" id="monto" placeholder="4.000">
 
-</form>
+<select id="categoria">
+<option>💰 Ingreso</option>
+<option>🍔 Comida</option>
+<option>🏠 Vivienda</option>
+<option>🚗 Transporte</option>
+<option>💡 Servicios</option>
+<option>🎮 Entretenimiento</option>
+<option>🏦 Ahorro</option>
+</select>
 
+<button class="primary" onclick="guardar()">Guardar</button>
+</div>
+
+<!-- LISTA -->
 <div class="list" id="lista"></div>
-
-</div>
-</div>
-
-<!-- DASHBOARD -->
-<div id="dashboard">
-
-<button class="secondary" onclick="irApp()">⬅ Volver</button>
-
-<br><br>
-
-<div class="top">
-
-<div class="card"><span>Ingresos</span><strong id="ingresos">$0</strong></div>
-<div class="card"><span>Gastos</span><strong id="gastos">$0</strong></div>
-<div class="card"><span>Ahorro</span><strong id="ahorroTotal">$0</strong></div>
-<div class="card"><span>Balance</span><strong id="balance">$0</strong></div>
-
-</div>
-
-<canvas id="pie"></canvas>
-<canvas id="bar"></canvas>
-
-</div>
 
 <script>
 
 const URL="https://script.google.com/macros/s/AKfycbwXGhRN-TJxXf4hvwk_BFV52Javiqn6Lzz5ps6M1yTz9PJy-9kDcsUKJLzUY-mTS1Z2/exec";
 
 let data=[];
-let pendientesLocal=JSON.parse(localStorage.getItem("pendientes")||"[]");
-let bloqueado=false;
-let syncing=false;
 
-let pie=null,bar=null;
-
-/* NAV */
-function irDashboard(){
-document.getElementById("app").style.display="none";
-document.getElementById("dashboard").style.display="block";
+/* INIT */
+fecha.valueAsDate=new Date();
 load();
-}
-
-function irApp(){
-document.getElementById("dashboard").style.display="none";
-document.getElementById("app").style.display="block";
-}
-
-/* TOAST */
-function toast(msg,color="#22c55e"){
-let t=document.createElement("div");
-t.className="toast";
-t.innerText=msg;
-t.style.background=color;
-document.body.appendChild(t);
-setTimeout(()=>t.remove(),2000);
-}
-
-/* UI FAST */
-function setLoading(state){
-let btn=document.getElementById("btnSave");
-btn.disabled=state;
-btn.innerText=state?"Guardando...":"Guardar";
-bloqueado=state;
-}
-
-/* PENDIENTES */
-function renderPendientes(){
-document.getElementById("pendientes").innerText=pendientesLocal.length;
-}
 
 /* LOAD */
 async function load(){
-try{
 let r=await fetch(URL);
 data=await r.json();
-}catch(e){
-data=data||[];
+render(data);
 }
 
-render();
-dash();
-syncOffline();
-}
-
-/* ⚡ RENDER ULTRA RÁPIDO */
-function addItemUI(x){
-let lista=document.getElementById("lista");
-
-lista.insertAdjacentHTML("afterbegin",`
-<div class="item ${x.Tipo==="Ingreso"?"ingreso":"gasto"}">
-<div class="title">${x.Categoría} - ${x.Descripción}</div>
-<div class="price">$${Number(x.Monto).toLocaleString()}</div>
-<button class="delete" onclick="borrar('${x.ID}')">🗑️ borrar</button>
-</div>
-`);
-}
-
-/* RENDER FULL */
-function render(){
-
-document.getElementById("registros").innerText=data.length;
-
-let hoy=new Date().toISOString().split("T")[0];
-let gastosHoy=0,ing=0,gas=0,ah=0;
+/* RENDER */
+function render(arr){
 
 let lista=document.getElementById("lista");
 lista.innerHTML="";
 
-data.forEach(x=>{
+arr.forEach(x=>{
 
-let m=+x.Monto;
+lista.innerHTML+=`
+<div class="item ${x.Tipo==="Ingreso"?"ingreso":"gasto"}">
+<div class="title">${x.Categoría} - ${x.Descripción}</div>
+<div class="price">$${Number(x.Monto).toLocaleString()}</div>
 
-if(x.Tipo==="Ingreso") ing+=m;
-else gas+=m;
+<div class="actions">
+<button onclick="editar('${x.ID}')">✏️</button>
+<button onclick="borrar('${x.ID}')">🗑️</button>
+</div>
 
-if(x.Categoría.includes("Ahorro")) ah+=m;
+</div>
+`;
 
-if(x.Fecha===hoy && x.Tipo==="Gasto") gastosHoy+=m;
-
-addItemUI(x);
-});
-
-document.getElementById("hoy").innerText="$"+gastosHoy.toLocaleString();
-document.getElementById("ahorro").innerText="$"+ah.toLocaleString();
-
-renderPendientes();
-}
-
-/* DASH */
-function dash(){
-
-let ing=0,gas=0,ah=0;
-let cat={};
-
-data.forEach(x=>{
-let m=+x.Monto;
-
-if(x.Tipo==="Ingreso") ing+=m;
-else gas+=m;
-
-if(x.Categoría.includes("Ahorro")) ah+=m;
-
-cat[x.Categoría]=(cat[x.Categoría]||0)+m;
-});
-
-document.getElementById("ingresos").innerText="$"+ing.toLocaleString();
-document.getElementById("gastos").innerText="$"+gas.toLocaleString();
-document.getElementById("ahorroTotal").innerText="$"+ah.toLocaleString();
-document.getElementById("balance").innerText="$"+(ing-gas).toLocaleString();
-
-if(pie) pie.destroy();
-if(bar) bar.destroy();
-
-pie=new Chart(document.getElementById("pie"),{
-type:"doughnut",
-data:{labels:Object.keys(cat),datasets:[{data:Object.values(cat)}]}
-});
-
-bar=new Chart(document.getElementById("bar"),{
-type:"bar",
-data:{labels:["Ingresos","Gastos","Ahorro"],datasets:[{data:[ing,gas,ah]}]}
 });
 }
 
-/* 🔥 SAVE ULTRA RÁPIDO */
-document.getElementById("formulario").addEventListener("submit",async e=>{
-e.preventDefault();
+/* FILTROS */
+function aplicarFiltros(){
 
-if(bloqueado) return;
-setLoading(true);
+let t=filtroTiempo.value;
+let c=filtroCategoria.value;
+
+let hoy=new Date();
+
+let filtrado=data.filter(x=>{
+
+let d=new Date(x.Fecha);
+
+let okT=true;
+let okC=true;
+
+/* tiempo */
+if(t==="today") okT=d.toDateString()===hoy.toDateString();
+
+if(t==="week"){
+let diff=(hoy-d)/(1000*60*60*24);
+okT=diff<=7;
+}
+
+if(t==="month"){
+okT=d.getMonth()===hoy.getMonth();
+}
+
+/* categoría */
+if(c!=="all") okC=x.Categoría===c;
+
+return okT && okC;
+
+});
+
+render(filtrado);
+}
+
+/* GUARDAR */
+async function guardar(){
 
 let datos={
 Fecha:fecha.value,
@@ -358,110 +211,58 @@ Monto:Number(monto.value.replace(/\./g,"")),
 Tipo:categoria.value.includes("Ingreso")?"Ingreso":"Gasto"
 };
 
-/* UI INSTANTÁNEA */
-addItemUI(datos);
-data.unshift(datos);
-document.getElementById("registros").innerText=data.length;
-
-if(!navigator.onLine){
-
-pendientesLocal.push(datos);
-localStorage.setItem("pendientes",JSON.stringify(pendientesLocal));
-renderPendientes();
-
-toast("Offline 📴","#f59e0b");
-setLoading(false);
-formulario.reset();
-fecha.valueAsDate=new Date();
-return;
-}
-
-fetch(URL,{
+await fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
 body:JSON.stringify(datos)
-}).then(()=>{
-toast("Guardado ✔️");
-syncOffline();
 });
 
-setLoading(false);
-formulario.reset();
-fecha.valueAsDate=new Date();
-});
+load();
+}
 
-/* ⚡ DELETE INSTANT */
+/* BORRAR */
 function borrar(id){
 
-if(bloqueado) return;
-if(!confirm("Eliminar?")) return;
+data=data.filter(x=>x.ID!=id);
+render(data);
 
-/* UI INSTANT */
-data = data.filter(x=>x.ID != id);
-render();
-dash();
-
-/* backend async */
 fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
 body:JSON.stringify({action:"delete",ID:id})
-}).then(()=>{
-toast("Eliminado ✔️","#ef4444");
 });
 
 }
 
-/* ⚡ FAST SYNC */
-async function syncOffline(){
+/* EDITAR */
+function editar(id){
 
-if(syncing) return;
-if(!navigator.onLine || pendientesLocal.length===0) return;
+let item=data.find(x=>x.ID==id);
+if(!item) return;
 
-syncing=true;
+let desc=prompt("Descripción:",item.Descripción);
+if(desc===null) return;
 
-let ok=[];
-let fail=[];
+let monto=prompt("Monto:",item.Monto);
+if(monto===null) return;
 
-await Promise.all(pendientesLocal.map(async item=>{
+item.Descripción=desc;
+item.Monto=Number(monto.replace(/\./g,""));
 
-try{
-await fetch(URL,{
+render(data);
+
+fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
-body:JSON.stringify(item)
+body:JSON.stringify({
+action:"edit",
+ID:id,
+Descripción:item.Descripción,
+Monto:item.Monto
+})
 });
-ok.push(item);
-}catch(e){
-fail.push(item);
+
 }
-
-}));
-
-pendientesLocal=fail;
-localStorage.setItem("pendientes",JSON.stringify(pendientesLocal));
-
-renderPendientes();
-
-if(ok.length){
-toast(`Sync ${ok.length} ✔️`);
-}
-
-syncing=false;
-}
-
-/* AUTO SYNC */
-window.addEventListener("online",syncOffline);
-
-/* INIT */
-let fecha=document.getElementById("fecha");
-let descripcion=document.getElementById("descripcion");
-let monto=document.getElementById("monto");
-let categoria=document.getElementById("categoria");
-
-fecha.valueAsDate=new Date();
-renderPendientes();
-load();
 
 </script>
 
