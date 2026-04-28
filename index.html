@@ -116,7 +116,7 @@ z-index:9999;
 <div id="app">
 
 <h1>🏦 Banking PRO</h1>
-<div class="sub">sincronización rápida y estable</div>
+<div class="sub">versión ultra rápida</div>
 
 <button class="secondary" onclick="irDashboard()" style="margin-bottom:12px;">
 📊 Dashboard
@@ -125,7 +125,7 @@ z-index:9999;
 <div class="top">
 
 <div class="card">
-<span>💸 Gastos hoy</span>
+<span>💸 Hoy</span>
 <strong id="hoy">$0</strong>
 </div>
 
@@ -140,7 +140,7 @@ z-index:9999;
 </div>
 
 <div class="card">
-<span>⏳ Pendientes offline</span>
+<span>⏳ Pendientes</span>
 <strong id="pendientes">0</strong>
 </div>
 
@@ -204,9 +204,9 @@ const URL="https://script.google.com/macros/s/AKfycbwXGhRN-TJxXf4hvwk_BFV52Javiq
 let data=[];
 let pendientesLocal=JSON.parse(localStorage.getItem("pendientes")||"[]");
 let bloqueado=false;
+let syncing=false;
 
 let pie=null,bar=null;
-let syncing=false;
 
 /* NAV */
 function irDashboard(){
@@ -230,7 +230,7 @@ document.body.appendChild(t);
 setTimeout(()=>t.remove(),2000);
 }
 
-/* BOTÓN */
+/* UI */
 function setLoading(state){
 let btn=document.getElementById("btnSave");
 btn.disabled=state;
@@ -243,7 +243,7 @@ function renderPendientes(){
 document.getElementById("pendientes").innerText=pendientesLocal.length;
 }
 
-/* LOAD SAFE */
+/* LOAD */
 async function load(){
 try{
 let r=await fetch(URL);
@@ -257,7 +257,7 @@ dash();
 syncOffline();
 }
 
-/* 🔥 SINCRONIZACIÓN RÁPIDA (FIX REAL) */
+/* ⚡ FAST SYNC */
 async function syncOffline(){
 
 if(syncing) return;
@@ -265,23 +265,18 @@ if(!navigator.onLine || pendientesLocal.length===0) return;
 
 syncing=true;
 
-let pendientes=[...pendientesLocal];
 let ok=[];
 let fail=[];
 
-/* ⚡ EN PARALELO (MUCHO MÁS RÁPIDO) */
-await Promise.all(pendientes.map(async (item)=>{
+await Promise.all(pendientesLocal.map(async (item)=>{
 
 try{
-
 await fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
 body:JSON.stringify(item)
 });
-
 ok.push(item);
-
 }catch(e){
 fail.push(item);
 }
@@ -293,15 +288,14 @@ localStorage.setItem("pendientes",JSON.stringify(pendientesLocal));
 
 renderPendientes();
 
-if(ok.length>0){
-toast(`Sincronizados ${ok.length} ✔️`);
-await load();
+if(ok.length){
+toast(`Sync ${ok.length} ✔️`);
 }
 
 syncing=false;
 }
 
-/* AUTO SYNC AL VOLVER INTERNET */
+/* AUTO SYNC */
 window.addEventListener("online",syncOffline);
 
 /* RENDER */
@@ -410,7 +404,6 @@ return;
 }
 
 try{
-
 await fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
@@ -430,7 +423,7 @@ formulario.reset();
 fecha.valueAsDate=new Date();
 });
 
-/* DELETE */
+/* DELETE OPTIMIZADO (SIN RECARGA LENTA) */
 async function borrar(id){
 
 if(bloqueado) return;
@@ -438,14 +431,18 @@ if(!confirm("Eliminar?")) return;
 
 setLoading(true);
 
-await fetch(URL,{
+/* UI INSTANTÁNEA */
+data = data.filter(x=>x.ID != id);
+render();
+dash();
+
+fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
 body:JSON.stringify({action:"delete",ID:id})
-});
-
-await load();
+}).then(()=>{
 toast("Eliminado ✔️","#ef4444");
+});
 
 setLoading(false);
 }
