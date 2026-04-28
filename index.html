@@ -2,44 +2,42 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Banking PRO AI v14 LUXE FIX</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>Banking PRO AI v13</title>
+
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 :root{
---bg:#0f172a;
---bg2:#020617;
+--bg1:#07111f;
+--bg2:#0f172a;
 --card:rgba(255,255,255,.06);
---text:#ffffff;
---muted:#94a3b8;
 --line:rgba(255,255,255,.08);
---pri:#2563eb;
---pri2:#0ea5e9;
+--text:#fff;
+--muted:#94a3b8;
+--input:#fff;
+--inputText:#111;
+--primary:#2563eb;
+--primary2:#1d4ed8;
 --ok:#22c55e;
 --bad:#ef4444;
 }
 
-body.light{
---bg:#f8fafc;
---bg2:#e2e8f0;
---card:#ffffff;
---text:#111827;
---muted:#64748b;
---line:#e5e7eb;
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+-webkit-tap-highlight-color:transparent;
 }
-
-*{margin:0;padding:0;box-sizing:border-box}
 
 body{
 font-family:Inter,sans-serif;
-background:linear-gradient(180deg,var(--bg),var(--bg2));
+background:linear-gradient(180deg,var(--bg1),var(--bg2));
 color:var(--text);
 padding:14px 14px 110px;
-max-width:860px;
+max-width:820px;
 margin:auto;
-transition:.2s;
 }
 
 .card,.header{
@@ -48,20 +46,20 @@ border:1px solid var(--line);
 border-radius:22px;
 padding:16px;
 margin-bottom:12px;
-backdrop-filter:blur(16px);
+backdrop-filter:blur(14px);
 }
 
-.title{font-size:18px;font-weight:800;margin-bottom:10px}
-.big{font-size:38px;font-weight:800}
+.title{font-size:17px;font-weight:800;margin-bottom:10px}
+.big{font-size:34px;font-weight:800}
 .small{font-size:12px;color:var(--muted)}
 
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.gridFav{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 
 .kpi{
 background:rgba(255,255,255,.04);
 padding:12px;
-border-radius:16px;
+border-radius:14px;
 }
 
 .kpi span{
@@ -75,16 +73,16 @@ input,select,button{
 width:100%;
 border:none;
 outline:none;
-border-radius:16px;
+border-radius:14px;
 font-family:inherit;
 }
 
 input,select{
 padding:14px;
-margin-bottom:10px;
-background:#fff;
-color:#111;
+background:var(--input);
+color:var(--inputText);
 font-weight:600;
+margin-bottom:10px;
 }
 
 button{
@@ -94,19 +92,21 @@ cursor:pointer;
 }
 
 .primary{
-background:linear-gradient(135deg,var(--pri),var(--pri2));
+background:linear-gradient(135deg,var(--primary),var(--primary2));
 color:#fff;
 }
 
 .secondary{
 background:rgba(255,255,255,.08);
-color:var(--text);
+color:#fff;
 }
 
 .small-btn{
-padding:10px;
+padding:10px 12px;
 font-size:12px;
+background:rgba(255,255,255,.08);
 width:auto;
+color:#fff;
 margin-top:8px;
 }
 
@@ -117,30 +117,18 @@ margin-top:8px;
 
 .item{
 background:rgba(255,255,255,.04);
-padding:14px;
-border-radius:18px;
+padding:12px;
+border-radius:14px;
 border-left:4px solid transparent;
 }
 
-.ingreso{border-left-color:var(--ok)}
-.gasto{border-left-color:var(--bad)}
+.ingreso{border-left-color:#22c55e}
+.gasto{border-left-color:#ef4444}
 
 .price{
-font-size:18px;
 font-weight:800;
 margin-top:6px;
 }
-
-.timeline-day{
-font-size:12px;
-color:var(--muted);
-font-weight:800;
-margin-top:8px;
-}
-
-.searchBox{position:relative;margin-bottom:10px}
-.searchBox input{padding-left:42px;margin-bottom:0}
-.searchIcon{position:absolute;left:14px;top:13px;color:var(--muted)}
 
 .nav{
 position:fixed;
@@ -148,9 +136,10 @@ left:0;right:0;bottom:0;
 display:grid;
 grid-template-columns:repeat(4,1fr);
 gap:8px;
-padding:10px 12px;
-background:rgba(2,6,23,.92);
-max-width:860px;
+padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+background:rgba(5,10,20,.94);
+backdrop-filter:blur(16px);
+max-width:820px;
 margin:auto;
 }
 
@@ -162,22 +151,30 @@ color:#cbd5e1;
 }
 
 .nav button.active{
-background:linear-gradient(135deg,#2563eb,#0ea5e9);
+background:rgba(255,255,255,.08);
 color:#fff;
 }
 
 .toast{
 position:fixed;
 left:50%;
-bottom:92px;
+bottom:95px;
 transform:translateX(-50%);
 background:#111827;
 color:#fff;
 padding:12px 16px;
 border-radius:14px;
-display:none;
 font-size:13px;
+font-weight:700;
+display:none;
 z-index:999;
+}
+
+.timeline-day{
+font-size:12px;
+color:var(--muted);
+font-weight:800;
+margin:10px 0 4px;
 }
 </style>
 </head>
@@ -186,15 +183,22 @@ z-index:999;
 
 <div class="header">
 
-<div class="small">Banking PRO AI v14 LUXE FIX</div>
+<div class="small">Banking PRO AI v13</div>
 <div class="small" id="today"></div>
 
 <div class="small" style="margin-top:10px">Saldo disponible</div>
 <div class="big" id="saldoTop">$0</div>
 
 <div class="grid2" style="margin-top:12px">
-<div class="kpi"><span>Pendientes</span><strong id="pendingCount">0</strong></div>
-<div class="kpi"><span>Sincronizados</span><strong id="syncCount">0</strong></div>
+<div class="kpi">
+<span>Pendientes</span>
+<strong id="pendingCount">0</strong>
+</div>
+
+<div class="kpi">
+<span>Sincronizados</span>
+<strong id="syncCount">0</strong>
+</div>
 </div>
 
 </div>
@@ -203,33 +207,11 @@ z-index:999;
 <section class="tab active" id="tab-home">
 
 <div class="card">
-<div class="title">🎛️ Centro de control</div>
-<div class="grid3">
-
-<div class="kpi">
-<span>Hoy gastado</span>
-<strong id="gastoHoy">$0</strong>
-</div>
-
-<div class="kpi">
-<span>Ahorro</span>
-<strong id="ahorroReal">$0</strong>
-</div>
-
-<div class="kpi">
-<span>Balance</span>
-<strong id="balanceMes">$0</strong>
-</div>
-
-</div>
-</div>
-
-<div class="card">
 <div class="title">➕ Nuevo movimiento</div>
 
 <input type="date" id="fecha">
 <input type="text" id="descripcion" placeholder="Descripción">
-<input type="text" id="monto" placeholder="Monto 4.000">
+<input type="text" id="monto" placeholder="Monto">
 
 <select id="categoria">
 <option>💰 Ingreso</option>
@@ -246,43 +228,37 @@ z-index:999;
 
 <div class="card">
 <div class="title">⭐ Favoritos automáticos</div>
-<div class="grid2" id="favList"></div>
+<div class="gridFav" id="favList"></div>
 </div>
 
 </section>
 
 <!-- DASH -->
 <section class="tab" id="tab-dashboard">
+
 <div class="card">
-<div class="title">📊 Dashboard</div>
+<div class="title">📊 Categorías</div>
 <canvas id="chart1"></canvas>
 </div>
+
 </section>
 
-<!-- MOV -->
+<!-- MOVS -->
 <section class="tab" id="tab-list">
+
 <div class="card">
 <div class="title">📋 Movimientos</div>
-
-<div class="searchBox">
-<div class="searchIcon">🔎</div>
-<input type="text" id="searchMov" placeholder="Buscar..." oninput="renderMovimientos()">
-</div>
-
 <div class="list" id="lista"></div>
 </div>
+
 </section>
 
 <!-- SETTINGS -->
 <section class="tab" id="tab-settings">
 
 <div class="card">
-<div class="title">⚙️ Apariencia</div>
-
-<button class="secondary" onclick="setTheme('dark')">🌙 Modo oscuro</button>
-<br><br>
-<button class="secondary" onclick="setTheme('light')">☀️ Modo claro</button>
-
+<div class="title">⚙️ Ajustes</div>
+<button class="secondary" onclick="load()">🔄 Recargar</button>
 </div>
 
 </section>
@@ -301,26 +277,24 @@ const URL="https://script.google.com/macros/s/AKfycbwXGhRN-TJxXf4hvwk_BFV52Javiq
 
 let data=[];
 let pending=JSON.parse(localStorage.getItem("pendingQueue")||"[]");
-let chart;
+let c1;
 
 fecha.valueAsDate=new Date();
 today.innerText=new Date().toLocaleDateString("es-CO",{weekday:"long",day:"numeric",month:"long"});
 pendingCount.innerText=pending.length;
 
-if(localStorage.getItem("theme")==="light"){
-document.body.classList.add("light");
-}
-
 load();
 syncPending();
 
-function toast(t){
-toastEl.innerText=t;
+/* toast */
+function toast(msg){
+toastEl.innerText=msg;
 toastEl.style.display="block";
 setTimeout(()=>toastEl.style.display="none",2200);
 }
 const toastEl=document.getElementById("toast");
 
+/* tabs */
 function goTab(tab,btn){
 document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
 document.getElementById("tab-"+tab).classList.add("active");
@@ -329,20 +303,12 @@ document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active")
 btn.classList.add("active");
 }
 
-function setTheme(mode){
-if(mode==="light"){
-document.body.classList.add("light");
-}else{
-document.body.classList.remove("light");
-}
-localStorage.setItem("theme",mode);
-toast("Tema actualizado");
-}
-
+/* helpers */
 function money(n){
 return "$"+Number(n).toLocaleString("es-CO");
 }
 
+/* load */
 async function load(){
 try{
 let r=await fetch(URL+"?t="+Date.now());
@@ -352,9 +318,10 @@ render();
 }catch(e){}
 }
 
+/* save */
 async function guardar(){
 
-let obj={
+let datos={
 Fecha:fecha.value,
 Categoría:categoria.value,
 Descripción:descripcion.value.trim(),
@@ -362,7 +329,7 @@ Monto:Number(monto.value.replace(/\./g,"")),
 Tipo:categoria.value.includes("Ingreso")?"Ingreso":"Gasto"
 };
 
-if(!obj.Descripción || obj.Monto<=0){
+if(!datos.Descripción || datos.Monto<=0){
 toast("Completa datos");
 return;
 }
@@ -370,35 +337,52 @@ return;
 saveBtn.disabled=true;
 saveBtn.innerText="Guardando...";
 
+if(!navigator.onLine){
+pending.push(datos);
+localStorage.setItem("pendingQueue",JSON.stringify(pending));
+pendingCount.innerText=pending.length;
+doneSave();
+toast("☁ Offline");
+return;
+}
+
 try{
 await fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
-body:JSON.stringify(obj)
+body:JSON.stringify(datos)
 });
-toast("Guardado");
+
+toast("✔ Guardado");
 await load();
 
 }catch(e){
-pending.push(obj);
+
+pending.push(datos);
 localStorage.setItem("pendingQueue",JSON.stringify(pending));
 pendingCount.innerText=pending.length;
-toast("Offline");
+
+toast("☁ Offline");
 }
 
+doneSave();
+}
+
+function doneSave(){
 descripcion.value="";
 monto.value="";
 saveBtn.disabled=false;
 saveBtn.innerText="💾 Guardar";
 }
 
+/* sync */
 window.addEventListener("online",syncPending);
 
 async function syncPending(){
 
-if(!pending.length) return;
+if(!navigator.onLine || !pending.length) return;
 
-let ok=0;
+let sent=0;
 
 while(pending.length){
 
@@ -410,20 +394,23 @@ body:JSON.stringify(pending[0])
 });
 
 pending.shift();
-ok++;
+sent++;
 
-}catch(e){break;}
+}catch(e){
+break;
+}
 }
 
 localStorage.setItem("pendingQueue",JSON.stringify(pending));
 pendingCount.innerText=pending.length;
 
-if(ok){
-toast(ok+" sincronizados");
+if(sent){
+toast("✔ "+sent+" sincronizados");
 load();
 }
 }
 
+/* delete */
 async function borrar(id){
 
 if(!confirm("Eliminar movimiento")) return;
@@ -431,57 +418,93 @@ if(!confirm("Eliminar movimiento")) return;
 data=data.filter(x=>String(x.ID)!==String(id));
 render();
 
+try{
 await fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
 body:JSON.stringify({action:"delete",ID:id})
 });
+
+toast("Eliminado");
+
+}catch(e){}
 }
 
+/* favoritos automáticos */
 function renderFavorites(){
 
 let map={};
 
 data.forEach(x=>{
-let k=x.Categoría+"|"+x.Descripción+"|"+x.Monto;
 
-if(!map[k]) map[k]={...x,c:0};
+let key=x.Categoría+"|"+x.Descripción+"|"+x.Monto;
 
-map[k].c++;
+if(!map[key]){
+map[key]={
+cat:x.Categoría,
+des:x.Descripción,
+monto:Number(x.Monto),
+count:0
+};
+}
+
+map[key].count++;
 });
 
-let arr=Object.values(map).sort((a,b)=>b.c-a.c).slice(0,6);
+let arr=Object.values(map)
+.sort((a,b)=>b.count-a.count)
+.slice(0,6);
 
 favList.innerHTML="";
 
+if(!arr.length){
+favList.innerHTML='<div class="small">Aún sin datos suficientes</div>';
+return;
+}
+
 arr.forEach(f=>{
+
 favList.innerHTML+=`
 <button class="secondary"
-onclick="categoria.value='${f.Categoría}';descripcion.value='${f.Descripción}';monto.value='${f.Monto}'">
-${f.Categoría}<br><small>${f.Descripción}</small>
+onclick="usarFav('${f.cat}','${f.des}',${f.monto})">
+${f.cat}<br>
+<span style="font-size:11px">${f.des}</span><br>
+<span style="font-size:11px">${money(f.monto)}</span>
 </button>`;
 });
 }
 
-function renderMovimientos(){
+function usarFav(cat,des,m){
 
-let q=searchMov.value.toLowerCase().trim();
+categoria.value=cat;
+descripcion.value=des;
+monto.value=Number(m).toLocaleString("es-CO");
 
-let rows=[...data].sort((a,b)=>new Date(b.Fecha)-new Date(a.Fecha));
-
-if(q){
-rows=rows.filter(x=>
-String(x.Fecha).toLowerCase().includes(q)||
-String(x.Categoría).toLowerCase().includes(q)||
-String(x.Descripción).toLowerCase().includes(q)||
-String(x.Monto).includes(q)
-);
+toast("Favorito cargado");
 }
 
+/* render */
+function render(){
+
 lista.innerHTML="";
+
+let saldo=0;
+let cats={};
+
+let sorted=[...data].sort((a,b)=>new Date(b.Fecha)-new Date(a.Fecha));
+
 let last="";
 
-rows.forEach(x=>{
+sorted.forEach(x=>{
+
+let montoNum=Number(x.Monto)||0;
+
+if(x.Tipo==="Ingreso") saldo+=montoNum;
+else saldo-=montoNum;
+
+if(x.Tipo==="Gasto"){
+cats[x.Categoría]=(cats[x.Categoría]||0)+montoNum;
+}
 
 if(last!==x.Fecha){
 lista.innerHTML+=`<div class="timeline-day">${x.Fecha}</div>`;
@@ -490,60 +513,30 @@ last=x.Fecha;
 
 lista.innerHTML+=`
 <div class="item ${x.Tipo==="Ingreso"?"ingreso":"gasto"}">
-<div style="font-weight:800">${x.Descripción}</div>
-<div class="small">${x.Categoría}</div>
-<div class="price">${money(x.Monto)}</div>
+<div>${x.Categoría} - ${x.Descripción}</div>
+<div class="price">${money(montoNum)}</div>
 <button class="small-btn" onclick="borrar('${x.ID}')">🗑️</button>
 </div>`;
 });
-}
-
-function render(){
-
-let saldo=0,ing=0,gas=0,aho=0;
-let cats={};
-
-let hoy=new Date().toISOString().slice(0,10);
-let gastoHoyNum=0;
-
-data.forEach(x=>{
-
-let m=Number(x.Monto)||0;
-
-if(x.Tipo==="Ingreso"){saldo+=m;ing+=m;}
-else{saldo-=m;gas+=m;}
-
-if(x.Categoría.includes("Ahorro")) aho+=m;
-
-if(x.Tipo==="Gasto"){
-cats[x.Categoría]=(cats[x.Categoría]||0)+m;
-}
-
-if(x.Fecha===hoy && x.Tipo==="Gasto"){
-gastoHoyNum+=m;
-}
-
-});
 
 saldoTop.innerText=money(saldo);
-gastoHoy.innerText=money(gastoHoyNum);
-ahorroReal.innerText=money(aho);
-balanceMes.innerText=money(ing-gas);
 
 renderFavorites();
-renderMovimientos();
-draw(cats);
+chart(cats);
 }
 
-function draw(cats){
+/* chart */
+function chart(cats){
 
-if(chart) chart.destroy();
+if(c1) c1.destroy();
 
-chart=new Chart(chart1,{
+c1=new Chart(chart1,{
 type:"doughnut",
 data:{
 labels:Object.keys(cats),
-datasets:[{data:Object.values(cats)}]
+datasets:[{
+data:Object.values(cats)
+}]
 }
 });
 }
