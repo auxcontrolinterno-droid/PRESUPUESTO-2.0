@@ -3,93 +3,129 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Banking PRO - Smart</title>
+<title>Banking PRO 4.0</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 
 <style>
 body{
 font-family:Inter;
-background:#0b1020;
+background:linear-gradient(180deg,#070b16,#0b1020);
 color:#fff;
 padding:14px;
 }
 
-h1{font-size:24px;margin-bottom:10px;}
-
-.card{
-background:rgba(255,255,255,.06);
-padding:14px;
-border-radius:14px;
-margin-bottom:10px;
+h1{
+font-size:26px;
+margin-bottom:6px;
 }
 
+.subtitle{
+opacity:.6;
+font-size:13px;
+margin-bottom:14px;
+}
+
+/* CARDS MODERNAS */
+.card{
+background:rgba(255,255,255,.06);
+backdrop-filter:blur(14px);
+padding:16px;
+border-radius:16px;
+border:1px solid rgba(255,255,255,.08);
+margin-bottom:12px;
+}
+
+/* INPUTS */
 input,select,button{
 width:100%;
 padding:12px;
-margin-top:8px;
 border:none;
 border-radius:10px;
+margin-top:8px;
 font-size:14px;
 }
 
-.primary{background:#2563eb;color:#fff;font-weight:700;}
-.secondary{background:rgba(255,255,255,.12);color:#fff;}
-
-.list{display:grid;gap:10px;margin-top:10px;}
-
-.item{
-background:rgba(255,255,255,.05);
-padding:10px;
-border-radius:10px;
+.primary{
+background:linear-gradient(135deg,#2563eb,#1d4ed8);
+color:#fff;
+font-weight:700;
 }
 
-.actions{
-display:flex;
-gap:8px;
-margin-top:6px;
+.secondary{
+background:rgba(255,255,255,.12);
+color:#fff;
 }
 
-.actions button{
-flex:1;
-padding:6px;
-font-size:12px;
-}
-
-.progress{
-height:10px;
-background:rgba(255,255,255,.1);
-border-radius:20px;
-overflow:hidden;
+/* LISTA */
+.list{
+display:grid;
+gap:10px;
 margin-top:10px;
 }
 
-.bar{
-height:100%;
-width:0%;
-background:limegreen;
-transition:.3s;
+.item{
+background:rgba(255,255,255,.05);
+padding:12px;
+border-radius:12px;
+border-left:3px solid transparent;
 }
 
-.warning{color:#f59e0b;font-weight:700;margin-top:6px;}
-.danger{color:#ef4444;font-weight:700;margin-top:6px;}
-.ok{color:#22c55e;font-weight:700;margin-top:6px;}
-.info{color:#60a5fa;font-weight:700;margin-top:6px;}
+.ingreso{border-left-color:#22c55e;}
+.gasto{border-left-color:#ef4444;}
+
+.price{
+font-weight:800;
+margin-top:4px;
+}
+
+/* ALERTAS */
+.alert{
+padding:10px;
+border-radius:12px;
+margin-top:8px;
+font-size:13px;
+}
+
+.good{background:rgba(34,197,94,.15);color:#22c55e;}
+.mid{background:rgba(245,158,11,.15);color:#f59e0b;}
+.bad{background:rgba(239,68,68,.15);color:#ef4444;}
+
+/* DASHBOARD STYLE */
+.grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+}
+
+.stat{
+background:rgba(255,255,255,.05);
+padding:14px;
+border-radius:14px;
+}
+
+.stat h3{
+font-size:12px;
+opacity:.6;
+}
+
+.stat strong{
+font-size:18px;
+}
 </style>
 </head>
 
 <body>
 
-<h1>🏦 Banking PRO Smart</h1>
+<h1>🏦 Banking PRO</h1>
+<div class="subtitle">versión financiera inteligente</div>
 
-<!-- MOVIMIENTOS -->
+<!-- FORM -->
 <div class="card">
-
-<h3>📊 Nuevo movimiento</h3>
 
 <input type="date" id="fecha">
 <input type="text" id="descripcion" placeholder="Descripción">
-<input type="text" id="monto" placeholder="Ej: 4000">
+<input type="text" id="monto" placeholder="Ej: 4.000">
 
 <select id="categoria">
 <option>💰 Ingreso</option>
@@ -101,35 +137,42 @@ transition:.3s;
 <option>🏦 Ahorro</option>
 </select>
 
-<button class="primary" onclick="guardar()">Guardar</button>
+<button class="primary" onclick="guardar()">Guardar movimiento</button>
 
 </div>
 
-<!-- PRESUPUESTO -->
+<!-- DASHBOARD -->
 <div class="card">
 
-<h3>💰 Presupuesto mensual</h3>
-
-<input type="number" id="budget">
-<button class="secondary" onclick="setBudget()">Guardar presupuesto</button>
-
-<div class="progress">
-<div class="bar" id="bar"></div>
+<div class="grid">
+<div class="stat">
+<h3>Ingresos</h3>
+<strong id="ing">$0</strong>
 </div>
 
-<div id="status"></div>
-
+<div class="stat">
+<h3>Gastos</h3>
+<strong id="gas">$0</strong>
 </div>
 
-<!-- INSIGHTS (FASE 3 INICIO) -->
-<div class="card">
-<h3>🧠 Inteligencia financiera</h3>
-<div id="insights"></div>
+<div class="stat">
+<h3>Ahorro</h3>
+<strong id="ah">$0</strong>
+</div>
+
+<div class="stat">
+<h3>Balance</h3>
+<strong id="bal">$0</strong>
+</div>
+</div>
+
+<div id="alerts"></div>
+
 </div>
 
 <!-- LISTA -->
 <div class="card">
-<h3>📋 Movimientos</h3>
+<h3>Movimientos</h3>
 <div class="list" id="lista"></div>
 </div>
 
@@ -138,7 +181,6 @@ transition:.3s;
 const URL="https://script.google.com/macros/s/AKfycbwXGhRN-TJxXf4hvwk_BFV52Javiqn6Lzz5ps6M1yTz9PJy-9kDcsUKJLzUY-mTS1Z2/exec";
 
 let data=[];
-let budget=localStorage.getItem("budget")||0;
 
 /* INIT */
 fecha.valueAsDate=new Date();
@@ -146,16 +188,12 @@ load();
 
 /* LOAD */
 async function load(){
-try{
 let r=await fetch(URL);
 data=await r.json();
-}catch(e){
-data=[];
-}
 render();
 }
 
-/* GUARDAR */
+/* SAVE */
 async function guardar(){
 
 let datos={
@@ -165,11 +203,6 @@ Descripción:descripcion.value,
 Monto:Number(monto.value.replace(/\./g,"")),
 Tipo:categoria.value.includes("Ingreso")?"Ingreso":"Gasto"
 };
-
-if(!datos.Descripción || !datos.Monto){
-alert("Completa los campos");
-return;
-}
 
 await fetch(URL,{
 method:"POST",
@@ -182,119 +215,71 @@ descripcion.value="";
 load();
 }
 
-/* 🗑️ BORRAR */
-function borrar(id){
-
-if(!confirm("Eliminar movimiento?")) return;
-
-data=data.filter(x=>x.ID!=id);
-render();
-
-/* backend */
-fetch(URL,{
-method:"POST",
-headers:{"Content-Type":"text/plain;charset=utf-8"},
-body:JSON.stringify({action:"delete",ID:id})
-});
-
-}
-
 /* RENDER */
 function render(){
+
+let ing=0,gas=0,ah=0;
+let cat={};
 
 let lista=document.getElementById("lista");
 lista.innerHTML="";
 
-let gastoMes=0;
-let ingresos=0;
-let gastos=0;
-let categorias={};
-
-let hoy=new Date();
-
 data.forEach(x=>{
 
-let d=new Date(x.Fecha);
+let m=+x.Monto;
 
-let m=Number(x.Monto);
+if(x.Tipo==="Ingreso") ing+=m;
+else gas+=m;
 
-if(x.Tipo==="Ingreso") ingresos+=m;
-else gastos+=m;
+if(x.Categoría.includes("Ahorro")) ah+=m;
 
-if(x.Tipo==="Gasto" && d.getMonth()===hoy.getMonth()){
-gastoMes+=m;
-}
-
-categorias[x.Categoría]=(categorias[x.Categoría]||0)+1;
+cat[x.Categoría]=(cat[x.Categoría]||0)+m;
 
 lista.innerHTML+=`
-<div class="item">
+<div class="item ${x.Tipo==="Ingreso"?"ingreso":"gasto"}">
 ${x.Categoría} - ${x.Descripción}
-<br><b>$${m.toLocaleString()}</b>
-
-<div class="actions">
-<button class="secondary" onclick="borrar('${x.ID}')">🗑️ borrar</button>
-</div>
-
+<div class="price">$${m.toLocaleString()}</div>
 </div>
 `;
 
 });
 
-updateBudget(gastoMes);
-generateInsights(ingresos,gastos,categorias);
+document.getElementById("ing").innerText="$"+ing.toLocaleString();
+document.getElementById("gas").innerText="$"+gas.toLocaleString();
+document.getElementById("ah").innerText="$"+ah.toLocaleString();
+document.getElementById("bal").innerText="$"+(ing-gas).toLocaleString();
+
+/* 🧠 IA */
+generateAlerts(ing,gas,cat);
 }
 
-/* PRESUPUESTO */
-function setBudget(){
-budget=document.getElementById("budget").value;
-localStorage.setItem("budget",budget);
-render();
+/* 🧠 FASE 4 IA */
+function generateAlerts(ing,gas,cat){
+
+let alerts=document.getElementById("alerts");
+alerts.innerHTML="";
+
+let top=Object.entries(cat).sort((a,b)=>b[1]-a[1])[0];
+
+let msg="";
+
+if(gas>ing){
+msg="🔴 Estás gastando más de lo que ingresas";
+alerts.innerHTML+=`<div class="alert bad">${msg}</div>`;
 }
 
-/* PROGRESO */
-function updateBudget(gasto){
-
-if(!budget){
-status.innerHTML="Define un presupuesto mensual";
-return;
+if(top && top[1]>gas*0.5){
+alerts.innerHTML+=`<div class="alert mid">⚠️ Alta concentración en ${top[0]}</div>`;
 }
-
-let percent=(gasto/budget)*100;
-bar.style.width=Math.min(percent,100)+"%";
-
-if(percent>=100){
-status.innerHTML="🔴 Te pasaste del presupuesto";
-status.className="danger";
-}
-else if(percent>=80){
-status.innerHTML="⚠️ Cerca del límite";
-status.className="warning";
-}
-else{
-status.innerHTML="🟢 Bajo control";
-status.className="ok";
-}
-
-}
-
-/* 🧠 FASE 3 - INSIGHTS */
-function generateInsights(ing,gas,cat){
-
-let lista=Object.entries(cat).sort((a,b)=>b[1]-a[1]);
-
-let top=lista[0] ? lista[0][0] : "N/A";
 
 let promedio=gas/data.length || 0;
 
-document.getElementById("insights").innerHTML=`
+if(promedio>50000){
+alerts.innerHTML+=`<div class="alert mid">📊 Gasto promedio alto: $${promedio.toFixed(0)}</div>`;
+}else{
+alerts.innerHTML+=`<div class="alert good">🟢 Gasto controlado</div>`;
+}
 
-<div class="info">💳 Ingresos: $${ing.toLocaleString()}</div>
-<div class="info">💸 Gastos: $${gas.toLocaleString()}</div>
-<div class="info">📊 Promedio gasto: $${promedio.toFixed(0)}</div>
-<div class="info">🔥 Categoría más usada: ${top}</div>
-
-`;
 }
 
 </script>
