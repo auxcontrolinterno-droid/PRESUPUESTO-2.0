@@ -11,12 +11,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
--webkit-tap-highlight-color:transparent;
-}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 
 body{
 font-family:'Inter',sans-serif;
@@ -28,9 +23,7 @@ padding:14px;
 h1{font-size:34px;font-weight:800;margin-bottom:4px;}
 .sub{opacity:.7;margin-bottom:18px;font-size:13px;}
 
-button,input,select{
-font-family:'Inter',sans-serif;
-}
+button,input,select{font-family:'Inter',sans-serif;}
 
 .top{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:16px;}
 
@@ -64,10 +57,7 @@ outline:none;
 border-radius:14px;
 }
 
-input,select{
-background:rgba(255,255,255,.95);
-color:#111;
-}
+input,select{background:rgba(255,255,255,.95);color:#111;}
 
 #monto{text-align:right;font-weight:700;font-size:18px;}
 
@@ -75,15 +65,8 @@ color:#111;
 
 button{font-weight:800;cursor:pointer;}
 
-.primary{
-background:linear-gradient(135deg,#0ea5e9,#2563eb);
-color:#fff;
-}
-
-.secondary{
-background:rgba(255,255,255,.15);
-color:#fff;
-}
+.primary{background:linear-gradient(135deg,#0ea5e9,#2563eb);color:#fff;}
+.secondary{background:rgba(255,255,255,.15);color:#fff;}
 
 .list{display:grid;gap:10px;margin-top:18px;}
 
@@ -107,6 +90,15 @@ left:0;top:0;bottom:0;width:4px;
 .item-title{font-weight:700;}
 .price{font-weight:800;}
 
+.delete{
+margin-top:8px;
+background:rgba(239,68,68,.2);
+color:#fff;
+padding:8px;
+border-radius:10px;
+font-size:12px;
+}
+
 #dashboard{display:none;}
 
 .back{margin-bottom:12px;}
@@ -120,7 +112,6 @@ left:0;top:0;bottom:0;width:4px;
 
 <body>
 
-<!-- ================= APP ================= -->
 <div id="app">
 
 <h1>💸 Presupuesto PRO</h1>
@@ -131,20 +122,9 @@ left:0;top:0;bottom:0;width:4px;
 </button>
 
 <div class="top">
-<div class="card">
-<span>Hoy gastado</span>
-<strong id="hoy">$0</strong>
-</div>
-
-<div class="card">
-<span>Registros</span>
-<strong id="registros">0</strong>
-</div>
-
-<div class="card">
-<span>Pendientes</span>
-<strong id="pendientes">0</strong>
-</div>
+<div class="card"><span>Hoy gastado</span><strong id="hoy">$0</strong></div>
+<div class="card"><span>Registros</span><strong id="registros">0</strong></div>
+<div class="card"><span>Pendientes</span><strong id="pendientes">0</strong></div>
 </div>
 
 <div class="panel">
@@ -170,7 +150,6 @@ left:0;top:0;bottom:0;width:4px;
 
 <div class="row">
 <button class="primary" type="submit">Guardar</button>
-<button class="secondary" type="button" onclick="guardarSeguir()">Guardar y seguir</button>
 </div>
 
 </form>
@@ -180,7 +159,7 @@ left:0;top:0;bottom:0;width:4px;
 </div>
 </div>
 
-<!-- ================= DASHBOARD ================= -->
+<!-- DASHBOARD -->
 <div id="dashboard">
 
 <button class="secondary back" onclick="irApp()">⬅ Volver</button>
@@ -189,9 +168,11 @@ left:0;top:0;bottom:0;width:4px;
 <div class="card"><span>Ingresos</span><strong id="ingresos">$0</strong></div>
 <div class="card"><span>Gastos</span><strong id="gastos">$0</strong></div>
 <div class="card"><span>Balance</span><strong id="balance">$0</strong></div>
+<div class="card"><span>Total mov.</span><strong id="totalMov">0</strong></div>
+<div class="card"><span>Promedio gasto</span><strong id="promedio">$0</strong></div>
+<div class="card"><span>Mayor gasto</span><strong id="mayor">$0</strong></div>
+<div class="card"><span>Categoría top</span><strong id="topCat">-</strong></div>
 </div>
-
-<canvas id="chart"></canvas>
 
 </div>
 
@@ -201,7 +182,6 @@ const URL_SCRIPT="https://script.google.com/macros/s/AKfycbwXGhRN-TJxXf4hvwk_BFV
 
 let historial=[];
 
-/* ================= NAV ================= */
 function irDashboard(){
 document.getElementById("app").style.display="none";
 document.getElementById("dashboard").style.display="block";
@@ -213,12 +193,10 @@ document.getElementById("dashboard").style.display="none";
 document.getElementById("app").style.display="block";
 }
 
-/* ================= HELPERS ================= */
 function money(n){
 return "$"+Number(n).toLocaleString("es-CO");
 }
 
-/* ================= FETCH DATA ================= */
 async function cargarDatos(){
 let r=await fetch(URL_SCRIPT);
 historial=await r.json();
@@ -226,7 +204,6 @@ render();
 renderDashboard();
 }
 
-/* ================= RENDER APP ================= */
 function render(){
 
 document.getElementById("registros").innerHTML=historial.length;
@@ -234,8 +211,9 @@ document.getElementById("registros").innerHTML=historial.length;
 let lista=document.getElementById("lista");
 lista.innerHTML="";
 
-historial.slice().reverse().forEach(x=>{
+historial.slice().reverse().forEach((x,i)=>{
 
+let indexReal = historial.length-1-i;
 let tipo=x.Tipo==="Ingreso"?"ingreso":"gasto";
 let signo=x.Tipo==="Ingreso"?"+":"-";
 
@@ -243,30 +221,46 @@ lista.innerHTML+=`
 <div class="item ${tipo}">
 <div class="item-title">${x.Categoría} - ${x.Descripción}</div>
 <div class="price">${signo}${money(x.Monto)}</div>
+
+<button class="delete" onclick="borrar(${indexReal})">🗑️ Borrar</button>
 </div>
 `;
 
 });
 }
 
-/* ================= DASHBOARD ================= */
 function renderDashboard(){
 
-let ingresos=0;
-let gastos=0;
+let ingresos=0,gastos=0,totalGastos=0,max=0;
+let categorias={};
 
 historial.forEach(x=>{
+
+categorias[x.Categoría]=(categorias[x.Categoría]||0)+1;
+
 if(x.Tipo==="Ingreso") ingresos+=Number(x.Monto);
-else gastos+=Number(x.Monto);
+else{
+gastos+=Number(x.Monto);
+totalGastos+=Number(x.Monto);
+if(Number(x.Monto)>max) max=Number(x.Monto);
+}
+
 });
+
+let topCat=Object.keys(categorias).sort((a,b)=>categorias[b]-categorias[a])[0]||"-";
 
 document.getElementById("ingresos").innerHTML=money(ingresos);
 document.getElementById("gastos").innerHTML=money(gastos);
 document.getElementById("balance").innerHTML=money(ingresos-gastos);
+document.getElementById("totalMov").innerHTML=historial.length;
+document.getElementById("mayor").innerHTML=money(max);
+document.getElementById("topCat").innerHTML=topCat;
+
+let prom = historial.length ? totalGastos / historial.length : 0;
+document.getElementById("promedio").innerHTML=money(prom);
 
 }
 
-/* ================= SEND ================= */
 async function enviar(datos){
 return await fetch(URL_SCRIPT,{
 method:"POST",
@@ -275,7 +269,17 @@ body:JSON.stringify(datos)
 });
 }
 
-/* ================= SAVE ================= */
+async function borrar(index){
+
+await fetch(URL_SCRIPT,{
+method:"POST",
+headers:{"Content-Type":"text/plain;charset=utf-8"},
+body:JSON.stringify({action:"delete",index:index})
+});
+
+await cargarDatos();
+}
+
 async function guardar(){
 
 let fecha=document.getElementById("fecha").value;
@@ -302,20 +306,17 @@ Año:f.getFullYear()
 };
 
 await enviar(datos);
-
 await cargarDatos();
 
 document.getElementById("descripcion").value="";
 document.getElementById("monto").value="";
 }
 
-/* ================= FORM ================= */
 document.getElementById("formulario").addEventListener("submit",e=>{
 e.preventDefault();
 guardar();
 });
 
-/* ================= INIT ================= */
 document.getElementById("fecha").valueAsDate=new Date();
 cargarDatos();
 
