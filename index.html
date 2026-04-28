@@ -116,7 +116,7 @@ z-index:9999;
 <div id="app">
 
 <h1>🏦 Banking PRO</h1>
-<div class="sub">control financiero estable</div>
+<div class="sub">sincronización rápida y estable</div>
 
 <button class="secondary" onclick="irDashboard()" style="margin-bottom:12px;">
 📊 Dashboard
@@ -206,6 +206,7 @@ let pendientesLocal=JSON.parse(localStorage.getItem("pendientes")||"[]");
 let bloqueado=false;
 
 let pie=null,bar=null;
+let syncing=false;
 
 /* NAV */
 function irDashboard(){
@@ -229,7 +230,7 @@ document.body.appendChild(t);
 setTimeout(()=>t.remove(),2000);
 }
 
-/* BOTÓN CONTROL */
+/* BOTÓN */
 function setLoading(state){
 let btn=document.getElementById("btnSave");
 btn.disabled=state;
@@ -237,12 +238,12 @@ btn.innerText=state?"Guardando...":"Guardar";
 bloqueado=state;
 }
 
-/* OFFLINE COUNTER */
+/* PENDIENTES */
 function renderPendientes(){
 document.getElementById("pendientes").innerText=pendientesLocal.length;
 }
 
-/* SAFE LOAD */
+/* LOAD SAFE */
 async function load(){
 try{
 let r=await fetch(URL);
@@ -256,14 +257,20 @@ dash();
 syncOffline();
 }
 
-/* SYNC ROBUSTO */
+/* 🔥 SINCRONIZACIÓN RÁPIDA (FIX REAL) */
 async function syncOffline(){
 
+if(syncing) return;
 if(!navigator.onLine || pendientesLocal.length===0) return;
 
-let nuevos=[];
+syncing=true;
 
-for(let item of pendientesLocal){
+let pendientes=[...pendientesLocal];
+let ok=[];
+let fail=[];
+
+/* ⚡ EN PARALELO (MUCHO MÁS RÁPIDO) */
+await Promise.all(pendientes.map(async (item)=>{
 
 try{
 
@@ -273,20 +280,29 @@ headers:{"Content-Type":"text/plain;charset=utf-8"},
 body:JSON.stringify(item)
 });
 
+ok.push(item);
+
 }catch(e){
-nuevos.push(item);
+fail.push(item);
 }
 
-}
+}));
 
-pendientesLocal=nuevos;
+pendientesLocal=fail;
 localStorage.setItem("pendientes",JSON.stringify(pendientesLocal));
 
 renderPendientes();
-load();
 
-toast("Sincronizado ✔️");
+if(ok.length>0){
+toast(`Sincronizados ${ok.length} ✔️`);
+await load();
 }
+
+syncing=false;
+}
+
+/* AUTO SYNC AL VOLVER INTERNET */
+window.addEventListener("online",syncOffline);
 
 /* RENDER */
 function render(){
@@ -364,7 +380,7 @@ data:{labels:["Ingresos","Gastos","Ahorro"],datasets:[{data:[ing,gas,ah]}]}
 });
 }
 
-/* SAVE FIXED */
+/* SAVE */
 document.getElementById("formulario").addEventListener("submit",async e=>{
 e.preventDefault();
 
