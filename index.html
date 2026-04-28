@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Banking PRO - Fase 2</title>
+<title>Banking PRO - Smart</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 
@@ -44,6 +44,18 @@ padding:10px;
 border-radius:10px;
 }
 
+.actions{
+display:flex;
+gap:8px;
+margin-top:6px;
+}
+
+.actions button{
+flex:1;
+padding:6px;
+font-size:12px;
+}
+
 .progress{
 height:10px;
 background:rgba(255,255,255,.1);
@@ -62,14 +74,15 @@ transition:.3s;
 .warning{color:#f59e0b;font-weight:700;margin-top:6px;}
 .danger{color:#ef4444;font-weight:700;margin-top:6px;}
 .ok{color:#22c55e;font-weight:700;margin-top:6px;}
+.info{color:#60a5fa;font-weight:700;margin-top:6px;}
 </style>
 </head>
 
 <body>
 
-<h1>🏦 Banking PRO - Fase 2</h1>
+<h1>🏦 Banking PRO Smart</h1>
 
-<!-- 💰 FORMULARIO MOVIMIENTOS -->
+<!-- MOVIMIENTOS -->
 <div class="card">
 
 <h3>📊 Nuevo movimiento</h3>
@@ -88,16 +101,16 @@ transition:.3s;
 <option>🏦 Ahorro</option>
 </select>
 
-<button class="primary" onclick="guardar()">Guardar movimiento</button>
+<button class="primary" onclick="guardar()">Guardar</button>
 
 </div>
 
-<!-- 💰 PRESUPUESTO -->
+<!-- PRESUPUESTO -->
 <div class="card">
 
 <h3>💰 Presupuesto mensual</h3>
 
-<input type="number" id="budget" placeholder="Ej: 1000000">
+<input type="number" id="budget">
 <button class="secondary" onclick="setBudget()">Guardar presupuesto</button>
 
 <div class="progress">
@@ -108,7 +121,13 @@ transition:.3s;
 
 </div>
 
-<!-- 📋 LISTA -->
+<!-- INSIGHTS (FASE 3 INICIO) -->
+<div class="card">
+<h3>🧠 Inteligencia financiera</h3>
+<div id="insights"></div>
+</div>
+
+<!-- LISTA -->
 <div class="card">
 <h3>📋 Movimientos</h3>
 <div class="list" id="lista"></div>
@@ -136,7 +155,7 @@ data=[];
 render();
 }
 
-/* GUARDAR MOVIMIENTO */
+/* GUARDAR */
 async function guardar(){
 
 let datos={
@@ -163,6 +182,23 @@ descripcion.value="";
 load();
 }
 
+/* 🗑️ BORRAR */
+function borrar(id){
+
+if(!confirm("Eliminar movimiento?")) return;
+
+data=data.filter(x=>x.ID!=id);
+render();
+
+/* backend */
+fetch(URL,{
+method:"POST",
+headers:{"Content-Type":"text/plain;charset=utf-8"},
+body:JSON.stringify({action:"delete",ID:id})
+});
+
+}
+
 /* RENDER */
 function render(){
 
@@ -170,26 +206,43 @@ let lista=document.getElementById("lista");
 lista.innerHTML="";
 
 let gastoMes=0;
+let ingresos=0;
+let gastos=0;
+let categorias={};
+
 let hoy=new Date();
 
 data.forEach(x=>{
 
 let d=new Date(x.Fecha);
 
+let m=Number(x.Monto);
+
+if(x.Tipo==="Ingreso") ingresos+=m;
+else gastos+=m;
+
 if(x.Tipo==="Gasto" && d.getMonth()===hoy.getMonth()){
-gastoMes+=Number(x.Monto);
+gastoMes+=m;
 }
+
+categorias[x.Categoría]=(categorias[x.Categoría]||0)+1;
 
 lista.innerHTML+=`
 <div class="item">
 ${x.Categoría} - ${x.Descripción}
-<br><b>$${Number(x.Monto).toLocaleString()}</b>
+<br><b>$${m.toLocaleString()}</b>
+
+<div class="actions">
+<button class="secondary" onclick="borrar('${x.ID}')">🗑️ borrar</button>
+</div>
+
 </div>
 `;
 
 });
 
 updateBudget(gastoMes);
+generateInsights(ingresos,gastos,categorias);
 }
 
 /* PRESUPUESTO */
@@ -219,15 +272,29 @@ status.innerHTML="⚠️ Cerca del límite";
 status.className="warning";
 }
 else{
-status.innerHTML="🟢 Vas bien";
+status.innerHTML="🟢 Bajo control";
 status.className="ok";
 }
 
 }
 
-/* INIT BUDGET */
-if(budget){
-document.getElementById("budget").value=budget;
+/* 🧠 FASE 3 - INSIGHTS */
+function generateInsights(ing,gas,cat){
+
+let lista=Object.entries(cat).sort((a,b)=>b[1]-a[1]);
+
+let top=lista[0] ? lista[0][0] : "N/A";
+
+let promedio=gas/data.length || 0;
+
+document.getElementById("insights").innerHTML=`
+
+<div class="info">💳 Ingresos: $${ing.toLocaleString()}</div>
+<div class="info">💸 Gastos: $${gas.toLocaleString()}</div>
+<div class="info">📊 Promedio gasto: $${promedio.toFixed(0)}</div>
+<div class="info">🔥 Categoría más usada: ${top}</div>
+
+`;
 }
 
 </script>
