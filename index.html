@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-<title>Banking PRO AI v9 - Fase 1</title>
+<title>Banking PRO AI v9 - Fase 2</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -14,10 +14,10 @@
 --bg2:#0b1020;
 --card:rgba(255,255,255,.06);
 --line:rgba(255,255,255,.08);
---text:#ffffff;
+--text:#fff;
 --muted:#94a3b8;
---input:#ffffff;
---inputText:#111111;
+--input:#fff;
+--inputText:#111;
 --primary:#2563eb;
 --primary2:#1d4ed8;
 }
@@ -25,14 +25,12 @@
 body.light{
 --bg1:#eef2ff;
 --bg2:#f8fafc;
---card:#ffffff;
+--card:#fff;
 --line:#e2e8f0;
 --text:#0f172a;
 --muted:#64748b;
---input:#ffffff;
+--input:#fff;
 --inputText:#111827;
---primary:#2563eb;
---primary2:#1e40af;
 }
 
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -41,19 +39,18 @@ body{
 font-family:Inter,sans-serif;
 background:linear-gradient(180deg,var(--bg1),var(--bg2));
 color:var(--text);
-padding:14px 14px 95px;
+padding:14px 14px 96px;
 max-width:780px;
 margin:auto;
-transition:.25s;
 }
 
 .header,.card{
 background:var(--card);
 border:1px solid var(--line);
-backdrop-filter:blur(14px);
 border-radius:22px;
 padding:16px;
 margin-bottom:12px;
+backdrop-filter:blur(14px);
 }
 
 .big{font-size:32px;font-weight:800}
@@ -131,10 +128,7 @@ border-left:4px solid transparent;
 .ingreso{border-left-color:#22c55e}
 .gasto{border-left-color:#ef4444}
 
-.price{
-font-weight:800;
-margin-top:5px;
-}
+.price{font-weight:800;margin-top:6px}
 
 .small-btn{
 padding:8px 10px;
@@ -169,7 +163,7 @@ margin-top:8px;
 height:100%;
 background:linear-gradient(90deg,#22c55e,#84cc16);
 width:0%;
-transition:.4s;
+transition:.35s;
 }
 
 .nav{
@@ -195,8 +189,8 @@ color:#cbd5e1;
 
 .nav button.active{
 background:rgba(255,255,255,.08);
-border-radius:12px;
 color:#fff;
+border-radius:12px;
 }
 
 canvas{
@@ -221,31 +215,66 @@ display:none;
 z-index:999;
 }
 
+.lock{
+position:fixed;
+inset:0;
+background:#020617;
+display:flex;
+align-items:center;
+justify-content:center;
+padding:18px;
+z-index:5000;
+}
+
+.lock-box{
+width:100%;
+max-width:360px;
+background:#111827;
+padding:22px;
+border-radius:22px;
+}
+
+.lock-box h2{
+font-size:22px;
+margin-bottom:12px;
+}
+
 .eye{
 font-size:12px;
+color:var(--muted);
 margin-top:10px;
 cursor:pointer;
-color:var(--muted);
 }
 </style>
 </head>
 
 <body>
 
+<!-- PIN LOCK -->
+<div class="lock" id="lockScreen" style="display:none">
+<div class="lock-box">
+<h2>🔐 Banking PRO AI</h2>
+<div class="small" style="margin-bottom:10px">Ingresa tu PIN</div>
+<input type="password" id="pinInput" maxlength="4" placeholder="****">
+<button class="primary" onclick="unlock()">Entrar</button>
+<button class="secondary" style="margin-top:10px" onclick="resetPin()">Olvidé PIN</button>
+</div>
+</div>
+
+<!-- HEADER -->
 <div class="header">
 <div class="small" id="hello"></div>
 <div class="small" id="today"></div>
 
 <div class="small" style="margin-top:10px">Saldo disponible</div>
 <div class="big" id="saldoTop">$0</div>
+
 <div class="eye" onclick="toggleHide()">👁 Mostrar / ocultar montos</div>
 
 <div class="grid2" style="margin-top:12px">
 <div class="kpi"><span>Pendientes</span><strong id="pendingCount">0</strong></div>
 <div class="kpi"><span>Sincronizados</span><strong id="syncCount">0</strong></div>
 </div>
-
-<div class="small" style="margin-top:10px" id="lastSync">Sincronizado recién</div>
 </div>
 
 <!-- HOME -->
@@ -272,18 +301,7 @@ color:var(--muted);
 </div>
 
 <div class="card">
-<div class="title">📌 Resumen</div>
-
-<div class="grid2">
-<div class="kpi"><span>Ingresos</span><strong id="ingresos">$0</strong></div>
-<div class="kpi"><span>Gastos</span><strong id="gastos">$0</strong></div>
-<div class="kpi"><span>Ahorro</span><strong id="ahorro">$0</strong></div>
-<div class="kpi"><span>Movimientos</span><strong id="movs">0</strong></div>
-</div>
-</div>
-
-<div class="card">
-<div class="title">🔔 Alertas inteligentes</div>
+<div class="title">🔔 Alertas</div>
 <div id="alerts"></div>
 </div>
 
@@ -304,7 +322,7 @@ color:var(--muted);
 
 </section>
 
-<!-- METAS -->
+<!-- GOALS -->
 <section class="tab" id="tab-goals">
 
 <div class="card">
@@ -337,11 +355,16 @@ color:var(--muted);
 <section class="tab" id="tab-settings">
 
 <div class="card">
-<div class="title">⚙️ Apariencia</div>
+<div class="title">⚙️ Ajustes</div>
 
-<button class="secondary" onclick="setTheme('dark')">🌙 Oscuro</button>
+<button class="secondary" onclick="setTheme('dark')">🌙 Tema oscuro</button>
 <br><br>
-<button class="secondary" onclick="setTheme('light')">☀️ Claro</button>
+<button class="secondary" onclick="setTheme('light')">☀️ Tema claro</button>
+<br><br>
+<button class="secondary" onclick="createPin()">🔐 Crear / cambiar PIN</button>
+<br><br>
+<button class="secondary" onclick="lockNow()">🔒 Bloquear ahora</button>
+
 </div>
 
 </section>
@@ -358,6 +381,7 @@ color:var(--muted);
 
 <script>
 const URL="https://script.google.com/macros/s/AKfycbwXGhRN-TJxXf4hvwk_BFV52Javiqn6Lzz5ps6M1yTz9PJy-9kDcsUKJLzUY-mTS1Z2/exec";
+
 let data=[];
 let goals=JSON.parse(localStorage.getItem("goals")||"[]");
 let pending=JSON.parse(localStorage.getItem("pendingQueue")||"[]");
@@ -374,6 +398,7 @@ load();
 function init(){
 
 const h=new Date().getHours();
+
 hello.innerText=
 h<12?"Buenos días ☀️":
 h<19?"Buenas tardes 🌤️":
@@ -387,6 +412,10 @@ pendingCount.innerText=pending.length;
 
 const th=localStorage.getItem("theme")||"dark";
 setTheme(th,false);
+
+if(localStorage.getItem("pinCode")){
+lockScreen.style.display="flex";
+}
 }
 
 /* TOAST */
@@ -396,6 +425,38 @@ toastEl.style.display="block";
 setTimeout(()=>toastEl.style.display="none",2200);
 }
 const toastEl=document.getElementById("toast");
+
+/* PIN */
+function createPin(){
+let p=prompt("Crea PIN de 4 dígitos");
+if(!p || p.length!==4) return;
+localStorage.setItem("pinCode",p);
+toast("PIN guardado");
+}
+
+function unlock(){
+let p=pinInput.value;
+if(p===localStorage.getItem("pinCode")){
+lockScreen.style.display="none";
+pinInput.value="";
+}else{
+toast("PIN incorrecto");
+}
+}
+
+function resetPin(){
+if(confirm("Eliminar PIN actual?")){
+localStorage.removeItem("pinCode");
+lockScreen.style.display="none";
+toast("PIN eliminado");
+}
+}
+
+function lockNow(){
+if(localStorage.getItem("pinCode")){
+lockScreen.style.display="flex";
+}
+}
 
 /* TABS */
 function goTab(tab,btn){
@@ -412,7 +473,7 @@ localStorage.setItem("theme",mode);
 if(show) toast("Tema actualizado");
 }
 
-/* MONEY HIDE */
+/* HIDE MONEY */
 function toggleHide(){
 hidden=!hidden;
 localStorage.setItem("hideMoney",hidden?"1":"0");
@@ -522,26 +583,20 @@ lista.innerHTML+=`
 });
 
 saldoTop.innerText=money(ing-gas);
-ingresos.innerText=money(ing);
-gastos.innerText=money(gas);
-ahorro.innerText=money(ah);
-movs.innerText=data.length;
 
 renderAlerts(ing,gas,ah,cats);
 renderGoals(ah);
 charts(ing,gas,cats);
 }
 
-/* ALERTAS */
+/* ALERTS */
 function renderAlerts(ing,gas,ah,cats){
 
 let html="";
 
-if(gas>ing){
-html+=`<div class="alert bad">🔴 Estás gastando más de lo que ingresas.</div>`;
-}else{
-html+=`<div class="alert good">🟢 Balance positivo actual.</div>`;
-}
+html+=gas>ing
+?'<div class="alert bad">🔴 Gastas más de lo que ingresas</div>'
+:'<div class="alert good">🟢 Balance positivo</div>';
 
 let top=Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
 
@@ -549,14 +604,12 @@ if(top){
 html+=`<div class="alert mid">⚠️ Mayor gasto: ${top[0]}</div>`;
 }
 
-if(ah>0){
-html+=`<div class="alert good">🏦 Excelente hábito de ahorro.</div>`;
-}
+html+=`<div class="alert good">🏦 Ahorro actual ${money(ah)}</div>`;
 
 alerts.innerHTML=html;
 }
 
-/* METAS */
+/* GOALS */
 function addGoal(){
 
 let n=goalName.value.trim();
@@ -570,7 +623,7 @@ localStorage.setItem("goals",JSON.stringify(goals));
 goalName.value="";
 goalValue.value="";
 
-renderGoals(0);
+render();
 toast("Meta creada");
 }
 
@@ -582,7 +635,7 @@ goals.forEach((g,i)=>{
 
 let p=Math.min((ah/g.v)*100,100);
 let faltan=Math.max(g.v-ah,0);
-let semana=Math.ceil(faltan/4);
+let sem=Math.ceil(faltan/4);
 
 goalList.innerHTML+=`
 <div class="item">
@@ -590,7 +643,7 @@ goalList.innerHTML+=`
 <div class="small">${money(ah)} / ${money(g.v)}</div>
 <div class="progress"><div class="bar" style="width:${p}%"></div></div>
 <div class="small" style="margin-top:8px">
-Te faltan ${money(faltan)} · Meta estimada ${semana} semanas
+Faltan ${money(faltan)} · Meta estimada ${sem} semanas
 </div>
 <button class="small-btn" onclick="delGoal(${i})">🗑️</button>
 </div>`;
