@@ -8,13 +8,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<!-- PWA -->
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0f172a">
-
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
-
+*{margin:0;padding:0;box-sizing:border-box}
 body{
 font-family:'Inter',sans-serif;
 background:radial-gradient(circle at top,#1a2a4a,#070b16);
@@ -22,348 +17,210 @@ color:#fff;
 padding:14px;
 }
 
-h1{font-size:32px;font-weight:800;}
-.sub{opacity:.7;margin-bottom:14px;font-size:13px;}
-
-.tabs{display:flex;gap:10px;margin-bottom:14px;}
-
-.tab{
+/* NAV */
+.nav{
+display:flex;
+gap:10px;
+margin-bottom:14px;
+}
+.nav button{
 flex:1;
 padding:12px;
 border-radius:12px;
-text-align:center;
-background:rgba(255,255,255,.08);
-cursor:pointer;
-font-weight:700;
+font-weight:800;
+background:rgba(255,255,255,.1);
+color:#fff;
+border:none;
+}
+.nav .active{
+background:#2563eb;
 }
 
-.tab.active{
-background:linear-gradient(135deg,#0ea5e9,#2563eb);
-}
+/* VISTAS */
+.view{display:none}
+.view.active{display:block}
 
-.top{
-display:grid;
-grid-template-columns:1fr;
-gap:12px;
-margin-bottom:14px;
-}
-
-.card{
-background:rgba(255,255,255,.07);
-backdrop-filter:blur(12px);
-padding:16px;
-border-radius:18px;
-border:1px solid rgba(255,255,255,.08);
-}
-
-.card span{font-size:12px;opacity:.7;}
-.card strong{font-size:22px;}
-
-.panel{
-background:rgba(255,255,255,.06);
-backdrop-filter:blur(14px);
-padding:16px;
-border-radius:24px;
-border:1px solid rgba(255,255,255,.08);
-}
-
+/* FORM */
 input,select,button{
 width:100%;
 padding:14px;
 border-radius:12px;
 border:none;
-outline:none;
+margin-bottom:10px;
 font-size:15px;
 }
 
-input,select{background:#fff;color:#111;}
-
-.row{display:grid;gap:10px;}
-
+/* BOTONES */
 .primary{
-background:linear-gradient(135deg,#0ea5e9,#2563eb);
+background:#2563eb;
 color:#fff;
 font-weight:800;
 }
 
-.list{margin-top:14px;display:grid;gap:10px;}
+.secondary{
+background:rgba(255,255,255,.15);
+color:#fff;
+}
 
+/* LISTA */
 .item{
-background:rgba(255,255,255,.06);
+background:rgba(255,255,255,.08);
+padding:12px;
+border-radius:14px;
+margin-top:10px;
+}
+
+.ingreso{border-left:4px solid #22c55e}
+.gasto{border-left:4px solid #ef4444}
+
+.price.ingreso{color:#22c55e}
+.price.gasto{color:#ef4444}
+
+/* DASHBOARD */
+.card{
+background:rgba(255,255,255,.08);
 padding:14px;
-border-radius:16px;
+border-radius:14px;
+margin-bottom:10px;
 }
 
-.item.ingreso{border-left:4px solid #22c55e;}
-.item.gasto{border-left:4px solid #ef4444;}
-
-.price{font-weight:800;margin-top:6px;}
-
-.actions{margin-top:8px;display:flex;gap:8px;}
-
-.actions button{
-padding:6px 10px;
-font-size:12px;
-border-radius:8px;
-}
-
-#dashboard{display:none;}
-
-canvas{background:rgba(255,255,255,.04);border-radius:14px;padding:10px;margin-top:10px;}
-
-/* TOAST */
-#toast{
-position:fixed;
-bottom:20px;
-left:50%;
-transform:translateX(-50%);
-background:#111;
-padding:12px 18px;
-border-radius:12px;
-opacity:0;
-transition:.3s;
-font-weight:700;
-}
-
-#toast.show{opacity:1;}
-
-@media(min-width:700px){
-.top{grid-template-columns:repeat(3,1fr);}
-}
+canvas{background:white;border-radius:12px;padding:10px}
 </style>
 </head>
 
 <body>
 
-<div id="toast"></div>
-
-<!-- TABS -->
-<div class="tabs">
-<div class="tab active" onclick="showApp()">💸 App</div>
-<div class="tab" onclick="showDash()">📊 Dashboard</div>
+<!-- NAV -->
+<div class="nav">
+<button id="btnForm" class="active" onclick="show('form')">💸 Movimientos</button>
+<button id="btnDash" onclick="show('dash')">📊 Dashboard</button>
 </div>
 
-<!-- APP -->
-<div id="app">
-
-<h1>Presupuesto PRO</h1>
-<div class="sub">control financiero inteligente</div>
-
-<div class="top">
-<div class="card"><span>Hoy gastado</span><strong id="hoy">$0</strong></div>
-<div class="card"><span>Registros</span><strong id="registros">0</strong></div>
-</div>
-
-<div class="panel">
-
-<form id="formulario">
+<!-- FORM -->
+<div id="form" class="view active">
 
 <input type="date" id="fecha">
 <input type="text" id="descripcion" placeholder="Descripción">
-
-<div class="row">
 <input type="text" id="monto" placeholder="Monto">
 
 <select id="categoria">
-<option>💰 Ingreso</option>
-<option>🏠 Vivienda</option>
-<option>🍔 Comida</option>
-<option>🚗 Transporte</option>
-<option>💡 Servicios</option>
-<option>🎮 Entretenimiento</option>
-<option>🏦 Ahorro</option>
+<option>Ingreso</option>
+<option>Gasto</option>
 </select>
-</div>
 
-<button class="primary" type="submit">Guardar</button>
+<button class="primary" onclick="guardar()">Guardar</button>
 
-</form>
-
-<div class="list" id="lista"></div>
-
-</div>
+<div id="lista"></div>
 </div>
 
 <!-- DASHBOARD -->
-<div id="dashboard">
+<div id="dash" class="view">
 
-<h1>📊 Dashboard</h1>
-
-<div class="top">
-<div class="card"><span>Ingresos</span><strong id="ing">$0</strong></div>
-<div class="card"><span>Gastos</span><strong id="gas">$0</strong></div>
-<div class="card"><span>Balance</span><strong id="bal">$0</strong></div>
+<div class="card">
+<h3>Resumen</h3>
+<div id="resumen"></div>
 </div>
 
-<canvas id="chartMes"></canvas>
-<canvas id="chartCat"></canvas>
-<canvas id="chartHist"></canvas>
+<canvas id="chart"></canvas>
 
 </div>
 
 <script>
 
-const URL="https://script.google.com/macros/s/AKfycbwXGhRN-TJxXf4hvwk_BFV52Javiqn6Lzz5ps6M1yTz9PJy-9kDcsUKJLzUY-mTS1Z2/exec";
+const URL="TU_SCRIPT_URL";
 
 let data=[];
 
-/* TOAST */
-function toast(msg){
-let t=document.getElementById("toast");
-t.innerText=msg;
-t.classList.add("show");
-setTimeout(()=>t.classList.remove("show"),2000);
+/* CAMBIO DE VISTAS */
+function show(v){
+
+document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));
+document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));
+
+document.getElementById(v).classList.add("active");
+
+if(v==="form") document.getElementById("btnForm").classList.add("active");
+if(v==="dash"){
+document.getElementById("btnDash").classList.add("active");
+renderDash();
 }
 
-/* TABS */
-function showApp(){
-document.getElementById("app").style.display="block";
-document.getElementById("dashboard").style.display="none";
-document.querySelectorAll(".tab")[0].classList.add("active");
-document.querySelectorAll(".tab")[1].classList.remove("active");
 }
 
-function showDash(){
-document.getElementById("app").style.display="none";
-document.getElementById("dashboard").style.display="block";
-document.querySelectorAll(".tab")[1].classList.add("active");
-document.querySelectorAll(".tab")[0].classList.remove("active");
-load();
-}
-
-/* LOAD */
+/* CARGAR */
 async function load(){
-try{
 let r=await fetch(URL);
 data=await r.json();
-render();
-dash();
-}catch(e){
-toast("Error de conexión");
-}
+renderList();
 }
 
-/* RENDER */
-function render(){
+/* GUARDAR */
+async function guardar(){
 
-document.getElementById("registros").innerText=data.length;
-
-let lista=document.getElementById("lista");
-lista.innerHTML="";
-
-let hoy=new Date().toISOString().slice(0,10);
-let gastoHoy=0;
-
-data.slice().reverse().forEach(x=>{
-
-if(x.Fecha===hoy && x.Tipo==="Gasto"){
-gastoHoy+=+x.Monto;
-}
-
-lista.innerHTML+=`
-<div class="item ${x.Tipo==="Ingreso"?"ingreso":"gasto"}">
-<b>${x.Categoría}</b><br>
-${x.Descripción}
-<div class="price">$${Number(x.Monto).toLocaleString()}</div>
-
-<div class="actions">
-<button onclick="del('${x.ID}')">🗑</button>
-</div>
-
-</div>
-`;
-});
-
-document.getElementById("hoy").innerText="$"+gastoHoy.toLocaleString();
-}
-
-/* DELETE */
-async function del(id){
-toast("Eliminando...");
-await fetch(URL,{
-method:"POST",
-headers:{"Content-Type":"text/plain"},
-body:JSON.stringify({action:"delete",ID:id})
-});
-toast("Eliminado ✔");
-load();
-}
-
-/* SAVE */
-document.getElementById("formulario").addEventListener("submit",async e=>{
-e.preventDefault();
-
-toast("Guardando...");
-
-let d={
+let obj={
 Fecha:document.getElementById("fecha").value,
 Descripción:document.getElementById("descripcion").value,
-Monto:document.getElementById("monto").value,
-Categoría:document.getElementById("categoria").value,
-Tipo:document.getElementById("categoria").value.includes("Ingreso")?"Ingreso":"Gasto"
+Monto:Number(document.getElementById("monto").value),
+Tipo:document.getElementById("categoria").value
 };
 
 await fetch(URL,{
 method:"POST",
-headers:{"Content-Type":"text/plain"},
-body:JSON.stringify(d)
+body:JSON.stringify(obj)
 });
 
-toast("Guardado ✔");
 load();
+}
+
+/* LISTA */
+function renderList(){
+
+let html="";
+
+data.slice().reverse().forEach(x=>{
+
+let cls=x.Tipo==="Ingreso"?"ingreso":"gasto";
+let sign=x.Tipo==="Ingreso"?"+":"-";
+
+html+=`
+<div class="item ${cls}">
+<strong>${x.Descripción}</strong><br>
+<small>${x.Fecha}</small><br>
+<div class="price ${cls}">${sign}$${x.Monto}</div>
+</div>
+`;
 });
+
+document.getElementById("lista").innerHTML=html;
+
+}
 
 /* DASHBOARD */
-function dash(){
+function renderDash(){
 
 let i=0,g=0;
 
 data.forEach(x=>{
-if(x.Tipo==="Ingreso") i+=+x.Monto;
-else g+=+x.Monto;
+if(x.Tipo==="Ingreso") i+=Number(x.Monto);
+else g+=Number(x.Monto);
 });
 
-document.getElementById("ing").innerText="$"+i.toLocaleString();
-document.getElementById("gas").innerText="$"+g.toLocaleString();
-document.getElementById("bal").innerText="$"+(i-g).toLocaleString();
+document.getElementById("resumen").innerHTML=`
+Ingresos: $${i}<br>
+Gastos: $${g}<br>
+Balance: $${i-g}
+`;
 
-let cat={};
-data.forEach(x=>{
-cat[x.Categoría]=(cat[x.Categoría]||0)+(+x.Monto);
-});
-
-new Chart(document.getElementById("chartCat"),{
-type:"pie",
-data:{labels:Object.keys(cat),datasets:[{data:Object.values(cat)}]}
-});
-
-let meses={};
-data.forEach(x=>{
-let m=x.Fecha.slice(0,7);
-meses[m]=(meses[m]||0)+(x.Tipo==="Ingreso"?1:-1)*(+x.Monto);
-});
-
-new Chart(document.getElementById("chartHist"),{
-type:"bar",
-data:{labels:Object.keys(meses),datasets:[{data:Object.values(meses)}]}
-});
-
-new Chart(document.getElementById("chartMes"),{
+new Chart(document.getElementById("chart"),{
 type:"doughnut",
-data:{labels:["Ingresos","Gastos"],datasets:[{data:[i,g]}]}
+data:{
+labels:["Ingresos","Gastos"],
+datasets:[{data:[i,g]}]
+}
 });
 
 }
 
-/* PWA */
-if ("serviceWorker" in navigator) {
-navigator.serviceWorker.register("sw.js")
-.then(()=>console.log("PWA activa"))
-.catch(err=>console.log(err));
-}
-
-/* INIT */
-document.getElementById("fecha").valueAsDate=new Date();
 load();
 
 </script>
