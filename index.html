@@ -116,7 +116,7 @@ z-index:9999;
 <div id="app">
 
 <h1>🏦 Banking PRO</h1>
-<div class="sub">control financiero rápido</div>
+<div class="sub">control financiero optimizado</div>
 
 <button class="secondary" onclick="irDashboard()" style="margin-bottom:12px;">
 📊 Dashboard
@@ -140,7 +140,7 @@ z-index:9999;
 </div>
 
 <div class="card">
-<span>⏳ Pendientes</span>
+<span>⏳ Pendientes offline</span>
 <strong id="pendientes">0</strong>
 </div>
 
@@ -229,40 +229,26 @@ document.body.appendChild(t);
 setTimeout(()=>t.remove(),2000);
 }
 
-/* FAST LOAD (OPTIMIZADO) */
+/* OFFLINE COUNTER */
+function renderPendientes(){
+document.getElementById("pendientes").innerText=pendientesLocal.length;
+}
+
+/* LOAD */
 async function load(){
+try{
 let r=await fetch(URL);
 data=await r.json();
+}catch(e){
+data=data||[];
+}
 
 render();
 dash();
 syncOffline();
 }
 
-/* OFFLINE */
-function renderPendientes(){
-document.getElementById("pendientes").innerText=pendientesLocal.length;
-}
-
-async function syncOffline(){
-
-if(!navigator.onLine || pendientesLocal.length===0) return;
-
-for(let item of pendientesLocal){
-await fetch(URL,{
-method:"POST",
-headers:{"Content-Type":"text/plain;charset=utf-8"},
-body:JSON.stringify(item)
-});
-}
-
-pendientesLocal=[];
-localStorage.removeItem("pendientes");
-toast("Sincronizado ✔️");
-load();
-}
-
-/* RENDER (SIN BUSCADOR = MÁS RÁPIDO) */
+/* RENDER */
 function render(){
 
 document.getElementById("registros").innerText=data.length;
@@ -287,6 +273,7 @@ if(x.Fecha===hoy && x.Tipo==="Gasto") gastosHoy+=m;
 
 document.getElementById("hoy").innerText="$"+gastosHoy.toLocaleString();
 document.getElementById("ahorro").innerText="$"+ah.toLocaleString();
+
 renderPendientes();
 
 data.slice().reverse().forEach(x=>{
@@ -301,7 +288,7 @@ lista.innerHTML+=`
 });
 }
 
-/* DASHBOARD (OPTIMIZADO - NO DUPLICA CHARTS SI NO CAMBIA) */
+/* DASH */
 function dash(){
 
 let ing=0,gas=0,ah=0;
@@ -337,7 +324,7 @@ data:{labels:["Ingresos","Gastos","Ahorro"],datasets:[{data:[ing,gas,ah]}]}
 });
 }
 
-/* SAVE */
+/* SAVE (FIX OFFLINE REAL) */
 document.getElementById("formulario").addEventListener("submit",async e=>{
 e.preventDefault();
 
@@ -357,15 +344,21 @@ Tipo:categoria.value.includes("Ingreso")?"Ingreso":"Gasto"
 };
 
 if(!navigator.onLine){
+
 pendientesLocal.push(datos);
 localStorage.setItem("pendientes",JSON.stringify(pendientesLocal));
-toast("Offline guardado 📴","#f59e0b");
+
+renderPendientes();
+toast("Guardado offline 📴","#f59e0b");
+
 }else{
+
 await fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
 body:JSON.stringify(datos)
 });
+
 toast("Guardado ✔️");
 }
 
@@ -406,6 +399,7 @@ let monto=document.getElementById("monto");
 let categoria=document.getElementById("categoria");
 
 fecha.valueAsDate=new Date();
+renderPendientes();
 load();
 
 </script>
