@@ -3,76 +3,74 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0f172a">
-<title>Presupuesto PRO</title>
+<title>Presupuesto PRO Banking</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 
 body{
 font-family:'Inter',sans-serif;
-background:radial-gradient(circle at top,#1a2a4a,#070b16);
+background:radial-gradient(circle at top,#0f172a,#05070f);
 color:#fff;
 padding:14px;
 }
 
-h1{font-size:32px;font-weight:800;margin-bottom:4px;}
-.sub{opacity:.7;margin-bottom:18px;font-size:13px;}
+h1{font-size:30px;font-weight:800;margin-bottom:6px;}
+.sub{opacity:.6;margin-bottom:14px;font-size:13px;}
 
 button,input,select{font-family:'Inter',sans-serif;}
 
-.top{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:16px;}
-
-.card{
-background:rgba(255,255,255,.07);
-backdrop-filter:blur(12px);
-padding:18px;
-border-radius:20px;
-border:1px solid rgba(255,255,255,.08);
+.top{
+display:grid;
+grid-template-columns:1fr;
+gap:12px;
+margin-bottom:16px;
 }
 
-.card span{font-size:12px;opacity:.7;}
-.card strong{font-size:26px;font-weight:800;}
-
-.panel{
+.card{
 background:rgba(255,255,255,.06);
 backdrop-filter:blur(14px);
 padding:16px;
-border-radius:26px;
+border-radius:18px;
 border:1px solid rgba(255,255,255,.08);
 }
 
-form{display:grid;gap:12px;}
+.card span{font-size:12px;opacity:.6;}
+.card strong{font-size:22px;font-weight:800;}
+
+.panel{
+background:rgba(255,255,255,.05);
+backdrop-filter:blur(14px);
+padding:14px;
+border-radius:22px;
+border:1px solid rgba(255,255,255,.08);
+}
+
+form{display:grid;gap:10px;}
 
 input,select,button{
 width:100%;
-padding:16px;
-font-size:16px;
+padding:14px;
+font-size:15px;
 border:none;
+border-radius:12px;
 outline:none;
-border-radius:14px;
 }
 
-input,select{background:rgba(255,255,255,.95);color:#111;}
+input,select{background:#fff;color:#111;}
 
-#monto{text-align:right;font-weight:700;font-size:18px;}
+.primary{background:linear-gradient(135deg,#0ea5e9,#2563eb);color:#fff;font-weight:800;}
+.secondary{background:rgba(255,255,255,.12);color:#fff;font-weight:700;}
 
-.row{display:grid;grid-template-columns:1fr;gap:12px;}
-
-button{font-weight:800;cursor:pointer;}
-
-.primary{background:linear-gradient(135deg,#0ea5e9,#2563eb);color:#fff;}
-.secondary{background:rgba(255,255,255,.15);color:#fff;}
-
-.list{display:grid;gap:10px;margin-top:18px;}
+.list{display:grid;gap:10px;margin-top:14px;}
 
 .item{
-background:rgba(255,255,255,.06);
-padding:14px;
-border-radius:18px;
+background:rgba(255,255,255,.05);
+padding:12px;
+border-radius:14px;
 position:relative;
 }
 
@@ -86,12 +84,12 @@ left:0;top:0;bottom:0;width:4px;
 .item.ingreso::before{background:#22c55e;}
 .item.gasto::before{background:#ef4444;}
 
-.item-title{font-weight:700;}
+.title{font-weight:700;font-size:14px;}
 .price{font-weight:800;margin-top:4px;}
 
 .delete{
-margin-top:10px;
-background:rgba(239,68,68,.2);
+margin-top:8px;
+background:rgba(239,68,68,.15);
 color:#fff;
 padding:8px;
 border-radius:10px;
@@ -100,44 +98,58 @@ font-size:12px;
 
 #dashboard{display:none;}
 
-.back{margin-bottom:12px;}
+canvas{
+background:rgba(255,255,255,.03);
+border-radius:16px;
+padding:10px;
+margin-top:14px;
+}
 
-/* TOAST */
 .toast{
 position:fixed;
 bottom:20px;
 left:50%;
 transform:translateX(-50%);
-padding:12px 18px;
+padding:12px 16px;
 border-radius:12px;
 font-weight:700;
 z-index:9999;
-color:#fff;
 }
 
 @media(min-width:700px){
 .top{grid-template-columns:repeat(3,1fr);}
-.row{grid-template-columns:1fr 1fr;}
 }
 </style>
 </head>
 
 <body>
 
-<!-- APP -->
 <div id="app">
 
-<h1>💸 Presupuesto PRO</h1>
-<div class="sub">control simple y rápido de tus movimientos</div>
+<h1>🏦 Banking PRO</h1>
+<div class="sub">control financiero inteligente</div>
 
 <button class="secondary" onclick="irDashboard()" style="margin-bottom:12px;">
-📊 Ver Dashboard
+📊 Abrir Dashboard
 </button>
 
 <div class="top">
-<div class="card"><span>Hoy</span><strong id="hoy">$0</strong></div>
-<div class="card"><span>Registros</span><strong id="registros">0</strong></div>
-<div class="card"><span>Pendientes</span><strong id="pendientes">0</strong></div>
+
+<div class="card">
+<span>💸 Gastos de hoy</span>
+<strong id="hoy">$0</strong>
+</div>
+
+<div class="card">
+<span>📊 Registros</span>
+<strong id="registros">0</strong>
+</div>
+
+<div class="card">
+<span>⚖️ Balance</span>
+<strong id="balance">$0</strong>
+</div>
+
 </div>
 
 <div class="panel">
@@ -147,21 +159,20 @@ color:#fff;
 <input type="date" id="fecha" required>
 <input type="text" id="descripcion" placeholder="Descripción" required>
 
-<div class="row">
-<input type="text" id="monto" placeholder="Monto" required>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+<input type="number" id="monto" placeholder="Monto" required>
 
 <select id="categoria">
 <option>💰 Ingreso</option>
-<option>🏠 Vivienda</option>
 <option>🍔 Comida</option>
+<option>🏠 Vivienda</option>
 <option>🚗 Transporte</option>
 <option>💡 Servicios</option>
 <option>🎮 Entretenimiento</option>
-<option>🏦 Ahorro</option>
 </select>
 </div>
 
-<button class="primary" type="submit">Guardar</button>
+<button class="primary" type="submit">Guardar movimiento</button>
 
 </form>
 
@@ -173,37 +184,48 @@ color:#fff;
 <!-- DASHBOARD -->
 <div id="dashboard">
 
-<button class="secondary back" onclick="irApp()">⬅ Volver</button>
+<button class="secondary" onclick="irApp()" style="margin-bottom:10px;">⬅ Volver</button>
 
 <div class="top">
-<div class="card"><span>Ingresos</span><strong id="ingresos">$0</strong></div>
-<div class="card"><span>Gastos</span><strong id="gastos">$0</strong></div>
-<div class="card"><span>Balance</span><strong id="balance">$0</strong></div>
+
+<div class="card">
+<span>💰 Ingresos</span>
+<strong id="ingresos">$0</strong>
 </div>
+
+<div class="card">
+<span>💸 Gastos</span>
+<strong id="gastos">$0</strong>
+</div>
+
+<div class="card">
+<span>⚖️ Balance</span>
+<strong id="balance2">$0</strong>
+</div>
+
+</div>
+
+<canvas id="chartPie"></canvas>
+<canvas id="chartBar"></canvas>
 
 </div>
 
 <script>
 
-const URL_SCRIPT="https://script.google.com/macros/s/AKfycbwXGhRN-TJxXf4hvwk_BFV52Javiqn6Lzz5ps6M1yTz9PJy-9kDcsUKJLzUY-mTS1Z2/exec";
+const URL="https://script.google.com/macros/s/AKfycbwXGhRN-TJxXf4hvwk_BFV52Javiqn6Lzz5ps6M1yTz9PJy-9kDcsUKJLzUY-mTS1Z2/exec";
 
-let historial=[];
+let data=[];
 
 /* NAV */
 function irDashboard(){
 document.getElementById("app").style.display="none";
 document.getElementById("dashboard").style.display="block";
-cargarDatos();
+load();
 }
 
 function irApp(){
 document.getElementById("dashboard").style.display="none";
 document.getElementById("app").style.display="block";
-}
-
-/* MONEY */
-function money(n){
-return "$"+Number(n).toLocaleString("es-CO");
 }
 
 /* TOAST */
@@ -217,67 +239,124 @@ setTimeout(()=>t.remove(),2000);
 }
 
 /* LOAD */
-async function cargarDatos(){
-let r=await fetch(URL_SCRIPT);
-historial=await r.json();
+async function load(){
+let r=await fetch(URL);
+data=await r.json();
 render();
-renderDashboard();
+dashboard();
 }
 
 /* RENDER LIST */
 function render(){
 
-document.getElementById("registros").innerText=historial.length;
+document.getElementById("registros").innerText=data.length;
 
 let lista=document.getElementById("lista");
 lista.innerHTML="";
 
-historial.slice().reverse().forEach(x=>{
+let hoy=new Date().toISOString().split("T")[0];
+let gastosHoy=0;
+let ingresos=0,gastos=0;
+
+data.forEach(x=>{
+
+if(x.Tipo==="Ingreso") ingresos+=+x.Monto;
+else gastos+=+x.Monto;
+
+if(x.Fecha===hoy && x.Tipo==="Gasto"){
+gastosHoy+=+x.Monto;
+}
+
+});
+
+document.getElementById("hoy").innerText="$"+gastosHoy.toLocaleString();
+document.getElementById("balance").innerText="$"+(ingresos-gastos).toLocaleString();
+
+data.slice().reverse().forEach(x=>{
 
 let tipo=x.Tipo==="Ingreso"?"ingreso":"gasto";
-let signo=x.Tipo==="Ingreso"?"+":"-";
 
 lista.innerHTML+=`
 <div class="item ${tipo}">
-<div class="item-title">${x.Categoría} - ${x.Descripción}</div>
-<div class="price">${signo}${money(x.Monto)}</div>
+<div class="title">${x.Categoría} - ${x.Descripción}</div>
+<div class="price">$${(+x.Monto).toLocaleString()}</div>
 
-<button class="delete" onclick="borrar('${x.ID}')">🗑️ Borrar</button>
+<button class="delete" onclick="borrar('${x.ID}')">🗑️ eliminar</button>
 </div>
 `;
 });
 }
 
-/* DASHBOARD SIMPLE */
-function renderDashboard(){
+/* DASHBOARD PRO */
+function dashboard(){
 
 let ingresos=0,gastos=0;
+let cat={};
 
-historial.forEach(x=>{
-if(x.Tipo==="Ingreso") ingresos+=Number(x.Monto);
-else gastos+=Number(x.Monto);
+data.forEach(x=>{
+if(x.Tipo==="Ingreso") ingresos+=+x.Monto;
+else gastos+=+x.Monto;
+
+cat[x.Categoría]=(cat[x.Categoría]||0)+(+x.Monto);
 });
 
-document.getElementById("ingresos").innerText=money(ingresos);
-document.getElementById("gastos").innerText=money(gastos);
-document.getElementById("balance").innerText=money(ingresos-gastos);
+document.getElementById("ingresos").innerText="$"+ingresos.toLocaleString();
+document.getElementById("gastos").innerText="$"+gastos.toLocaleString();
+document.getElementById("balance2").innerText="$"+(ingresos-gastos).toLocaleString();
+
+/* PIE */
+new Chart(document.getElementById("chartPie"),{
+type:"doughnut",
+data:{
+labels:Object.keys(cat),
+datasets:[{data:Object.values(cat)}]
+}
+});
+
+/* BAR */
+new Chart(document.getElementById("chartBar"),{
+type:"bar",
+data:{
+labels:["Ingresos","Gastos"],
+datasets:[{
+data:[ingresos,gastos]
+}]
+}
+});
 }
 
-/* SEND */
-async function enviar(data){
-return await fetch(URL_SCRIPT,{
+/* SAVE */
+document.getElementById("formulario").addEventListener("submit",async e=>{
+e.preventDefault();
+
+let r=await fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
-body:JSON.stringify(data)
+body:JSON.stringify({
+Fecha:fecha.value,
+Categoría:categoria.value,
+Descripción:descripcion.value,
+Monto:monto.value,
+Tipo:categoria.value.includes("Ingreso")?"Ingreso":"Gasto"
+})
 });
-}
+
+let res=await r.json();
+
+if(res.status==="ok") toast("Guardado ✔️");
+else toast("Error","#ef4444");
+
+load();
+
+formulario.reset();
+});
 
 /* DELETE */
 async function borrar(id){
 
-if(!confirm("¿Eliminar este movimiento?")) return;
+if(!confirm("Eliminar movimiento?")) return;
 
-let r=await fetch(URL_SCRIPT,{
+let r=await fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
 body:JSON.stringify({action:"delete",ID:id})
@@ -285,56 +364,19 @@ body:JSON.stringify({action:"delete",ID:id})
 
 let res=await r.json();
 
-if(res.status==="deleted"){
-toast("Eliminado ✔️","#ef4444");
-}else{
-toast("Error al eliminar","#ef4444");
+if(res.status==="deleted") toast("Eliminado ✔️","#ef4444");
+
+load();
 }
-
-await cargarDatos();
-}
-
-/* SAVE */
-document.getElementById("formulario").addEventListener("submit",async e=>{
-e.preventDefault();
-
-let fecha=document.getElementById("fecha").value;
-let descripcion=document.getElementById("descripcion").value.trim();
-let monto=Number(document.getElementById("monto").value);
-let categoria=document.getElementById("categoria").value;
-
-if(!descripcion || monto<=0){
-toast("Datos inválidos","#ef4444");
-return;
-}
-
-let tipo=categoria.includes("Ingreso")?"Ingreso":"Gasto";
-
-let r=await enviar({
-Fecha:fecha,
-Categoría:categoria,
-Descripción:descripcion,
-Monto:monto,
-Tipo:tipo
-});
-
-let res=await r.json();
-
-if(res.status==="ok"){
-toast("Guardado ✔️");
-}else{
-toast("Error al guardar","#ef4444");
-}
-
-document.getElementById("descripcion").value="";
-document.getElementById("monto").value="";
-
-await cargarDatos();
-});
 
 /* INIT */
-document.getElementById("fecha").valueAsDate=new Date();
-cargarDatos();
+let fecha=document.getElementById("fecha");
+let descripcion=document.getElementById("descripcion");
+let monto=document.getElementById("monto");
+let categoria=document.getElementById("categoria");
+
+fecha.valueAsDate=new Date();
+load();
 
 </script>
 
