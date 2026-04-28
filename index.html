@@ -3,18 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-<title>Banking PRO AI - Fase 7</title>
+<title>Banking PRO AI</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
--webkit-tap-highlight-color:transparent;
-}
-
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{
 font-family:Inter,sans-serif;
 background:linear-gradient(180deg,#070b16,#0b1020);
@@ -23,80 +17,45 @@ padding:14px 14px 90px;
 max-width:760px;
 margin:auto;
 }
-
-/* ===== HEADER ===== */
 .header{
 background:linear-gradient(135deg,#111827,#1e293b);
 padding:18px;
 border-radius:22px;
 border:1px solid rgba(255,255,255,.08);
-margin-bottom:14px;
+margin-bottom:12px;
 box-shadow:0 14px 28px rgba(0,0,0,.22);
 }
+.small{font-size:12px;opacity:.72}
+.big{font-size:32px;font-weight:800;margin-top:4px;letter-spacing:-1px}
 
-.small{
-font-size:12px;
-opacity:.72;
+.statusbar{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:8px;
+margin-top:14px;
 }
-
-.big{
-font-size:32px;
-font-weight:800;
-margin-top:4px;
-letter-spacing:-1px;
+.pill{
+background:rgba(255,255,255,.07);
+padding:10px;
+border-radius:14px;
+font-size:11px;
+text-align:center;
+line-height:1.35;
 }
+.pill strong{display:block;font-size:14px;margin-top:3px}
 
-/* ===== CARDS ===== */
 .card{
 background:rgba(255,255,255,.06);
-backdrop-filter:blur(14px);
 padding:14px;
 border-radius:18px;
 border:1px solid rgba(255,255,255,.08);
 margin-bottom:12px;
+backdrop-filter:blur(14px);
 }
+.title{font-size:17px;font-weight:800;margin-bottom:10px}
 
-.title{
-font-size:17px;
-font-weight:800;
-margin-bottom:10px;
-}
-
-.grid2{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:10px;
-}
-
-.kpi{
-background:rgba(255,255,255,.05);
-padding:12px;
-border-radius:14px;
-}
-
-.kpi span{
-display:block;
-font-size:12px;
-opacity:.7;
-margin-bottom:5px;
-}
-
-.kpi strong{
-font-size:18px;
-font-weight:800;
-}
-
-/* ===== FORM ===== */
-.field{
-margin-bottom:10px;
-}
-
-.field label{
-display:block;
-font-size:12px;
-opacity:.72;
-margin-bottom:5px;
-}
+.field{margin-bottom:10px}
+.field label{display:block;font-size:12px;opacity:.72;margin-bottom:5px}
 
 input,select,button{
 width:100%;
@@ -105,69 +64,63 @@ outline:none;
 border-radius:14px;
 font-family:inherit;
 }
-
 input,select{
 padding:14px;
+background:#fff;
+color:#111;
 font-size:14px;
 font-weight:600;
-background:rgba(255,255,255,.95);
-color:#111;
 }
-
 button{
 padding:14px;
-font-weight:800;
 font-size:15px;
+font-weight:800;
 cursor:pointer;
 transition:.18s;
 }
-
-button:active{
-transform:scale(.98);
-}
-
+button:active{transform:scale(.98)}
 .primary{
 background:linear-gradient(135deg,#2563eb,#1d4ed8);
 color:#fff;
 }
-
 .secondary{
-background:rgba(255,255,255,.10);
+background:rgba(255,255,255,.08);
 color:#fff;
 }
 
-/* ===== LISTA ===== */
-.list{
+.grid2{
 display:grid;
+grid-template-columns:1fr 1fr;
 gap:10px;
 }
+.kpi{
+background:rgba(255,255,255,.05);
+padding:12px;
+border-radius:14px;
+}
+.kpi span{display:block;font-size:12px;opacity:.72;margin-bottom:4px}
+.kpi strong{font-size:18px}
 
+.list{display:grid;gap:10px}
 .item{
 background:rgba(255,255,255,.05);
 padding:12px;
 border-radius:14px;
 border-left:4px solid transparent;
 }
-
-.ingreso{border-left-color:#22c55e;}
-.gasto{border-left-color:#ef4444;}
-
-.price{
-font-weight:800;
-margin-top:6px;
-}
+.ingreso{border-left-color:#22c55e}
+.gasto{border-left-color:#ef4444}
+.price{font-weight:800;margin-top:6px}
 
 .small-btn{
 margin-top:8px;
 padding:8px 10px;
 font-size:12px;
 width:auto;
-border-radius:10px;
-background:rgba(255,255,255,.10);
+background:rgba(255,255,255,.08);
 color:#fff;
 }
 
-/* ===== ALERT ===== */
 .alert{
 padding:10px;
 border-radius:12px;
@@ -175,23 +128,10 @@ font-size:13px;
 margin-top:8px;
 line-height:1.4;
 }
+.good{background:rgba(34,197,94,.14);color:#22c55e}
+.mid{background:rgba(245,158,11,.14);color:#f59e0b}
+.bad{background:rgba(239,68,68,.14);color:#ef4444}
 
-.good{
-background:rgba(34,197,94,.14);
-color:#22c55e;
-}
-
-.mid{
-background:rgba(245,158,11,.14);
-color:#f59e0b;
-}
-
-.bad{
-background:rgba(239,68,68,.14);
-color:#ef4444;
-}
-
-/* ===== PROGRESS ===== */
 .progress{
 height:10px;
 background:rgba(255,255,255,.08);
@@ -199,60 +139,41 @@ border-radius:20px;
 overflow:hidden;
 margin-top:10px;
 }
-
 .bar{
 height:100%;
 width:0%;
 background:linear-gradient(90deg,#22c55e,#84cc16);
+transition:.3s;
 }
 
-/* ===== TABS ===== */
-.tab{
-display:none;
-animation:fade .22s ease;
-}
+.tab{display:none}
+.tab.active{display:block}
 
-.tab.active{
-display:block;
-}
-
-@keyframes fade{
-from{opacity:0;transform:translateY(8px);}
-to{opacity:1;transform:translateY(0);}
-}
-
-/* ===== NAV ===== */
 .nav{
 position:fixed;
-left:0;
-right:0;
-bottom:0;
-padding:10px 12px calc(10px + env(safe-area-inset-bottom));
-background:rgba(8,12,22,.94);
-backdrop-filter:blur(18px);
+left:0;right:0;bottom:0;
 display:grid;
 grid-template-columns:repeat(4,1fr);
 gap:8px;
+padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+background:rgba(8,12,22,.95);
+backdrop-filter:blur(18px);
 border-top:1px solid rgba(255,255,255,.08);
 max-width:760px;
 margin:auto;
 }
-
 .nav button{
 padding:10px 6px;
 font-size:12px;
 font-weight:700;
-border-radius:14px;
 background:transparent;
 color:#cbd5e1;
 }
-
 .nav button.active{
 background:rgba(255,255,255,.08);
 color:#fff;
 }
 
-/* ===== TOAST ===== */
 .toast{
 position:fixed;
 left:50%;
@@ -266,8 +187,8 @@ font-weight:700;
 opacity:0;
 transition:.25s;
 pointer-events:none;
+z-index:99;
 }
-
 .toast.show{
 opacity:1;
 transform:translateX(-50%) translateY(0);
@@ -281,11 +202,34 @@ transform:translateX(-50%) translateY(0);
 <div class="header">
 <div class="small" id="hello">Hola 👋</div>
 <div class="small" id="today"></div>
-<div class="small" style="margin-top:10px;">Saldo disponible</div>
+
+<div class="small" style="margin-top:10px">Saldo disponible</div>
 <div class="big" id="saldoTop">$0</div>
+
+<!-- STATUS BAR RESTAURADA -->
+<div class="statusbar">
+<div class="pill">
+Estado
+<strong id="netState">🟢 Online</strong>
 </div>
 
-<!-- ================= TAB INICIO ================= -->
+<div class="pill">
+Sincronizados
+<strong id="syncCount">0</strong>
+</div>
+
+<div class="pill">
+Pendientes
+<strong id="pendingCount">0</strong>
+</div>
+</div>
+
+<div class="small" style="margin-top:10px" id="lastSync">
+Sincronizado recién
+</div>
+</div>
+
+<!-- TAB HOME -->
 <section class="tab active" id="tab-home">
 
 <div class="card">
@@ -298,7 +242,7 @@ transform:translateX(-50%) translateY(0);
 
 <div class="field">
 <label>Descripción</label>
-<input type="text" id="descripcion" placeholder="Ej: Almuerzo, Nómina">
+<input type="text" id="descripcion">
 </div>
 
 <div class="field">
@@ -324,7 +268,6 @@ transform:translateX(-50%) translateY(0);
 
 <div class="card">
 <div class="title">📌 Resumen rápido</div>
-
 <div class="grid2">
 <div class="kpi"><span>Ingresos</span><strong id="ingresos">$0</strong></div>
 <div class="kpi"><span>Gastos</span><strong id="gastos">$0</strong></div>
@@ -333,22 +276,18 @@ transform:translateX(-50%) translateY(0);
 </div>
 </div>
 
-<div class="card">
-<div class="title">🤖 Coach financiero</div>
-<div id="coach"></div>
-</div>
-
 </section>
 
-<!-- ================= TAB DASHBOARD ================= -->
+<!-- TAB DASH -->
 <section class="tab" id="tab-dashboard">
-
 <div class="card">
 <div class="title">💰 Presupuesto mensual</div>
 
-<input type="number" id="budget" placeholder="Ej: 1000000">
+<input type="number" id="budget">
 
-<button class="primary" style="margin-top:10px;" onclick="setBudget()">Guardar presupuesto</button>
+<button class="primary" style="margin-top:10px" onclick="setBudget()">
+Guardar presupuesto
+</button>
 
 <div class="progress">
 <div class="bar" id="bar"></div>
@@ -358,46 +297,33 @@ transform:translateX(-50%) translateY(0);
 </div>
 
 <div class="card">
-<div class="title">🧠 IA financiera</div>
-<div id="insights"></div>
+<div class="title">🤖 Coach financiero</div>
+<div id="coach"></div>
 </div>
-
 </section>
 
-<!-- ================= TAB CALENDARIO ================= -->
+<!-- TAB CALENDAR -->
 <section class="tab" id="tab-calendar">
-
 <div class="card">
-<div class="title">📆 Calendario financiero</div>
-<div id="calendarData"></div>
+<div class="title">📆 Historial por fecha</div>
+<div class="list" id="calendarData"></div>
 </div>
-
 </section>
 
-<!-- ================= TAB MAS ================= -->
+<!-- TAB MORE -->
 <section class="tab" id="tab-more">
-
 <div class="card">
-<div class="title">📋 Movimientos recientes</div>
+<div class="title">📋 Movimientos</div>
 <div class="list" id="lista"></div>
 </div>
-
-<div class="card">
-<div class="title">⚙️ Herramientas</div>
-
-<button class="secondary" onclick="exportar()">📤 Exportar datos</button>
-<button class="secondary" style="margin-top:10px;" onclick="load()">🔄 Sincronizar</button>
-
-</div>
-
 </section>
 
 <!-- NAV -->
 <nav class="nav">
 <button class="active" onclick="goTab('home',this)">🏠 Inicio</button>
 <button onclick="goTab('dashboard',this)">📊 Dashboard</button>
-<button onclick="goTab('calendar',this)">📆 Calendario</button>
-<button onclick="goTab('more',this)">⚙️ Más</button>
+<button onclick="goTab('calendar',this)">📆 Fechas</button>
+<button onclick="goTab('more',this)">📋 Lista</button>
 </nav>
 
 <div class="toast" id="toast"></div>
@@ -406,17 +332,18 @@ transform:translateX(-50%) translateY(0);
 const URL="https://script.google.com/macros/s/AKfycbwXGhRN-TJxXf4hvwk_BFV52Javiqn6Lzz5ps6M1yTz9PJy-9kDcsUKJLzUY-mTS1Z2/exec";
 
 let data=[];
+let pending=JSON.parse(localStorage.getItem("pendingQueue")||"[]");
 let budget=localStorage.getItem("budget")||0;
 
-/* INIT */
 fecha.valueAsDate=new Date();
 budget && (document.getElementById("budget").value=budget);
 
-headerInfo();
+initHeader();
+setNetwork();
 load();
 
 /* ===== HEADER ===== */
-function headerInfo(){
+function initHeader(){
 const h=new Date().getHours();
 
 hello.innerText=
@@ -425,23 +352,20 @@ h<19?"Buenas tardes 🌤️":
 "Buenas noches 🌙";
 
 today.innerText=new Date().toLocaleDateString("es-CO",{
-weekday:"long",
-day:"numeric",
-month:"long"
+weekday:"long",day:"numeric",month:"long"
 });
 }
 
 /* ===== TOAST ===== */
 function toast(msg){
-const t=document.getElementById("toast");
-t.innerText=msg;
-t.classList.add("show");
-setTimeout(()=>t.classList.remove("show"),2200);
+toastEl.innerText=msg;
+toastEl.classList.add("show");
+setTimeout(()=>toastEl.classList.remove("show"),2200);
 }
+const toastEl=document.getElementById("toast");
 
 /* ===== TABS ===== */
 function goTab(tab,btn){
-
 document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
 document.getElementById("tab-"+tab).classList.add("active");
 
@@ -449,23 +373,36 @@ document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active")
 btn.classList.add("active");
 }
 
+/* ===== NETWORK ===== */
+function setNetwork(){
+netState.innerText=navigator.onLine?"🟢 Online":"🔴 Offline";
+pendingCount.innerText=pending.length;
+}
+window.addEventListener("online",()=>{
+setNetwork();
+syncPending();
+});
+window.addEventListener("offline",setNetwork);
+
 /* ===== LOAD ===== */
 async function load(){
-
 try{
 let r=await fetch(URL);
 data=await r.json();
-}catch(e){
-data=[];
-}
+
+syncCount.innerText=data.length;
+lastSync.innerText="Sincronizado recién";
 
 render();
+
+}catch(e){
+lastSync.innerText="Sin conexión";
+render();
+}
 }
 
 /* ===== SAVE ===== */
 async function guardar(){
-
-const btn=saveBtn;
 
 let datos={
 Fecha:fecha.value,
@@ -476,12 +413,31 @@ Tipo:categoria.value.includes("Ingreso")?"Ingreso":"Gasto"
 };
 
 if(!datos.Descripción || datos.Monto<=0){
-toast("Completa los datos");
+toast("Completa datos");
 return;
 }
 
-btn.disabled=true;
-btn.innerText="Guardando...";
+saveBtn.disabled=true;
+saveBtn.innerText="Guardando...";
+
+/* VISUAL INMEDIATO */
+data.unshift({...datos,ID:"tmp"+Date.now()});
+render();
+
+if(!navigator.onLine){
+
+pending.push(datos);
+localStorage.setItem("pendingQueue",JSON.stringify(pending));
+
+pendingCount.innerText=pending.length;
+toast("☁ Guardado pendiente");
+
+saveBtn.disabled=false;
+saveBtn.innerText="💾 Guardar movimiento";
+descripcion.value="";
+monto.value="";
+return;
+}
 
 try{
 await fetch(URL,{
@@ -490,19 +446,55 @@ headers:{"Content-Type":"text/plain;charset=utf-8"},
 body:JSON.stringify(datos)
 });
 
+toast("✔ Guardado");
 descripcion.value="";
 monto.value="";
-
-toast("✔ Movimiento guardado");
-
 await load();
 
 }catch(e){
-toast("Error al guardar");
+pending.push(datos);
+localStorage.setItem("pendingQueue",JSON.stringify(pending));
+pendingCount.innerText=pending.length;
+toast("☁ Guardado pendiente");
 }
 
-btn.disabled=false;
-btn.innerText="💾 Guardar movimiento";
+saveBtn.disabled=false;
+saveBtn.innerText="💾 Guardar movimiento";
+}
+
+/* ===== SYNC PENDIENTES ===== */
+async function syncPending(){
+
+if(!navigator.onLine || !pending.length) return;
+
+let enviados=0;
+
+while(pending.length){
+
+let item=pending[0];
+
+try{
+await fetch(URL,{
+method:"POST",
+headers:{"Content-Type":"text/plain;charset=utf-8"},
+body:JSON.stringify(item)
+});
+
+pending.shift();
+enviados++;
+
+}catch(e){
+break;
+}
+}
+
+localStorage.setItem("pendingQueue",JSON.stringify(pending));
+pendingCount.innerText=pending.length;
+
+if(enviados>0){
+toast("✔ "+enviados+" sincronizados");
+await load();
+}
 }
 
 /* ===== DELETE ===== */
@@ -513,25 +505,28 @@ if(!confirm("¿Eliminar movimiento?")) return;
 data=data.filter(x=>String(x.ID)!==String(id));
 render();
 
-toast("🗑 Eliminado");
-
 try{
 await fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
 body:JSON.stringify({action:"delete",ID:id})
 });
-}catch(e){}
+
+toast("🗑 Eliminado");
+await load();
+
+}catch(e){
+toast("Error al borrar");
+}
 }
 
 /* ===== RENDER ===== */
 function render(){
 
-let ing=0,gas=0,ah=0,gastoMes=0;
-
 lista.innerHTML="";
 calendarData.innerHTML="";
 
+let ing=0,gas=0,ah=0,gastoMes=0;
 const hoy=new Date();
 
 data.slice().reverse().forEach(x=>{
@@ -548,43 +543,32 @@ if(
 x.Tipo==="Gasto" &&
 f.getMonth()===hoy.getMonth() &&
 f.getFullYear()===hoy.getFullYear()
-){
-gastoMes+=m;
-}
+) gastoMes+=m;
 
-/* MOVS */
 lista.innerHTML+=`
 <div class="item ${x.Tipo==="Ingreso"?"ingreso":"gasto"}">
 <div>${x.Categoría} - ${x.Descripción}</div>
 <div class="price">$${m.toLocaleString("es-CO")}</div>
 <button class="small-btn" onclick="borrar('${x.ID}')">🗑️ Borrar</button>
-</div>
-`;
+</div>`;
 
-/* CALENDARIO */
 calendarData.innerHTML+=`
 <div class="item ${x.Tipo==="Ingreso"?"ingreso":"gasto"}">
 <div>${x.Fecha}</div>
 <div>${x.Categoría}</div>
 <div class="price">$${m.toLocaleString("es-CO")}</div>
-</div>
-`;
-
+</div>`;
 });
 
-/* HEADER */
 let saldo=ing-gas;
-saldoTop.innerText="$"+saldo.toLocaleString("es-CO");
 
-/* KPIs */
+saldoTop.innerText="$"+saldo.toLocaleString("es-CO");
 ingresos.innerText="$"+ing.toLocaleString("es-CO");
 gastos.innerText="$"+gas.toLocaleString("es-CO");
 ahorro.innerText="$"+ah.toLocaleString("es-CO");
 movs.innerText=data.length;
 
-/* DASHBOARD */
 renderBudget(gastoMes);
-renderInsights(ing,gas,ah);
 renderCoach(ing,gas,ah);
 }
 
@@ -593,13 +577,13 @@ function setBudget(){
 budget=Number(document.getElementById("budget").value)||0;
 localStorage.setItem("budget",budget);
 render();
-toast("✔ Presupuesto guardado");
+toast("Presupuesto guardado");
 }
 
 function renderBudget(gasto){
 
 if(!budget){
-budgetText.innerHTML="Define un presupuesto";
+budgetText.innerHTML="Define presupuesto";
 bar.style.width="0%";
 return;
 }
@@ -607,26 +591,12 @@ return;
 let p=(gasto/budget)*100;
 bar.style.width=Math.min(p,100)+"%";
 
-if(p>=100){
+if(p>=100)
 budgetText.innerHTML='<div class="alert bad">🔴 Sobre presupuesto</div>';
-}else if(p>=80){
+else if(p>=80)
 budgetText.innerHTML='<div class="alert mid">⚠️ Cerca del límite</div>';
-}else{
+else
 budgetText.innerHTML='<div class="alert good">🟢 Bajo control</div>';
-}
-}
-
-/* ===== INSIGHTS ===== */
-function renderInsights(ing,gas,ah){
-
-let promedio=data.length ? gas/data.length : 0;
-
-insights.innerHTML=`
-<div class="alert good">💰 Ingresos: $${ing.toLocaleString("es-CO")}</div>
-<div class="alert mid">💸 Gastos: $${gas.toLocaleString("es-CO")}</div>
-<div class="alert good">🏦 Ahorro: $${ah.toLocaleString("es-CO")}</div>
-<div class="alert mid">📊 Promedio gasto: $${promedio.toFixed(0)}</div>
-`;
 }
 
 /* ===== COACH ===== */
@@ -635,28 +605,13 @@ function renderCoach(ing,gas,ah){
 let txt="🟢 Buen control financiero";
 
 if(gas>ing) txt="🔴 Gastas más de lo que ingresas";
-else if(ah<ing*0.1) txt="⚠️ Tu ahorro es bajo este mes";
-else if(gas>ing*0.7) txt="🟡 Gastos altos, vigílalos";
+else if(ah<ing*.10) txt="⚠️ Ahorro bajo";
+else if(gas>ing*.70) txt="🟡 Gastos elevados";
 
 coach.innerHTML=`
 <div class="alert good">${txt}</div>
-<div class="alert mid">🎯 Meta sugerida ahorro: $${(ing*0.2).toLocaleString("es-CO")}</div>
+<div class="alert mid">🎯 Meta sugerida: $${(ing*.20).toLocaleString("es-CO")}</div>
 `;
-}
-
-/* ===== EXPORTAR ===== */
-function exportar(){
-
-let texto=JSON.stringify(data,null,2);
-
-let blob=new Blob([texto],{type:"application/json"});
-let a=document.createElement("a");
-
-a.href=URL.createObjectURL(blob);
-a.download="movimientos.json";
-a.click();
-
-toast("📤 Datos exportados");
 }
 </script>
 
