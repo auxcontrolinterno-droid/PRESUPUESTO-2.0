@@ -2,63 +2,61 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-<title>Banking PRO AI v14 LUXE</title>
-
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Banking PRO AI v14 LUXE FIX</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 :root{
---bg1:#0f172a;
+--bg:#0f172a;
 --bg2:#020617;
 --card:rgba(255,255,255,.06);
---line:rgba(255,255,255,.08);
---text:#fff;
+--text:#ffffff;
 --muted:#94a3b8;
---primary:#2563eb;
---primary2:#0ea5e9;
---danger:#ef4444;
+--line:rgba(255,255,255,.08);
+--pri:#2563eb;
+--pri2:#0ea5e9;
 --ok:#22c55e;
---gold:#f8d26a;
+--bad:#ef4444;
 }
 
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
--webkit-tap-highlight-color:transparent;
+body.light{
+--bg:#f8fafc;
+--bg2:#e2e8f0;
+--card:#ffffff;
+--text:#111827;
+--muted:#64748b;
+--line:#e5e7eb;
 }
+
+*{margin:0;padding:0;box-sizing:border-box}
 
 body{
 font-family:Inter,sans-serif;
-background:
-radial-gradient(circle at top left,#1e293b,#0f172a 35%,#020617 100%);
+background:linear-gradient(180deg,var(--bg),var(--bg2));
 color:var(--text);
 padding:14px 14px 110px;
 max-width:860px;
 margin:auto;
+transition:.2s;
 }
 
 .card,.header{
-background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));
+background:var(--card);
 border:1px solid var(--line);
-border-radius:24px;
+border-radius:22px;
 padding:16px;
 margin-bottom:12px;
-backdrop-filter:blur(18px);
-box-shadow:0 12px 30px rgba(0,0,0,.25);
+backdrop-filter:blur(16px);
 }
 
+.title{font-size:18px;font-weight:800;margin-bottom:10px}
 .big{font-size:38px;font-weight:800}
 .small{font-size:12px;color:var(--muted)}
-.title{font-size:18px;font-weight:800;margin-bottom:10px}
 
-.grid2{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:10px;
-}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 
 .kpi{
 background:rgba(255,255,255,.04);
@@ -83,10 +81,10 @@ font-family:inherit;
 
 input,select{
 padding:14px;
+margin-bottom:10px;
 background:#fff;
 color:#111;
 font-weight:600;
-margin-bottom:10px;
 }
 
 button{
@@ -96,13 +94,13 @@ cursor:pointer;
 }
 
 .primary{
-background:linear-gradient(135deg,var(--primary),var(--primary2));
+background:linear-gradient(135deg,var(--pri),var(--pri2));
 color:#fff;
 }
 
 .secondary{
 background:rgba(255,255,255,.08);
-color:#fff;
+color:var(--text);
 }
 
 .small-btn{
@@ -110,8 +108,6 @@ padding:10px;
 font-size:12px;
 width:auto;
 margin-top:8px;
-background:rgba(255,255,255,.08);
-color:#fff;
 }
 
 .tab{display:none}
@@ -120,54 +116,31 @@ color:#fff;
 .list{display:grid;gap:10px}
 
 .item{
-background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));
+background:rgba(255,255,255,.04);
 padding:14px;
 border-radius:18px;
 border-left:4px solid transparent;
 }
 
 .ingreso{border-left-color:var(--ok)}
-.gasto{border-left-color:var(--danger)}
+.gasto{border-left-color:var(--bad)}
 
 .price{
-font-weight:800;
 font-size:18px;
+font-weight:800;
 margin-top:6px;
 }
 
 .timeline-day{
 font-size:12px;
+color:var(--muted);
 font-weight:800;
-letter-spacing:1px;
-opacity:.65;
-margin:12px 2px 4px;
+margin-top:8px;
 }
 
-.searchBox{
-position:relative;
-margin-bottom:12px;
-}
-
-.searchBox input{
-padding-left:42px;
-margin-bottom:0;
-}
-
-.searchIcon{
-position:absolute;
-left:14px;
-top:13px;
-opacity:.6;
-}
-
-.chip{
-display:inline-block;
-padding:4px 8px;
-border-radius:20px;
-font-size:11px;
-background:rgba(255,255,255,.08);
-margin-top:6px;
-}
+.searchBox{position:relative;margin-bottom:10px}
+.searchBox input{padding-left:42px;margin-bottom:0}
+.searchIcon{position:absolute;left:14px;top:13px;color:var(--muted)}
 
 .nav{
 position:fixed;
@@ -175,16 +148,14 @@ left:0;right:0;bottom:0;
 display:grid;
 grid-template-columns:repeat(4,1fr);
 gap:8px;
-padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+padding:10px 12px;
 background:rgba(2,6,23,.92);
-backdrop-filter:blur(20px);
 max-width:860px;
 margin:auto;
-border-top:1px solid rgba(255,255,255,.08);
 }
 
 .nav button{
-font-size:25px;
+font-size:24px;
 padding:8px;
 background:transparent;
 color:#cbd5e1;
@@ -198,25 +169,16 @@ color:#fff;
 .toast{
 position:fixed;
 left:50%;
-bottom:96px;
+bottom:92px;
 transform:translateX(-50%);
 background:#111827;
 color:#fff;
 padding:12px 16px;
 border-radius:14px;
-font-size:13px;
-font-weight:700;
 display:none;
+font-size:13px;
 z-index:999;
 }
-
-canvas{
-background:rgba(255,255,255,.03);
-padding:8px;
-border-radius:16px;
-}
-
-.gold{color:var(--gold)}
 </style>
 </head>
 
@@ -224,30 +186,43 @@ border-radius:16px;
 
 <div class="header">
 
-<div class="small">Banking PRO AI v14 LUXE</div>
+<div class="small">Banking PRO AI v14 LUXE FIX</div>
 <div class="small" id="today"></div>
 
 <div class="small" style="margin-top:10px">Saldo disponible</div>
 <div class="big" id="saldoTop">$0</div>
 
 <div class="grid2" style="margin-top:12px">
-
-<div class="kpi">
-<span>Pendientes</span>
-<strong id="pendingCount">0</strong>
-</div>
-
-<div class="kpi">
-<span>Sincronizados</span>
-<strong id="syncCount">0</strong>
-</div>
-
+<div class="kpi"><span>Pendientes</span><strong id="pendingCount">0</strong></div>
+<div class="kpi"><span>Sincronizados</span><strong id="syncCount">0</strong></div>
 </div>
 
 </div>
 
 <!-- HOME -->
 <section class="tab active" id="tab-home">
+
+<div class="card">
+<div class="title">🎛️ Centro de control</div>
+<div class="grid3">
+
+<div class="kpi">
+<span>Hoy gastado</span>
+<strong id="gastoHoy">$0</strong>
+</div>
+
+<div class="kpi">
+<span>Ahorro</span>
+<strong id="ahorroReal">$0</strong>
+</div>
+
+<div class="kpi">
+<span>Balance</span>
+<strong id="balanceMes">$0</strong>
+</div>
+
+</div>
+</div>
 
 <div class="card">
 <div class="title">➕ Nuevo movimiento</div>
@@ -270,7 +245,7 @@ border-radius:16px;
 </div>
 
 <div class="card">
-<div class="title gold">⭐ Favoritos automáticos</div>
+<div class="title">⭐ Favoritos automáticos</div>
 <div class="grid2" id="favList"></div>
 </div>
 
@@ -278,36 +253,36 @@ border-radius:16px;
 
 <!-- DASH -->
 <section class="tab" id="tab-dashboard">
-
 <div class="card">
-<div class="title">📊 Gastos por categoría</div>
+<div class="title">📊 Dashboard</div>
 <canvas id="chart1"></canvas>
 </div>
-
 </section>
 
-<!-- MOVS -->
+<!-- MOV -->
 <section class="tab" id="tab-list">
-
 <div class="card">
-<div class="title gold">📋 Movimientos</div>
+<div class="title">📋 Movimientos</div>
 
 <div class="searchBox">
 <div class="searchIcon">🔎</div>
-<input type="text" id="searchMov" placeholder="Buscar movimiento..." oninput="renderMovimientos()">
+<input type="text" id="searchMov" placeholder="Buscar..." oninput="renderMovimientos()">
 </div>
 
 <div class="list" id="lista"></div>
 </div>
-
 </section>
 
 <!-- SETTINGS -->
 <section class="tab" id="tab-settings">
 
 <div class="card">
-<div class="title">⚙️ Ajustes</div>
-<button class="secondary" onclick="load()">🔄 Recargar datos</button>
+<div class="title">⚙️ Apariencia</div>
+
+<button class="secondary" onclick="setTheme('dark')">🌙 Modo oscuro</button>
+<br><br>
+<button class="secondary" onclick="setTheme('light')">☀️ Modo claro</button>
+
 </div>
 
 </section>
@@ -326,17 +301,21 @@ const URL="https://script.google.com/macros/s/AKfycbwXGhRN-TJxXf4hvwk_BFV52Javiq
 
 let data=[];
 let pending=JSON.parse(localStorage.getItem("pendingQueue")||"[]");
-let c1;
+let chart;
 
 fecha.valueAsDate=new Date();
 today.innerText=new Date().toLocaleDateString("es-CO",{weekday:"long",day:"numeric",month:"long"});
 pendingCount.innerText=pending.length;
 
+if(localStorage.getItem("theme")==="light"){
+document.body.classList.add("light");
+}
+
 load();
 syncPending();
 
-function toast(msg){
-toastEl.innerText=msg;
+function toast(t){
+toastEl.innerText=t;
 toastEl.style.display="block";
 setTimeout(()=>toastEl.style.display="none",2200);
 }
@@ -345,8 +324,19 @@ const toastEl=document.getElementById("toast");
 function goTab(tab,btn){
 document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
 document.getElementById("tab-"+tab).classList.add("active");
+
 document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));
 btn.classList.add("active");
+}
+
+function setTheme(mode){
+if(mode==="light"){
+document.body.classList.add("light");
+}else{
+document.body.classList.remove("light");
+}
+localStorage.setItem("theme",mode);
+toast("Tema actualizado");
 }
 
 function money(n){
@@ -364,7 +354,7 @@ render();
 
 async function guardar(){
 
-let datos={
+let obj={
 Fecha:fecha.value,
 Categoría:categoria.value,
 Descripción:descripcion.value.trim(),
@@ -372,7 +362,7 @@ Monto:Number(monto.value.replace(/\./g,"")),
 Tipo:categoria.value.includes("Ingreso")?"Ingreso":"Gasto"
 };
 
-if(!datos.Descripción || datos.Monto<=0){
+if(!obj.Descripción || obj.Monto<=0){
 toast("Completa datos");
 return;
 }
@@ -380,37 +370,22 @@ return;
 saveBtn.disabled=true;
 saveBtn.innerText="Guardando...";
 
-if(!navigator.onLine){
-pending.push(datos);
-localStorage.setItem("pendingQueue",JSON.stringify(pending));
-pendingCount.innerText=pending.length;
-doneSave();
-toast("☁ Offline");
-return;
-}
-
 try{
 await fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
-body:JSON.stringify(datos)
+body:JSON.stringify(obj)
 });
-
-toast("✔ Guardado");
+toast("Guardado");
 await load();
 
 }catch(e){
-
-pending.push(datos);
+pending.push(obj);
 localStorage.setItem("pendingQueue",JSON.stringify(pending));
 pendingCount.innerText=pending.length;
-toast("☁ Offline");
+toast("Offline");
 }
 
-doneSave();
-}
-
-function doneSave(){
 descripcion.value="";
 monto.value="";
 saveBtn.disabled=false;
@@ -421,9 +396,9 @@ window.addEventListener("online",syncPending);
 
 async function syncPending(){
 
-if(!navigator.onLine || !pending.length) return;
+if(!pending.length) return;
 
-let sent=0;
+let ok=0;
 
 while(pending.length){
 
@@ -435,18 +410,16 @@ body:JSON.stringify(pending[0])
 });
 
 pending.shift();
-sent++;
+ok++;
 
-}catch(e){
-break;
-}
+}catch(e){break;}
 }
 
 localStorage.setItem("pendingQueue",JSON.stringify(pending));
 pendingCount.innerText=pending.length;
 
-if(sent){
-toast("✔ "+sent+" sincronizados");
+if(ok){
+toast(ok+" sincronizados");
 load();
 }
 }
@@ -458,23 +431,11 @@ if(!confirm("Eliminar movimiento")) return;
 data=data.filter(x=>String(x.ID)!==String(id));
 render();
 
-try{
 await fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
 body:JSON.stringify({action:"delete",ID:id})
 });
-
-toast("Eliminado");
-
-}catch(e){}
-}
-
-function usarFav(cat,des,m){
-categoria.value=cat;
-descripcion.value=des;
-monto.value=Number(m).toLocaleString("es-CO");
-toast("Favorito cargado");
 }
 
 function renderFavorites(){
@@ -482,35 +443,27 @@ function renderFavorites(){
 let map={};
 
 data.forEach(x=>{
-
 let k=x.Categoría+"|"+x.Descripción+"|"+x.Monto;
 
-if(!map[k]){
-map[k]={cat:x.Categoría,des:x.Descripción,monto:x.Monto,count:0};
-}
+if(!map[k]) map[k]={...x,c:0};
 
-map[k].count++;
+map[k].c++;
 });
 
-let arr=Object.values(map).sort((a,b)=>b.count-a.count).slice(0,6);
+let arr=Object.values(map).sort((a,b)=>b.c-a.c).slice(0,6);
 
 favList.innerHTML="";
 
 arr.forEach(f=>{
-
 favList.innerHTML+=`
 <button class="secondary"
-onclick="usarFav('${f.cat}','${f.des}',${f.monto}')">
-${f.cat}<br>
-<small>${f.des}</small><br>
-<small>${money(f.monto)}</small>
+onclick="categoria.value='${f.Categoría}';descripcion.value='${f.Descripción}';monto.value='${f.Monto}'">
+${f.Categoría}<br><small>${f.Descripción}</small>
 </button>`;
 });
 }
 
 function renderMovimientos(){
-
-lista.innerHTML="";
 
 let q=searchMov.value.toLowerCase().trim();
 
@@ -518,13 +471,14 @@ let rows=[...data].sort((a,b)=>new Date(b.Fecha)-new Date(a.Fecha));
 
 if(q){
 rows=rows.filter(x=>
-String(x.Fecha).toLowerCase().includes(q) ||
-String(x.Categoría).toLowerCase().includes(q) ||
-String(x.Descripción).toLowerCase().includes(q) ||
+String(x.Fecha).toLowerCase().includes(q)||
+String(x.Categoría).toLowerCase().includes(q)||
+String(x.Descripción).toLowerCase().includes(q)||
 String(x.Monto).includes(q)
 );
 }
 
+lista.innerHTML="";
 let last="";
 
 rows.forEach(x=>{
@@ -537,49 +491,59 @@ last=x.Fecha;
 lista.innerHTML+=`
 <div class="item ${x.Tipo==="Ingreso"?"ingreso":"gasto"}">
 <div style="font-weight:800">${x.Descripción}</div>
-<div class="chip">${x.Categoría}</div>
+<div class="small">${x.Categoría}</div>
 <div class="price">${money(x.Monto)}</div>
-<button class="small-btn" onclick="borrar('${x.ID}')">🗑️ Eliminar</button>
+<button class="small-btn" onclick="borrar('${x.ID}')">🗑️</button>
 </div>`;
 });
 }
 
 function render(){
 
-let saldo=0;
+let saldo=0,ing=0,gas=0,aho=0;
 let cats={};
+
+let hoy=new Date().toISOString().slice(0,10);
+let gastoHoyNum=0;
 
 data.forEach(x=>{
 
 let m=Number(x.Monto)||0;
 
-if(x.Tipo==="Ingreso") saldo+=m;
-else saldo-=m;
+if(x.Tipo==="Ingreso"){saldo+=m;ing+=m;}
+else{saldo-=m;gas+=m;}
+
+if(x.Categoría.includes("Ahorro")) aho+=m;
 
 if(x.Tipo==="Gasto"){
 cats[x.Categoría]=(cats[x.Categoría]||0)+m;
 }
 
+if(x.Fecha===hoy && x.Tipo==="Gasto"){
+gastoHoyNum+=m;
+}
+
 });
 
 saldoTop.innerText=money(saldo);
+gastoHoy.innerText=money(gastoHoyNum);
+ahorroReal.innerText=money(aho);
+balanceMes.innerText=money(ing-gas);
 
 renderFavorites();
 renderMovimientos();
-chart(cats);
+draw(cats);
 }
 
-function chart(cats){
+function draw(cats){
 
-if(c1) c1.destroy();
+if(chart) chart.destroy();
 
-c1=new Chart(chart1,{
+chart=new Chart(chart1,{
 type:"doughnut",
 data:{
 labels:Object.keys(cats),
-datasets:[{
-data:Object.values(cats)
-}]
+datasets:[{data:Object.values(cats)}]
 }
 });
 }
