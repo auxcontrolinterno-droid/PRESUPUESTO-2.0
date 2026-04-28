@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-<title>Banking PRO AI v10 Stable</title>
+<title>Banking PRO AI v11 - Fase 3 Elite</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -29,7 +29,7 @@ body.light{
 --line:#e5e7eb;
 --text:#111827;
 --muted:#64748b;
---input:#ffffff;
+--input:#fff;
 --inputText:#111827;
 }
 
@@ -44,8 +44,8 @@ body{
 font-family:Inter,sans-serif;
 background:linear-gradient(180deg,var(--bg1),var(--bg2));
 color:var(--text);
-padding:14px 14px 95px;
-max-width:760px;
+padding:14px 14px 105px;
+max-width:780px;
 margin:auto;
 }
 
@@ -55,7 +55,7 @@ border:1px solid var(--line);
 border-radius:22px;
 padding:16px;
 margin-bottom:12px;
-backdrop-filter:blur(12px);
+backdrop-filter:blur(14px);
 }
 
 .big{font-size:34px;font-weight:800}
@@ -147,6 +147,18 @@ background:rgba(255,255,255,.08);
 color:var(--text);
 }
 
+.alert{
+padding:10px;
+border-radius:12px;
+font-size:13px;
+margin-top:8px;
+line-height:1.45;
+}
+
+.good{background:rgba(34,197,94,.14);color:#22c55e}
+.bad{background:rgba(239,68,68,.14);color:#ef4444}
+.mid{background:rgba(245,158,11,.14);color:#f59e0b}
+
 .progress{
 height:10px;
 background:rgba(255,255,255,.08);
@@ -162,18 +174,6 @@ width:0%;
 transition:.3s;
 }
 
-.alert{
-padding:10px;
-border-radius:12px;
-font-size:13px;
-margin-top:8px;
-line-height:1.4;
-}
-
-.good{background:rgba(34,197,94,.14);color:#22c55e}
-.bad{background:rgba(239,68,68,.14);color:#ef4444}
-.mid{background:rgba(245,158,11,.14);color:#f59e0b}
-
 .nav{
 position:fixed;
 left:0;right:0;bottom:0;
@@ -184,21 +184,22 @@ padding:10px 12px calc(10px + env(safe-area-inset-bottom));
 background:rgba(5,10,20,.94);
 backdrop-filter:blur(16px);
 border-top:1px solid var(--line);
-max-width:760px;
+max-width:780px;
 margin:auto;
 }
 
 .nav button{
-padding:10px 6px;
-font-size:11px;
+padding:8px 4px;
+font-size:22px;
 background:transparent;
 color:#cbd5e1;
+line-height:1;
 }
 
 .nav button.active{
 background:rgba(255,255,255,.08);
 color:#fff;
-border-radius:12px;
+border-radius:14px;
 }
 
 canvas{
@@ -211,7 +212,7 @@ border-radius:14px;
 .toast{
 position:fixed;
 left:50%;
-bottom:88px;
+bottom:96px;
 transform:translateX(-50%);
 background:#111827;
 color:#fff;
@@ -226,8 +227,8 @@ z-index:999;
 .eye{
 font-size:12px;
 margin-top:10px;
-color:var(--muted);
 cursor:pointer;
+color:var(--muted);
 }
 </style>
 </head>
@@ -235,7 +236,7 @@ cursor:pointer;
 <body>
 
 <div class="header">
-<div class="small">Banking PRO AI v10</div>
+<div class="small">Banking PRO AI v11 Elite</div>
 <div class="small" id="today"></div>
 
 <div class="small" style="margin-top:10px">Saldo disponible</div>
@@ -280,17 +281,17 @@ cursor:pointer;
 </div>
 
 <div class="card">
-<div class="title">🔔 Alertas</div>
-<div id="alerts"></div>
+<div class="title">🧠 Coach Financiero AI</div>
+<div id="coach"></div>
 </div>
 
 </section>
 
-<!-- DASH -->
+<!-- DASHBOARD -->
 <section class="tab" id="tab-dashboard">
 
 <div class="card">
-<div class="title">📊 Gastos por categoría</div>
+<div class="title">📊 Categorías</div>
 <canvas id="chart1"></canvas>
 </div>
 
@@ -299,49 +300,47 @@ cursor:pointer;
 <canvas id="chart2"></canvas>
 </div>
 
+<div class="card">
+<div class="title">📉 Tendencia mensual</div>
+<canvas id="chart3"></canvas>
+</div>
+
+<div class="card">
+<div class="title">📆 Semana actual</div>
+<canvas id="chart4"></canvas>
+</div>
+
+<div class="card">
+<div class="title">💡 Insights rápidos</div>
+<div id="insights"></div>
+</div>
+
 </section>
 
 <!-- GOALS -->
 <section class="tab" id="tab-goals">
-
 <div class="card">
-<div class="title">🎯 Nueva meta</div>
-
-<input type="text" id="goalName" placeholder="Ej: Viaje">
-<input type="number" id="goalValue" placeholder="Monto meta">
-
-<button class="primary" onclick="addGoal()">Guardar meta</button>
-</div>
-
-<div class="card">
-<div class="title">🚀 Metas</div>
+<div class="title">🎯 Metas</div>
 <div id="goalList"></div>
 </div>
-
 </section>
 
-<!-- LIST -->
+<!-- MOVEMENTS -->
 <section class="tab" id="tab-list">
-
 <div class="card">
 <div class="title">📋 Movimientos</div>
 <div class="list" id="lista"></div>
 </div>
-
 </section>
 
 <!-- SETTINGS -->
 <section class="tab" id="tab-settings">
-
 <div class="card">
 <div class="title">⚙️ Ajustes</div>
-
-<button class="secondary" onclick="setTheme('dark')">🌙 Tema oscuro</button>
+<button class="secondary" onclick="setTheme('dark')">🌙 Oscuro</button>
 <br><br>
-<button class="secondary" onclick="setTheme('light')">☀️ Tema claro</button>
-
+<button class="secondary" onclick="setTheme('light')">☀️ Claro</button>
 </div>
-
 </section>
 
 <nav class="nav">
@@ -358,11 +357,11 @@ cursor:pointer;
 const URL="https://script.google.com/macros/s/AKfycbwXGhRN-TJxXf4hvwk_BFV52Javiqn6Lzz5ps6M1yTz9PJy-9kDcsUKJLzUY-mTS1Z2/exec";
 
 let data=[];
+let pending=JSON.parse(localStorage.getItem("pendingQueue")||"[]");
 let hidden=localStorage.getItem("hideMoney")==="1";
 let goals=JSON.parse(localStorage.getItem("goals")||"[]");
-let pending=JSON.parse(localStorage.getItem("pendingQueue")||"[]");
 
-let c1,c2;
+let c1,c2,c3,c4;
 
 fecha.valueAsDate=new Date();
 
@@ -438,44 +437,32 @@ return;
 saveBtn.disabled=true;
 saveBtn.innerText="Guardando...";
 
-/* OFFLINE */
 if(!navigator.onLine){
-
 pending.push(datos);
 localStorage.setItem("pendingQueue",JSON.stringify(pending));
 pendingCount.innerText=pending.length;
-
-descripcion.value="";
-monto.value="";
-
 toast("☁ Guardado offline");
-
 saveBtn.disabled=false;
 saveBtn.innerText="💾 Guardar";
 return;
 }
 
-/* ONLINE */
 try{
-
 await fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
 body:JSON.stringify(datos)
 });
 
+toast("✔ Guardado");
 descripcion.value="";
 monto.value="";
-
-toast("✔ Guardado");
 await load();
 
 }catch(e){
-
 pending.push(datos);
 localStorage.setItem("pendingQueue",JSON.stringify(pending));
 pendingCount.innerText=pending.length;
-
 toast("☁ Guardado offline");
 }
 
@@ -488,15 +475,13 @@ window.addEventListener("online",syncPending);
 
 async function syncPending(){
 
-if(!navigator.onLine) return;
-if(!pending.length) return;
+if(!navigator.onLine || !pending.length) return;
 
 let enviados=0;
 
 while(pending.length){
 
 try{
-
 await fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
@@ -528,34 +513,13 @@ if(!confirm("Eliminar movimiento")) return;
 data=data.filter(x=>String(x.ID)!==String(id));
 render();
 
-try{
 await fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
 body:JSON.stringify({action:"delete",ID:id})
 });
+
 toast("Eliminado");
-}catch(e){
-toast("No se pudo eliminar");
-}
-}
-
-/* GOALS */
-function addGoal(){
-
-let n=goalName.value.trim();
-let v=Number(goalValue.value);
-
-if(!n || v<=0) return;
-
-goals.push({n,v});
-localStorage.setItem("goals",JSON.stringify(goals));
-
-goalName.value="";
-goalValue.value="";
-
-render();
-toast("Meta creada");
 }
 
 /* RENDER */
@@ -565,6 +529,8 @@ lista.innerHTML="";
 
 let ing=0,gas=0,ah=0;
 let cats={};
+let meses={};
+let dias=[0,0,0,0,0,0,0];
 
 data.slice().reverse().forEach(x=>{
 
@@ -579,6 +545,11 @@ if(x.Tipo==="Gasto"){
 cats[x.Categoría]=(cats[x.Categoría]||0)+m;
 }
 
+let d=new Date(x.Fecha);
+let mes=(d.getMonth()+1)+"/"+d.getFullYear();
+meses[mes]=(meses[mes]||0)+m;
+dias[d.getDay()]+=m;
+
 lista.innerHTML+=`
 <div class="item ${x.Tipo==="Ingreso"?"ingreso":"gasto"}">
 <div>${x.Categoría} - ${x.Descripción}</div>
@@ -589,64 +560,61 @@ lista.innerHTML+=`
 
 saldoTop.innerText=money(ing-gas);
 
-renderAlerts(ing,gas,ah,cats);
+coachAI(ing,gas,ah,cats);
 renderGoals(ah);
-charts(ing,gas,cats);
+renderInsights(gas,cats,dias);
+charts(ing,gas,cats,meses,dias);
 }
 
-/* ALERTS */
-function renderAlerts(ing,gas,ah,cats){
+/* COACH */
+function coachAI(ing,gas,ah,cats){
 
-let html="";
+let txt="";
 
-html+=gas>ing
-?'<div class="alert bad">🔴 Gastas más de lo que ingresas</div>'
-:'<div class="alert good">🟢 Balance positivo</div>';
+if(gas>ing){
+txt+=`<div class="alert bad">🔴 Vas en déficit actual.</div>`;
+}else{
+txt+=`<div class="alert good">🟢 Tus finanzas van positivas.</div>`;
+}
 
 let top=Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
 
 if(top){
-html+=`<div class="alert mid">⚠️ Mayor gasto: ${top[0]}</div>`;
+txt+=`<div class="alert mid">⚠️ Mayor fuga de dinero: ${top[0]}.</div>`;
 }
 
-html+=`<div class="alert good">🏦 Ahorro actual ${money(ah)}</div>`;
+txt+=`<div class="alert good">🏦 Ahorro acumulado: ${money(ah)}</div>`;
 
-alerts.innerHTML=html;
+let proyectado=Math.round(gas*1.15);
+txt+=`<div class="alert mid">📅 Proyección cierre mensual gastos: ${money(proyectado)}</div>`;
+
+coach.innerHTML=txt;
 }
 
-/* GOAL LIST */
+/* INSIGHTS */
+function renderInsights(gas,cats,dias){
+
+let top=Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
+let maxDay=Math.max(...dias);
+
+insights.innerHTML=`
+<div class="alert good">💳 Gasto total actual: ${money(gas)}</div>
+<div class="alert mid">📦 Categoría dominante: ${top?top[0]:"N/A"}</div>
+<div class="alert bad">🔥 Día más caro: ${money(maxDay)}</div>
+`;
+}
+
+/* GOALS */
 function renderGoals(ah){
-
-goalList.innerHTML="";
-
-goals.forEach((g,i)=>{
-
-let p=Math.min((ah/g.v)*100,100);
-let faltan=Math.max(g.v-ah,0);
-
-goalList.innerHTML+=`
-<div class="item">
-<div><strong>${g.n}</strong></div>
-<div class="small">${money(ah)} / ${money(g.v)}</div>
-<div class="progress"><div class="bar" style="width:${p}%"></div></div>
-<div class="small" style="margin-top:8px">
-Faltan ${money(faltan)}
-</div>
-<button class="small-btn" onclick="delGoal(${i})">🗑️</button>
-</div>`;
-});
-}
-
-function delGoal(i){
-goals.splice(i,1);
-localStorage.setItem("goals",JSON.stringify(goals));
-render();
+goalList.innerHTML=`
+<div class="alert good">🏦 Ahorro real acumulado: ${money(ah)}</div>
+`;
 }
 
 /* CHARTS */
-function charts(ing,gas,cats){
+function charts(ing,gas,cats,meses,dias){
 
-[c1,c2].forEach(x=>x&&x.destroy());
+[c1,c2,c3,c4].forEach(x=>x&&x.destroy());
 
 c1=new Chart(chart1,{
 type:"doughnut",
@@ -661,6 +629,22 @@ type:"bar",
 data:{
 labels:["Ingresos","Gastos"],
 datasets:[{data:[ing,gas]}]
+}
+});
+
+c3=new Chart(chart3,{
+type:"line",
+data:{
+labels:Object.keys(meses),
+datasets:[{data:Object.values(meses),fill:false,tension:.3}]
+}
+});
+
+c4=new Chart(chart4,{
+type:"bar",
+data:{
+labels:["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"],
+datasets:[{data:dias}]
 }
 });
 }
