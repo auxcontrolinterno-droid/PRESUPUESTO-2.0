@@ -91,6 +91,11 @@ box-shadow:0 10px 25px rgba(37,99,235,.35);
 cursor:pointer;
 }
 
+.save-btn:disabled{
+opacity:.7;
+cursor:not-allowed;
+}
+
 .save-btn:active{
 transform:scale(.98);
 }
@@ -173,6 +178,7 @@ padding:9px 10px;
 border-radius:10px;
 font-size:13px;
 margin-top:8px;
+line-height:1.35;
 }
 
 .good{
@@ -309,11 +315,13 @@ btn.innerText="💾 Guardar movimiento";
 return;
 }
 
+try{
 await fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
 body:JSON.stringify(datos)
 });
+}catch(e){}
 
 descripcion.value="";
 monto.value="";
@@ -329,14 +337,15 @@ function borrar(id){
 
 if(!confirm("¿Eliminar movimiento?")) return;
 
-data=data.filter(x=>x.ID!=id);
+data=data.filter(x=>String(x.ID)!==String(id));
 render();
 
 fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
 body:JSON.stringify({action:"delete",ID:id})
-});
+}).catch(()=>{});
+
 }
 
 /* RENDER */
@@ -354,13 +363,13 @@ const hoy=new Date();
 
 data.slice().reverse().forEach(x=>{
 
-let montoNum=Number(x.Monto);
+let montoNum=Number(x.Monto)||0;
 let fechaMov=new Date(x.Fecha);
 
 if(x.Tipo==="Ingreso") ingresos+=montoNum;
 else gastos+=montoNum;
 
-if(x.Categoría.includes("Ahorro")) ahorro+=montoNum;
+if(String(x.Categoría).includes("Ahorro")) ahorro+=montoNum;
 
 if(
 x.Tipo==="Gasto" &&
@@ -385,11 +394,12 @@ lista.innerHTML+=`
 updateBudget(gastoMes);
 generateInsights(ingresos,gastos,ahorro);
 predictiveAI(ingresos,gastos);
+smartCoach(ingresos,gastos,ahorro);
 }
 
 /* PRESUPUESTO */
 function setBudget(){
-budget=document.getElementById("budget").value;
+budget=Number(document.getElementById("budget").value)||0;
 localStorage.setItem("budget",budget);
 render();
 }
@@ -430,7 +440,7 @@ let promedio=data.length ? gas/data.length : 0;
 insights.innerHTML=`
 <div class="alert good">💰 Ingresos: $${ing.toLocaleString("es-CO")}</div>
 <div class="alert mid">💸 Gastos: $${gas.toLocaleString("es-CO")}</div>
-<div class="alert good">🏦 Ahorro: $${ah.toLocaleString("es-CO")}</div>
+<div class="alert good">🏦 Ahorro actual: $${ah.toLocaleString("es-CO")}</div>
 <div class="alert mid">📊 Promedio gasto: $${promedio.toFixed(0)}</div>
 `;
 }
@@ -460,6 +470,80 @@ html+=`<div class="alert good">🟢 Proyección saludable</div>`;
 }
 
 insights.innerHTML+=html;
+}
+
+/* FASE 6.3 IA PERSONALIZADA */
+function smartCoach(ing,gas,ah){
+
+const insights=document.getElementById("insights");
+
+let comida=0;
+let transporte=0;
+let entretenimiento=0;
+
+data.forEach(x=>{
+
+let m=Number(x.Monto)||0;
+
+if(String(x.Categoría).includes("Comida")) comida+=m;
+if(String(x.Categoría).includes("Transporte")) transporte+=m;
+if(String(x.Categoría).includes("Entretenimiento")) entretenimiento+=m;
+
+});
+
+/* META AUTOMÁTICA */
+let meta=0;
+
+if(ing<1000000) meta=ing*0.10;
+else if(ing<3000000) meta=ing*0.20;
+else meta=ing*0.30;
+
+/* PRIORIDAD */
+let categorias=[
+["🍔 Comida",comida],
+["🚗 Transporte",transporte],
+["🎮 Entretenimiento",entretenimiento]
+].sort((a,b)=>b[1]-a[1]);
+
+let top=categorias[0];
+let ahorroPotencial=top[1]*0.15;
+
+let html="";
+
+html+=`
+<div class="alert mid">
+🎯 Meta sugerida de ahorro: $${meta.toLocaleString("es-CO")}
+</div>
+`;
+
+if(ah<meta){
+html+=`
+<div class="alert bad">
+⚠️ Vas por debajo de tu meta de ahorro
+</div>
+`;
+}else{
+html+=`
+<div class="alert good">
+🟢 Vas cumpliendo tu meta de ahorro
+</div>
+`;
+}
+
+html+=`
+<div class="alert mid">
+💡 Si reduces ${top[0]} un 15%, ahorrarías $${ahorroPotencial.toLocaleString("es-CO")}
+</div>
+`;
+
+html+=`
+<div class="alert good">
+📌 Prioridad financiera actual: ${top[0]}
+</div>
+`;
+
+insights.innerHTML+=html;
+
 }
 </script>
 
