@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-<title>Banking PRO AI</title>
+<title>Banking PRO AI v8</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -14,14 +14,16 @@ body{
 font-family:Inter,sans-serif;
 background:linear-gradient(180deg,#070b16,#0b1020);
 color:#fff;
-padding:14px 14px 90px;
-max-width:760px;
+padding:14px 14px 92px;
+max-width:780px;
 margin:auto;
 }
-.header,.card{
+
+/* ===== UI ===== */
+.card,.header{
 background:rgba(255,255,255,.06);
-backdrop-filter:blur(14px);
 border:1px solid rgba(255,255,255,.08);
+backdrop-filter:blur(16px);
 border-radius:22px;
 padding:16px;
 margin-bottom:12px;
@@ -31,39 +33,26 @@ background:linear-gradient(135deg,#111827,#1e293b);
 }
 .small{font-size:12px;opacity:.72}
 .big{font-size:32px;font-weight:800;margin-top:4px}
+.title{font-size:17px;font-weight:800;margin-bottom:10px}
 
-.statusbar{
+.grid2{
 display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:8px;
-margin-top:12px;
+grid-template-columns:1fr 1fr;
+gap:10px;
 }
-.pill{
-background:rgba(255,255,255,.06);
-padding:10px;
+
+.kpi{
+background:rgba(255,255,255,.05);
+padding:12px;
 border-radius:14px;
-font-size:11px;
-text-align:center;
 }
-.pill strong{
-display:block;
-font-size:14px;
-margin-top:4px;
-}
-
-.title{
-font-size:17px;
-font-weight:800;
-margin-bottom:10px;
-}
-
-.field{margin-bottom:10px}
-.field label{
+.kpi span{
 display:block;
 font-size:12px;
 opacity:.72;
-margin-bottom:5px;
+margin-bottom:4px;
 }
+.kpi strong{font-size:18px}
 
 input,select,button{
 width:100%;
@@ -77,13 +66,12 @@ input,select{
 padding:14px;
 background:#fff;
 color:#111;
-font-size:14px;
 font-weight:600;
+margin-bottom:10px;
 }
 
 button{
 padding:14px;
-font-size:15px;
 font-weight:800;
 cursor:pointer;
 }
@@ -93,27 +81,9 @@ background:linear-gradient(135deg,#2563eb,#1d4ed8);
 color:#fff;
 }
 
-.grid2{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:10px;
-}
-
-.kpi{
-background:rgba(255,255,255,.05);
-padding:12px;
-border-radius:14px;
-}
-
-.kpi span{
-display:block;
-font-size:12px;
-opacity:.72;
-margin-bottom:4px;
-}
-
-.kpi strong{
-font-size:18px;
+.secondary{
+background:rgba(255,255,255,.08);
+color:#fff;
 }
 
 .list{
@@ -150,18 +120,24 @@ padding:10px;
 border-radius:12px;
 font-size:13px;
 margin-top:8px;
-line-height:1.4;
+line-height:1.45;
 }
-
 .good{background:rgba(34,197,94,.14);color:#22c55e}
 .mid{background:rgba(245,158,11,.14);color:#f59e0b}
 .bad{background:rgba(239,68,68,.14);color:#ef4444}
 
-canvas{
-margin-top:10px;
-background:rgba(255,255,255,.03);
-border-radius:14px;
-padding:10px;
+.progress{
+height:10px;
+background:rgba(255,255,255,.08);
+border-radius:30px;
+overflow:hidden;
+margin-top:8px;
+}
+.bar{
+height:100%;
+width:0%;
+background:linear-gradient(90deg,#22c55e,#84cc16);
+transition:.35s;
 }
 
 .tab{display:none}
@@ -171,32 +147,37 @@ padding:10px;
 position:fixed;
 left:0;right:0;bottom:0;
 display:grid;
-grid-template-columns:repeat(4,1fr);
+grid-template-columns:repeat(5,1fr);
 gap:8px;
 padding:10px 12px calc(10px + env(safe-area-inset-bottom));
 background:rgba(8,12,22,.95);
 backdrop-filter:blur(18px);
 border-top:1px solid rgba(255,255,255,.08);
-max-width:760px;
+max-width:780px;
 margin:auto;
 }
-
 .nav button{
 padding:10px 6px;
-font-size:12px;
+font-size:11px;
 background:transparent;
 color:#cbd5e1;
 }
-
 .nav button.active{
 background:rgba(255,255,255,.08);
 color:#fff;
 }
 
+canvas{
+margin-top:10px;
+background:rgba(255,255,255,.03);
+border-radius:14px;
+padding:8px;
+}
+
 .toast{
 position:fixed;
 left:50%;
-bottom:82px;
+bottom:88px;
 transform:translateX(-50%);
 background:#111827;
 padding:12px 16px;
@@ -211,6 +192,7 @@ z-index:99;
 
 <body>
 
+<!-- HEADER -->
 <div class="header">
 <div class="small" id="hello"></div>
 <div class="small" id="today"></div>
@@ -218,10 +200,16 @@ z-index:99;
 <div class="small" style="margin-top:10px">Saldo disponible</div>
 <div class="big" id="saldoTop">$0</div>
 
-<div class="statusbar">
-<div class="pill">Estado<strong id="netState">🟢</strong></div>
-<div class="pill">Sincronizados<strong id="syncCount">0</strong></div>
-<div class="pill">Pendientes<strong id="pendingCount">0</strong></div>
+<div class="grid2" style="margin-top:12px">
+<div class="kpi">
+<span>Pendientes</span>
+<strong id="pendingCount">0</strong>
+</div>
+
+<div class="kpi">
+<span>Sincronizados</span>
+<strong id="syncCount">0</strong>
+</div>
 </div>
 
 <div class="small" style="margin-top:10px" id="lastSync">Sincronizado recién</div>
@@ -233,23 +221,10 @@ z-index:99;
 <div class="card">
 <div class="title">➕ Nuevo movimiento</div>
 
-<div class="field">
-<label>Fecha</label>
 <input type="date" id="fecha">
-</div>
+<input type="text" id="descripcion" placeholder="Descripción">
+<input type="text" id="monto" placeholder="Monto (4.000)">
 
-<div class="field">
-<label>Descripción</label>
-<input type="text" id="descripcion">
-</div>
-
-<div class="field">
-<label>Monto</label>
-<input type="text" id="monto" placeholder="Ej: 4.000">
-</div>
-
-<div class="field">
-<label>Categoría</label>
 <select id="categoria">
 <option>💰 Ingreso</option>
 <option>🍔 Comida</option>
@@ -259,13 +234,12 @@ z-index:99;
 <option>🎮 Entretenimiento</option>
 <option>🏦 Ahorro</option>
 </select>
-</div>
 
-<button class="primary" onclick="guardar()" id="saveBtn">💾 Guardar</button>
+<button class="primary" id="saveBtn" onclick="guardar()">💾 Guardar</button>
 </div>
 
 <div class="card">
-<div class="title">📌 Resumen</div>
+<div class="title">📌 Resumen rápido</div>
 
 <div class="grid2">
 <div class="kpi"><span>Ingresos</span><strong id="ingresos">$0</strong></div>
@@ -281,53 +255,79 @@ z-index:99;
 <section class="tab" id="tab-dashboard">
 
 <div class="card">
-<div class="title">🤖 Coach financiero PRO</div>
+<div class="title">🤖 Coach PRO</div>
 <div id="coach"></div>
 </div>
 
 <div class="card">
-<div class="title">📊 Gastos por categoría</div>
+<div class="title">📊 Categorías</div>
 <canvas id="chart1"></canvas>
 </div>
 
 <div class="card">
-<div class="title">📈 Últimos 7 movimientos</div>
+<div class="title">📈 Ingreso vs Gasto</div>
 <canvas id="chart2"></canvas>
 </div>
 
 <div class="card">
-<div class="title">💰 Ingreso vs Gasto</div>
+<div class="title">🏦 Evolución ahorro</div>
 <canvas id="chart3"></canvas>
 </div>
 
+</section>
+
+<!-- METAS -->
+<section class="tab" id="tab-goals">
+
 <div class="card">
-<div class="title">🏦 Evolución ahorro</div>
-<canvas id="chart4"></canvas>
+<div class="title">🎯 Nueva meta</div>
+
+<input type="text" id="goalName" placeholder="Ej: Viaje Cartagena">
+<input type="number" id="goalValue" placeholder="Monto meta">
+
+<button class="primary" onclick="addGoal()">Guardar meta</button>
+</div>
+
+<div class="card">
+<div class="title">🚀 Tus metas</div>
+<div id="goalList"></div>
 </div>
 
 </section>
 
-<!-- CALENDAR -->
+<!-- CALENDARIO -->
 <section class="tab" id="tab-calendar">
+
 <div class="card">
-<div class="title">📆 Historial por fecha</div>
-<div class="list" id="calendarData"></div>
+<div class="title">📆 Próximos pagos</div>
+
+<input type="text" id="billName" placeholder="Ej: Internet">
+<input type="date" id="billDate">
+
+<button class="primary" onclick="addBill()">Guardar recordatorio</button>
+
+<div id="billList" style="margin-top:10px"></div>
 </div>
+
 </section>
 
-<!-- LIST -->
+<!-- MORE -->
 <section class="tab" id="tab-more">
+
 <div class="card">
 <div class="title">📋 Movimientos</div>
 <div class="list" id="lista"></div>
 </div>
+
 </section>
 
+<!-- NAV -->
 <nav class="nav">
-<button class="active" onclick="goTab('home',this)">🏠 Inicio</button>
-<button onclick="goTab('dashboard',this)">📊 Dashboard</button>
-<button onclick="goTab('calendar',this)">📆 Fechas</button>
-<button onclick="goTab('more',this)">📋 Lista</button>
+<button class="active" onclick="goTab('home',this)">🏠</button>
+<button onclick="goTab('dashboard',this)">📊</button>
+<button onclick="goTab('goals',this)">🎯</button>
+<button onclick="goTab('calendar',this)">📆</button>
+<button onclick="goTab('more',this)">📋</button>
 </nav>
 
 <div class="toast" id="toast"></div>
@@ -337,15 +337,17 @@ const URL="https://script.google.com/macros/s/AKfycbwXGhRN-TJxXf4hvwk_BFV52Javiq
 
 let data=[];
 let pending=JSON.parse(localStorage.getItem("pendingQueue")||"[]");
+let goals=JSON.parse(localStorage.getItem("goals")||"[]");
+let bills=JSON.parse(localStorage.getItem("bills")||"[]");
 
-let c1,c2,c3,c4;
+let c1,c2,c3;
 
 fecha.valueAsDate=new Date();
 
 init();
 load();
 
-/* ===== INIT ===== */
+/* INIT */
 function init(){
 const h=new Date().getHours();
 
@@ -355,13 +357,17 @@ h<19?"Buenas tardes 🌤️":
 "Buenas noches 🌙";
 
 today.innerText=new Date().toLocaleDateString("es-CO",{
-weekday:"long",day:"numeric",month:"long"
+weekday:"long",
+day:"numeric",
+month:"long"
 });
 
-setNetwork();
+pendingCount.innerText=pending.length;
+renderGoals();
+renderBills();
 }
 
-/* ===== TOAST ===== */
+/* TOAST */
 function toast(msg){
 toastEl.innerText=msg;
 toastEl.style.display="block";
@@ -369,7 +375,7 @@ setTimeout(()=>toastEl.style.display="none",2200);
 }
 const toastEl=document.getElementById("toast");
 
-/* ===== TABS ===== */
+/* TABS */
 function goTab(tab,btn){
 document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
 document.getElementById("tab-"+tab).classList.add("active");
@@ -378,20 +384,7 @@ document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active")
 btn.classList.add("active");
 }
 
-/* ===== NETWORK ===== */
-function setNetwork(){
-netState.innerText=navigator.onLine?"🟢":"🔴";
-pendingCount.innerText=pending.length;
-}
-
-window.addEventListener("online",()=>{
-setNetwork();
-syncPending();
-});
-
-window.addEventListener("offline",setNetwork);
-
-/* ===== LOAD ===== */
+/* LOAD */
 async function load(){
 try{
 let r=await fetch(URL);
@@ -408,7 +401,7 @@ render();
 }
 }
 
-/* ===== SAVE ===== */
+/* SAVE */
 async function guardar(){
 
 let datos={
@@ -444,11 +437,10 @@ headers:{"Content-Type":"text/plain;charset=utf-8"},
 body:JSON.stringify(datos)
 });
 
-toast("✔ Guardado");
-
 descripcion.value="";
 monto.value="";
 
+toast("✔ Guardado");
 await load();
 
 }catch(e){
@@ -459,45 +451,10 @@ saveBtn.disabled=false;
 saveBtn.innerText="💾 Guardar";
 }
 
-/* ===== SYNC ===== */
-async function syncPending(){
-
-if(!pending.length) return;
-
-let enviados=0;
-
-while(pending.length){
-
-let item=pending[0];
-
-try{
-await fetch(URL,{
-method:"POST",
-headers:{"Content-Type":"text/plain;charset=utf-8"},
-body:JSON.stringify(item)
-});
-
-pending.shift();
-enviados++;
-
-}catch(e){
-break;
-}
-}
-
-localStorage.setItem("pendingQueue",JSON.stringify(pending));
-pendingCount.innerText=pending.length;
-
-if(enviados){
-toast("✔ "+enviados+" sincronizados");
-await load();
-}
-}
-
-/* ===== DELETE ===== */
+/* DELETE */
 async function borrar(id){
 
-if(!confirm("¿Eliminar?")) return;
+if(!confirm("¿Eliminar movimiento?")) return;
 
 data=data.filter(x=>String(x.ID)!==String(id));
 render();
@@ -511,17 +468,16 @@ body:JSON.stringify({action:"delete",ID:id})
 toast("🗑 Eliminado");
 }
 
-/* ===== RENDER ===== */
+/* RENDER */
 function render(){
 
 lista.innerHTML="";
-calendarData.innerHTML="";
 
 let ing=0,gas=0,ah=0;
-let categorias={};
-let ahorroAcum=[];
+let cats={};
+let ahorroLine=[];
 
-data.slice().reverse().forEach((x,i)=>{
+data.slice().reverse().forEach(x=>{
 
 let m=Number(x.Monto)||0;
 
@@ -531,23 +487,16 @@ else gas+=m;
 if(String(x.Categoría).includes("Ahorro")) ah+=m;
 
 if(x.Tipo==="Gasto"){
-categorias[x.Categoría]=(categorias[x.Categoría]||0)+m;
+cats[x.Categoría]=(cats[x.Categoría]||0)+m;
 }
 
-ahorroAcum.push(ah);
+ahorroLine.push(ah);
 
 lista.innerHTML+=`
 <div class="item ${x.Tipo==="Ingreso"?"ingreso":"gasto"}">
 <div>${x.Categoría} - ${x.Descripción}</div>
 <div class="price">$${m.toLocaleString("es-CO")}</div>
 <button class="small-btn" onclick="borrar('${x.ID}')">🗑️ Borrar</button>
-</div>`;
-
-calendarData.innerHTML+=`
-<div class="item ${x.Tipo==="Ingreso"?"ingreso":"gasto"}">
-<div>${x.Fecha}</div>
-<div>${x.Categoría}</div>
-<div class="price">$${m.toLocaleString("es-CO")}</div>
 </div>`;
 });
 
@@ -557,48 +506,39 @@ gastos.innerText="$"+gas.toLocaleString("es-CO");
 ahorro.innerText="$"+ah.toLocaleString("es-CO");
 movs.innerText=data.length;
 
-renderCoach(ing,gas,ah,categorias);
-renderCharts(ing,gas,categorias,ahorroAcum);
+renderCoach(ing,gas,ah,cats);
+renderCharts(ing,gas,ahorroLine,cats);
+renderGoals();
 }
 
-/* ===== COACH PRO ===== */
+/* COACH */
 function renderCoach(ing,gas,ah,cats){
 
-let topCat=Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
+let top=Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
+let libre=ing-gas;
+
 let html="";
 
-if(gas>ing){
-html+=`<div class="alert bad">🔴 Gastas más de lo que ingresas.</div>`;
-}else{
-html+=`<div class="alert good">🟢 Balance positivo este mes.</div>`;
-}
+html+=gas>ing
+?'<div class="alert bad">🔴 Gastas más de lo que ingresas.</div>'
+:'<div class="alert good">🟢 Balance saludable.</div>';
 
-if(topCat){
-html+=`<div class="alert mid">📌 Mayor fuga: ${topCat[0]} ($${topCat[1].toLocaleString("es-CO")})</div>`;
+if(top){
+html+=`<div class="alert mid">📌 Mayor gasto: ${top[0]} ($${top[1].toLocaleString("es-CO")})</div>`;
 }
 
 html+=`<div class="alert good">🏦 Ahorro actual: $${ah.toLocaleString("es-CO")}</div>`;
 
-let libre=ing-gas;
-html+=`<div class="alert mid">💡 Si sigues así cerrarías con $${libre.toLocaleString("es-CO")} libres.</div>`;
-
-if(gas>ing*0.7){
-html+=`<div class="alert bad">⚠️ Tus gastos ya consumen más del 70% de ingresos.</div>`;
-}
+html+=`<div class="alert mid">📈 Si mantienes ritmo cerrarás con $${libre.toLocaleString("es-CO")} libres.</div>`;
 
 coach.innerHTML=html;
 }
 
-/* ===== CHARTS ===== */
-function destroyCharts(){
-[c1,c2,c3,c4].forEach(x=>x&&x.destroy());
-}
+/* CHARTS */
+function renderCharts(ing,gas,line,cats){
 
-function renderCharts(ing,gas,cats,ahorroAcum){
+[c1,c2,c3].forEach(x=>x&&x.destroy());
 
-destroyCharts();
-
-/* Dona categorias */
 c1=new Chart(chart1,{
 type:"doughnut",
 data:{
@@ -607,41 +547,111 @@ datasets:[{data:Object.values(cats)}]
 }
 });
 
-/* Linea ultimos 7 */
-let ult=data.slice(-7);
 c2=new Chart(chart2,{
-type:"line",
-data:{
-labels:ult.map(x=>x.Fecha),
-datasets:[{
-label:"Monto",
-data:ult.map(x=>x.Monto)
-}]
-}
-});
-
-/* Barras ingreso gasto */
-c3=new Chart(chart3,{
 type:"bar",
 data:{
 labels:["Ingresos","Gastos"],
-datasets:[{
-data:[ing,gas]
-}]
+datasets:[{data:[ing,gas]}]
 }
 });
 
-/* Ahorro */
-c4=new Chart(chart4,{
+c3=new Chart(chart3,{
 type:"line",
 data:{
-labels:ahorroAcum.map((_,i)=>i+1),
+labels:line.map((_,i)=>i+1),
 datasets:[{
 label:"Ahorro",
-data:ahorroAcum
+data:line
 }]
 }
 });
+}
+
+/* GOALS */
+function addGoal(){
+
+let name=goalName.value.trim();
+let val=Number(goalValue.value);
+
+if(!name || val<=0) return;
+
+goals.push({name,val});
+localStorage.setItem("goals",JSON.stringify(goals));
+
+goalName.value="";
+goalValue.value="";
+
+renderGoals();
+toast("🎯 Meta creada");
+}
+
+function renderGoals(){
+
+let ahorroActual=document.getElementById("ahorro").innerText
+.replace(/\$/g,"")
+.replace(/\./g,"")
+.replace(/,/g,"");
+
+ahorroActual=Number(ahorroActual)||0;
+
+goalList.innerHTML="";
+
+goals.forEach((g,i)=>{
+
+let p=Math.min((ahorroActual/g.val)*100,100);
+
+goalList.innerHTML+=`
+<div class="item">
+<div><strong>${g.name}</strong></div>
+<div class="small">$${ahorroActual.toLocaleString("es-CO")} / $${g.val.toLocaleString("es-CO")}</div>
+<div class="progress"><div class="bar" style="width:${p}%"></div></div>
+<button class="small-btn" onclick="delGoal(${i})">🗑️</button>
+</div>`;
+});
+}
+
+function delGoal(i){
+goals.splice(i,1);
+localStorage.setItem("goals",JSON.stringify(goals));
+renderGoals();
+}
+
+/* BILLS */
+function addBill(){
+
+let n=billName.value.trim();
+let d=billDate.value;
+
+if(!n || !d) return;
+
+bills.push({n,d});
+localStorage.setItem("bills",JSON.stringify(bills));
+
+billName.value="";
+billDate.value="";
+
+renderBills();
+toast("📆 Recordatorio creado");
+}
+
+function renderBills(){
+
+billList.innerHTML="";
+
+bills.forEach((b,i)=>{
+
+billList.innerHTML+=`
+<div class="item">
+<div><strong>${b.n}</strong></div>
+<div>${b.d}</div>
+<button class="small-btn" onclick="delBill(${i})">🗑️</button>
+</div>`;
+});
+}
+function delBill(i){
+bills.splice(i,1);
+localStorage.setItem("bills",JSON.stringify(bills));
+renderBills();
 }
 </script>
 
