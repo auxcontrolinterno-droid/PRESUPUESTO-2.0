@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-<title>Presupuesto PRO 2.0</title>
+<title>Presupuesto PRO</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -22,7 +22,16 @@ h1{font-size:32px;font-weight:800;}
 
 .sub{opacity:.7;margin-bottom:14px;font-size:13px;}
 
-.top{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:14px;}
+button,input,select{
+font-family:'Inter',sans-serif;
+}
+
+.top{
+display:grid;
+grid-template-columns:1fr;
+gap:12px;
+margin-bottom:14px;
+}
 
 .card{
 background:rgba(255,255,255,.07);
@@ -50,7 +59,6 @@ border-radius:12px;
 border:none;
 outline:none;
 font-size:15px;
-font-family:'Inter',sans-serif;
 }
 
 input,select{background:#fff;color:#111;}
@@ -83,7 +91,11 @@ position:relative;
 
 .price{font-weight:800;margin-top:6px;}
 
-.actions{margin-top:8px;display:flex;gap:8px;}
+.actions{
+margin-top:8px;
+display:flex;
+gap:8px;
+}
 
 .actions button{
 padding:6px 10px;
@@ -93,12 +105,7 @@ border-radius:8px;
 
 #dashboard{display:none;}
 
-canvas{
-background:rgba(255,255,255,.04);
-border-radius:14px;
-padding:10px;
-margin-top:10px;
-}
+canvas{background:rgba(255,255,255,.04);border-radius:14px;padding:10px;margin-top:10px;}
 
 @media(min-width:700px){
 .top{grid-template-columns:repeat(3,1fr);}
@@ -114,11 +121,8 @@ margin-top:10px;
 <h1>💸 Presupuesto PRO</h1>
 <div class="sub">control financiero inteligente</div>
 
-<button class="secondary" onclick="goDash()" style="margin-bottom:10px;">
-📊 Ver Dashboard
-</button>
-
 <div class="top">
+
 <div class="card">
 <span>Hoy gastado</span>
 <strong id="hoy">$0</strong>
@@ -133,6 +137,7 @@ margin-top:10px;
 <span>Registros</span>
 <strong id="registros">0</strong>
 </div>
+
 </div>
 
 <div class="panel">
@@ -157,7 +162,6 @@ margin-top:10px;
 </div>
 
 <button class="primary" type="submit">Guardar</button>
-
 </form>
 
 <div class="list" id="lista"></div>
@@ -226,24 +230,24 @@ let gastoHoy=0;
 data.slice().reverse().forEach(x=>{
 
 if(x.Fecha===hoy && x.Tipo==="Gasto"){
-gastoHoy+=Number(x.Monto);
+gastoHoy+=+x.Monto;
 }
 
 lista.innerHTML+=`
 <div class="item ${x.Tipo==="Ingreso"?"ingreso":"gasto"}">
 <b>${x.Categoría}</b><br>
 ${x.Descripción}
-
-<div class="price">$${Number(x.Monto).toLocaleString("es-CO")}</div>
+<div class="price">$${Number(x.Monto).toLocaleString()}</div>
 
 <div class="actions">
 <button onclick="del('${x.ID}')">🗑</button>
 </div>
+
 </div>
 `;
 });
 
-document.getElementById("hoy").innerText="$"+gastoHoy.toLocaleString("es-CO");
+document.getElementById("hoy").innerText="$"+gastoHoy.toLocaleString();
 }
 
 /* ================= DELETE ================= */
@@ -271,7 +275,7 @@ e.preventDefault();
 let d={
 Fecha:document.getElementById("fecha").value,
 Descripción:document.getElementById("descripcion").value,
-Monto:Number(document.getElementById("monto").value.replace(/\./g,"")),
+Monto:document.getElementById("monto").value,
 Categoría:document.getElementById("categoria").value,
 Tipo:document.getElementById("categoria").value.includes("Ingreso")?"Ingreso":"Gasto"
 };
@@ -281,49 +285,48 @@ load();
 });
 
 /* ================= DASHBOARD ================= */
-let c1,c2,c3;
-
 function dash(){
-
-if(c1) c1.destroy();
-if(c2) c2.destroy();
-if(c3) c3.destroy();
 
 let i=0,g=0;
 
 data.forEach(x=>{
-if(x.Tipo==="Ingreso") i+=Number(x.Monto);
-else g+=Number(x.Monto);
+if(x.Tipo==="Ingreso") i+=+x.Monto;
+else g+=+x.Monto;
 });
 
-document.getElementById("ing").innerText="$"+i.toLocaleString("es-CO");
-document.getElementById("gas").innerText="$"+g.toLocaleString("es-CO");
-document.getElementById("bal").innerText="$"+(i-g).toLocaleString("es-CO");
+document.getElementById("ing").innerText="$"+i.toLocaleString();
+document.getElementById("gas").innerText="$"+g.toLocaleString();
+document.getElementById("bal").innerText="$"+(i-g).toLocaleString();
 
-c1=new Chart(document.getElementById("chartMes"),{
+/* gráfico mes */
+new Chart(document.getElementById("chartMes"),{
 type:"doughnut",
 data:{labels:["Ingresos","Gastos"],datasets:[{data:[i,g]}]}
 });
 
+/* categorías */
 let cat={};
 data.forEach(x=>{
-cat[x.Categoría]=(cat[x.Categoría]||0)+Number(x.Monto);
+if(!cat[x.Categoría])cat[x.Categoría]=0;
+cat[x.Categoría]+=+x.Monto;
 });
 
-c2=new Chart(document.getElementById("chartCat"),{
+new Chart(document.getElementById("chartCat"),{
 type:"pie",
 data:{labels:Object.keys(cat),datasets:[{data:Object.values(cat)}]}
 });
 
-let hist={};
+/* historial */
+let meses={};
 data.forEach(x=>{
 let m=x.Fecha.slice(0,7);
-hist[m]=(hist[m]||0)+((x.Tipo==="Ingreso")?1:-1)*Number(x.Monto);
+if(!meses[m])meses[m]=0;
+meses[m]+= (x.Tipo==="Ingreso"?1:-1)*x.Monto;
 });
 
-c3=new Chart(document.getElementById("chartHist"),{
+new Chart(document.getElementById("chartHist"),{
 type:"bar",
-data:{labels:Object.keys(hist),datasets:[{data:Object.values(hist)}]}
+data:{labels:Object.keys(meses),datasets:[{data:Object.values(meses)}]}
 });
 
 }
