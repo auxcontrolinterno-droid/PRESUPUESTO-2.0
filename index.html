@@ -65,6 +65,12 @@ background:rgba(255,255,255,.05);
 padding:12px;
 border-radius:14px;
 position:relative;
+animation:fade .15s ease-in;
+}
+
+@keyframes fade{
+from{opacity:0;transform:translateY(4px);}
+to{opacity:1;transform:translateY(0);}
 }
 
 .item.ingreso::before,
@@ -116,7 +122,7 @@ z-index:9999;
 <div id="app">
 
 <h1>🏦 Banking PRO</h1>
-<div class="sub">versión ultra rápida</div>
+<div class="sub">UI ultra rápida optimizada</div>
 
 <button class="secondary" onclick="irDashboard()" style="margin-bottom:12px;">
 📊 Dashboard
@@ -230,7 +236,7 @@ document.body.appendChild(t);
 setTimeout(()=>t.remove(),2000);
 }
 
-/* UI */
+/* UI FAST */
 function setLoading(state){
 let btn=document.getElementById("btnSave");
 btn.disabled=state;
@@ -257,48 +263,20 @@ dash();
 syncOffline();
 }
 
-/* ⚡ FAST SYNC */
-async function syncOffline(){
+/* ⚡ RENDER ULTRA RÁPIDO */
+function addItemUI(x){
+let lista=document.getElementById("lista");
 
-if(syncing) return;
-if(!navigator.onLine || pendientesLocal.length===0) return;
-
-syncing=true;
-
-let ok=[];
-let fail=[];
-
-await Promise.all(pendientesLocal.map(async (item)=>{
-
-try{
-await fetch(URL,{
-method:"POST",
-headers:{"Content-Type":"text/plain;charset=utf-8"},
-body:JSON.stringify(item)
-});
-ok.push(item);
-}catch(e){
-fail.push(item);
+lista.insertAdjacentHTML("afterbegin",`
+<div class="item ${x.Tipo==="Ingreso"?"ingreso":"gasto"}">
+<div class="title">${x.Categoría} - ${x.Descripción}</div>
+<div class="price">$${Number(x.Monto).toLocaleString()}</div>
+<button class="delete" onclick="borrar('${x.ID}')">🗑️ borrar</button>
+</div>
+`);
 }
 
-}));
-
-pendientesLocal=fail;
-localStorage.setItem("pendientes",JSON.stringify(pendientesLocal));
-
-renderPendientes();
-
-if(ok.length){
-toast(`Sync ${ok.length} ✔️`);
-}
-
-syncing=false;
-}
-
-/* AUTO SYNC */
-window.addEventListener("online",syncOffline);
-
-/* RENDER */
+/* RENDER FULL */
 function render(){
 
 document.getElementById("registros").innerText=data.length;
@@ -319,23 +297,14 @@ else gas+=m;
 if(x.Categoría.includes("Ahorro")) ah+=m;
 
 if(x.Fecha===hoy && x.Tipo==="Gasto") gastosHoy+=m;
+
+addItemUI(x);
 });
 
 document.getElementById("hoy").innerText="$"+gastosHoy.toLocaleString();
 document.getElementById("ahorro").innerText="$"+ah.toLocaleString();
 
 renderPendientes();
-
-data.slice().reverse().forEach(x=>{
-
-lista.innerHTML+=`
-<div class="item ${x.Tipo==="Ingreso"?"ingreso":"gasto"}">
-<div class="title">${x.Categoría} - ${x.Descripción}</div>
-<div class="price">$${(+x.Monto).toLocaleString()}</div>
-<button class="delete" onclick="borrar('${x.ID}')">🗑️ borrar</button>
-</div>
-`;
-});
 }
 
 /* DASH */
@@ -374,7 +343,7 @@ data:{labels:["Ingresos","Gastos","Ahorro"],datasets:[{data:[ing,gas,ah]}]}
 });
 }
 
-/* SAVE */
+/* 🔥 SAVE ULTRA RÁPIDO */
 document.getElementById("formulario").addEventListener("submit",async e=>{
 e.preventDefault();
 
@@ -389,53 +358,50 @@ Monto:Number(monto.value.replace(/\./g,"")),
 Tipo:categoria.value.includes("Ingreso")?"Ingreso":"Gasto"
 };
 
+/* UI INSTANTÁNEA */
+addItemUI(datos);
+data.unshift(datos);
+document.getElementById("registros").innerText=data.length;
+
 if(!navigator.onLine){
 
 pendientesLocal.push(datos);
 localStorage.setItem("pendientes",JSON.stringify(pendientesLocal));
-
 renderPendientes();
-toast("Offline 📴","#f59e0b");
 
+toast("Offline 📴","#f59e0b");
 setLoading(false);
 formulario.reset();
 fecha.valueAsDate=new Date();
 return;
 }
 
-try{
-await fetch(URL,{
+fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
 body:JSON.stringify(datos)
+}).then(()=>{
+toast("Guardado ✔️");
+syncOffline();
 });
 
-toast("Guardado ✔️");
-
-}catch(e){
-toast("Error","#ef4444");
-}
-
 setLoading(false);
-await load();
-
 formulario.reset();
 fecha.valueAsDate=new Date();
 });
 
-/* DELETE OPTIMIZADO (SIN RECARGA LENTA) */
-async function borrar(id){
+/* ⚡ DELETE INSTANT */
+function borrar(id){
 
 if(bloqueado) return;
 if(!confirm("Eliminar?")) return;
 
-setLoading(true);
-
-/* UI INSTANTÁNEA */
+/* UI INSTANT */
 data = data.filter(x=>x.ID != id);
 render();
 dash();
 
+/* backend async */
 fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
@@ -444,8 +410,48 @@ body:JSON.stringify({action:"delete",ID:id})
 toast("Eliminado ✔️","#ef4444");
 });
 
-setLoading(false);
 }
+
+/* ⚡ FAST SYNC */
+async function syncOffline(){
+
+if(syncing) return;
+if(!navigator.onLine || pendientesLocal.length===0) return;
+
+syncing=true;
+
+let ok=[];
+let fail=[];
+
+await Promise.all(pendientesLocal.map(async item=>{
+
+try{
+await fetch(URL,{
+method:"POST",
+headers:{"Content-Type":"text/plain;charset=utf-8"},
+body:JSON.stringify(item)
+});
+ok.push(item);
+}catch(e){
+fail.push(item);
+}
+
+}));
+
+pendientesLocal=fail;
+localStorage.setItem("pendientes",JSON.stringify(pendientesLocal));
+
+renderPendientes();
+
+if(ok.length){
+toast(`Sync ${ok.length} ✔️`);
+}
+
+syncing=false;
+}
+
+/* AUTO SYNC */
+window.addEventListener("online",syncOffline);
 
 /* INIT */
 let fecha=document.getElementById("fecha");
