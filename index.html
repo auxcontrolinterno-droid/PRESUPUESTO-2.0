@@ -19,11 +19,28 @@ padding:14px;
 }
 
 h1{font-size:32px;font-weight:800;}
-
 .sub{opacity:.7;margin-bottom:14px;font-size:13px;}
 
-button,input,select{
-font-family:'Inter',sans-serif;
+button,input,select{font-family:'Inter',sans-serif;}
+
+.tabs{
+display:flex;
+gap:10px;
+margin-bottom:14px;
+}
+
+.tab{
+flex:1;
+padding:12px;
+border-radius:12px;
+text-align:center;
+background:rgba(255,255,255,.08);
+cursor:pointer;
+font-weight:700;
+}
+
+.tab.active{
+background:linear-gradient(135deg,#0ea5e9,#2563eb);
 }
 
 .top{
@@ -91,11 +108,7 @@ position:relative;
 
 .price{font-weight:800;margin-top:6px;}
 
-.actions{
-margin-top:8px;
-display:flex;
-gap:8px;
-}
+.actions{margin-top:8px;display:flex;gap:8px;}
 
 .actions button{
 padding:6px 10px;
@@ -103,6 +116,23 @@ font-size:12px;
 border-radius:8px;
 }
 
+/* TOAST */
+#toast{
+position:fixed;
+bottom:20px;
+left:50%;
+transform:translateX(-50%);
+background:#111;
+padding:12px 18px;
+border-radius:12px;
+opacity:0;
+transition:.3s;
+font-weight:700;
+}
+
+#toast.show{opacity:1;}
+
+/* DASHBOARD */
 #dashboard{display:none;}
 
 canvas{background:rgba(255,255,255,.04);border-radius:14px;padding:10px;margin-top:10px;}
@@ -115,10 +145,18 @@ canvas{background:rgba(255,255,255,.04);border-radius:14px;padding:10px;margin-t
 
 <body>
 
+<div id="toast"></div>
+
+<!-- ================= TABS ================= -->
+<div class="tabs">
+<div class="tab active" onclick="showApp()">💸 App</div>
+<div class="tab" onclick="showDash()">📊 Dashboard</div>
+</div>
+
 <!-- ================= APP ================= -->
 <div id="app">
 
-<h1>💸 Presupuesto PRO</h1>
+<h1>Presupuesto PRO</h1>
 <div class="sub">control financiero inteligente</div>
 
 <div class="top">
@@ -172,8 +210,6 @@ canvas{background:rgba(255,255,255,.04);border-radius:14px;padding:10px;margin-t
 <!-- ================= DASHBOARD ================= -->
 <div id="dashboard">
 
-<button class="secondary" onclick="back()">⬅ Volver</button>
-
 <h1>📊 Dashboard</h1>
 
 <div class="top">
@@ -195,16 +231,24 @@ const URL="https://script.google.com/macros/s/AKfycbwXGhRN-TJxXf4hvwk_BFV52Javiq
 let data=[];
 let cola=JSON.parse(localStorage.getItem("cola"))||[];
 
-/* ================= NAV ================= */
-function goDash(){
+/* ================= TOAST ================= */
+function toast(msg){
+let t=document.getElementById("toast");
+t.innerText=msg;
+t.classList.add("show");
+setTimeout(()=>t.classList.remove("show"),2000);
+}
+
+/* ================= TABS ================= */
+function showApp(){
+document.getElementById("app").style.display="block";
+document.getElementById("dashboard").style.display="none";
+}
+
+function showDash(){
 document.getElementById("app").style.display="none";
 document.getElementById("dashboard").style.display="block";
 load();
-}
-
-function back(){
-document.getElementById("dashboard").style.display="none";
-document.getElementById("app").style.display="block";
 }
 
 /* ================= LOAD ================= */
@@ -215,7 +259,7 @@ render();
 dash();
 }
 
-/* ================= RENDER APP ================= */
+/* ================= RENDER ================= */
 function render(){
 
 document.getElementById("registros").innerText=data.length;
@@ -252,25 +296,21 @@ document.getElementById("hoy").innerText="$"+gastoHoy.toLocaleString();
 
 /* ================= DELETE ================= */
 async function del(id){
+toast("Eliminando...");
 await fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain"},
 body:JSON.stringify({action:"delete",ID:id})
 });
+toast("Eliminado ✔");
 load();
 }
 
 /* ================= SAVE ================= */
-async function send(d){
-return fetch(URL,{
-method:"POST",
-headers:{"Content-Type":"text/plain"},
-body:JSON.stringify(d)
-});
-}
-
 document.getElementById("formulario").addEventListener("submit",async e=>{
 e.preventDefault();
+
+toast("Guardando...");
 
 let d={
 Fecha:document.getElementById("fecha").value,
@@ -280,11 +320,17 @@ Categoría:document.getElementById("categoria").value,
 Tipo:document.getElementById("categoria").value.includes("Ingreso")?"Ingreso":"Gasto"
 };
 
-await send(d);
+await fetch(URL,{
+method:"POST",
+headers:{"Content-Type":"text/plain"},
+body:JSON.stringify(d)
+});
+
+toast("Guardado ✔");
 load();
 });
 
-/* ================= DASHBOARD ================= */
+/* ================= DASH ================= */
 function dash(){
 
 let i=0,g=0;
@@ -298,17 +344,14 @@ document.getElementById("ing").innerText="$"+i.toLocaleString();
 document.getElementById("gas").innerText="$"+g.toLocaleString();
 document.getElementById("bal").innerText="$"+(i-g).toLocaleString();
 
-/* gráfico mes */
 new Chart(document.getElementById("chartMes"),{
 type:"doughnut",
 data:{labels:["Ingresos","Gastos"],datasets:[{data:[i,g]}]}
 });
 
-/* categorías */
 let cat={};
 data.forEach(x=>{
-if(!cat[x.Categoría])cat[x.Categoría]=0;
-cat[x.Categoría]+=+x.Monto;
+cat[x.Categoría]=(cat[x.Categoría]||0)++x.Monto;
 });
 
 new Chart(document.getElementById("chartCat"),{
@@ -316,12 +359,10 @@ type:"pie",
 data:{labels:Object.keys(cat),datasets:[{data:Object.values(cat)}]}
 });
 
-/* historial */
 let meses={};
 data.forEach(x=>{
 let m=x.Fecha.slice(0,7);
-if(!meses[m])meses[m]=0;
-meses[m]+= (x.Tipo==="Ingreso"?1:-1)*x.Monto;
+meses[m]=(meses[m]||0)+ (x.Tipo==="Ingreso"?1:-1)*x.Monto;
 });
 
 new Chart(document.getElementById("chartHist"),{
@@ -331,7 +372,7 @@ data:{labels:Object.keys(meses),datasets:[{data:Object.values(meses)}]}
 
 }
 
-/* ================= INIT ================= */
+/* INIT */
 document.getElementById("fecha").valueAsDate=new Date();
 load();
 
