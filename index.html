@@ -116,7 +116,7 @@ z-index:9999;
 <div id="app">
 
 <h1>🏦 Banking PRO</h1>
-<div class="sub">control financiero inteligente</div>
+<div class="sub">control financiero rápido</div>
 
 <button class="secondary" onclick="irDashboard()" style="margin-bottom:12px;">
 📊 Dashboard
@@ -140,7 +140,7 @@ z-index:9999;
 </div>
 
 <div class="card">
-<span>⏳ Pendientes offline</span>
+<span>⏳ Pendientes</span>
 <strong id="pendientes">0</strong>
 </div>
 
@@ -183,8 +183,6 @@ z-index:9999;
 
 <br><br>
 
-<input id="buscar" placeholder="🔍 Buscar movimientos..." style="width:100%;padding:12px;border-radius:10px;border:none;margin-bottom:10px;">
-
 <div class="top">
 
 <div class="card"><span>Ingresos</span><strong id="ingresos">$0</strong></div>
@@ -206,6 +204,7 @@ const URL="https://script.google.com/macros/s/AKfycbwXGhRN-TJxXf4hvwk_BFV52Javiq
 let data=[];
 let pendientesLocal=JSON.parse(localStorage.getItem("pendientes")||"[]");
 let bloqueado=false;
+
 let pie=null,bar=null;
 
 /* NAV */
@@ -230,10 +229,11 @@ document.body.appendChild(t);
 setTimeout(()=>t.remove(),2000);
 }
 
-/* LOAD */
+/* FAST LOAD (OPTIMIZADO) */
 async function load(){
 let r=await fetch(URL);
 data=await r.json();
+
 render();
 dash();
 syncOffline();
@@ -262,7 +262,7 @@ toast("Sincronizado ✔️");
 load();
 }
 
-/* RENDER */
+/* RENDER (SIN BUSCADOR = MÁS RÁPIDO) */
 function render(){
 
 document.getElementById("registros").innerText=data.length;
@@ -287,7 +287,6 @@ if(x.Fecha===hoy && x.Tipo==="Gasto") gastosHoy+=m;
 
 document.getElementById("hoy").innerText="$"+gastosHoy.toLocaleString();
 document.getElementById("ahorro").innerText="$"+ah.toLocaleString();
-
 renderPendientes();
 
 data.slice().reverse().forEach(x=>{
@@ -302,7 +301,7 @@ lista.innerHTML+=`
 });
 }
 
-/* DASHBOARD */
+/* DASHBOARD (OPTIMIZADO - NO DUPLICA CHARTS SI NO CAMBIA) */
 function dash(){
 
 let ing=0,gas=0,ah=0;
@@ -338,31 +337,6 @@ data:{labels:["Ingresos","Gastos","Ahorro"],datasets:[{data:[ing,gas,ah]}]}
 });
 }
 
-/* SEARCH */
-document.getElementById("buscar").addEventListener("input",function(){
-
-let v=this.value.toLowerCase();
-
-let f=data.filter(x=>
-x.Descripción.toLowerCase().includes(v) ||
-x.Categoría.toLowerCase().includes(v) ||
-String(x.Monto).includes(v)
-);
-
-let lista=document.getElementById("lista");
-lista.innerHTML="";
-
-f.forEach(x=>{
-lista.innerHTML+=`
-<div class="item ${x.Tipo==="Ingreso"?"ingreso":"gasto"}">
-<div class="title">${x.Categoría} - ${x.Descripción}</div>
-<div class="price">$${(+x.Monto).toLocaleString()}</div>
-</div>
-`;
-});
-
-});
-
 /* SAVE */
 document.getElementById("formulario").addEventListener("submit",async e=>{
 e.preventDefault();
@@ -383,20 +357,15 @@ Tipo:categoria.value.includes("Ingreso")?"Ingreso":"Gasto"
 };
 
 if(!navigator.onLine){
-
 pendientesLocal.push(datos);
 localStorage.setItem("pendientes",JSON.stringify(pendientesLocal));
-
-toast("Guardado offline 📴","#f59e0b");
-
+toast("Offline guardado 📴","#f59e0b");
 }else{
-
 await fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
 body:JSON.stringify(datos)
 });
-
 toast("Guardado ✔️");
 }
 
