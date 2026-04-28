@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-<title>Banking PRO AI v9 - Fase 2</title>
+<title>Banking PRO AI v10 Stable</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 :root{
---bg1:#070b16;
---bg2:#0b1020;
+--bg1:#07111f;
+--bg2:#0f172a;
 --card:rgba(255,255,255,.06);
 --line:rgba(255,255,255,.08);
 --text:#fff;
@@ -24,36 +24,41 @@
 
 body.light{
 --bg1:#eef2ff;
---bg2:#f8fafc;
---card:#fff;
---line:#e2e8f0;
---text:#0f172a;
+--bg2:#ffffff;
+--card:#ffffff;
+--line:#e5e7eb;
+--text:#111827;
 --muted:#64748b;
---input:#fff;
+--input:#ffffff;
 --inputText:#111827;
 }
 
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+-webkit-tap-highlight-color:transparent;
+}
 
 body{
 font-family:Inter,sans-serif;
 background:linear-gradient(180deg,var(--bg1),var(--bg2));
 color:var(--text);
-padding:14px 14px 96px;
-max-width:780px;
+padding:14px 14px 95px;
+max-width:760px;
 margin:auto;
 }
 
-.header,.card{
+.card,.header{
 background:var(--card);
 border:1px solid var(--line);
 border-radius:22px;
 padding:16px;
 margin-bottom:12px;
-backdrop-filter:blur(14px);
+backdrop-filter:blur(12px);
 }
 
-.big{font-size:32px;font-weight:800}
+.big{font-size:34px;font-weight:800}
 .small{font-size:12px;color:var(--muted)}
 .title{font-size:17px;font-weight:800;margin-bottom:10px}
 
@@ -128,7 +133,10 @@ border-left:4px solid transparent;
 .ingreso{border-left-color:#22c55e}
 .gasto{border-left-color:#ef4444}
 
-.price{font-weight:800;margin-top:6px}
+.price{
+font-weight:800;
+margin-top:6px;
+}
 
 .small-btn{
 padding:8px 10px;
@@ -138,18 +146,6 @@ width:auto;
 background:rgba(255,255,255,.08);
 color:var(--text);
 }
-
-.alert{
-padding:10px;
-border-radius:12px;
-font-size:13px;
-margin-top:8px;
-line-height:1.4;
-}
-
-.good{background:rgba(34,197,94,.14);color:#22c55e}
-.mid{background:rgba(245,158,11,.14);color:#f59e0b}
-.bad{background:rgba(239,68,68,.14);color:#ef4444}
 
 .progress{
 height:10px;
@@ -163,8 +159,20 @@ margin-top:8px;
 height:100%;
 background:linear-gradient(90deg,#22c55e,#84cc16);
 width:0%;
-transition:.35s;
+transition:.3s;
 }
+
+.alert{
+padding:10px;
+border-radius:12px;
+font-size:13px;
+margin-top:8px;
+line-height:1.4;
+}
+
+.good{background:rgba(34,197,94,.14);color:#22c55e}
+.bad{background:rgba(239,68,68,.14);color:#ef4444}
+.mid{background:rgba(245,158,11,.14);color:#f59e0b}
 
 .nav{
 position:fixed;
@@ -173,10 +181,10 @@ display:grid;
 grid-template-columns:repeat(5,1fr);
 gap:8px;
 padding:10px 12px calc(10px + env(safe-area-inset-bottom));
-background:rgba(8,12,22,.92);
+background:rgba(5,10,20,.94);
 backdrop-filter:blur(16px);
 border-top:1px solid var(--line);
-max-width:780px;
+max-width:760px;
 margin:auto;
 }
 
@@ -196,8 +204,8 @@ border-radius:12px;
 canvas{
 margin-top:10px;
 background:rgba(255,255,255,.03);
-border-radius:14px;
 padding:8px;
+border-radius:14px;
 }
 
 .toast{
@@ -215,34 +223,10 @@ display:none;
 z-index:999;
 }
 
-.lock{
-position:fixed;
-inset:0;
-background:#020617;
-display:flex;
-align-items:center;
-justify-content:center;
-padding:18px;
-z-index:5000;
-}
-
-.lock-box{
-width:100%;
-max-width:360px;
-background:#111827;
-padding:22px;
-border-radius:22px;
-}
-
-.lock-box h2{
-font-size:22px;
-margin-bottom:12px;
-}
-
 .eye{
 font-size:12px;
-color:var(--muted);
 margin-top:10px;
+color:var(--muted);
 cursor:pointer;
 }
 </style>
@@ -250,20 +234,8 @@ cursor:pointer;
 
 <body>
 
-<!-- PIN LOCK -->
-<div class="lock" id="lockScreen" style="display:none">
-<div class="lock-box">
-<h2>🔐 Banking PRO AI</h2>
-<div class="small" style="margin-bottom:10px">Ingresa tu PIN</div>
-<input type="password" id="pinInput" maxlength="4" placeholder="****">
-<button class="primary" onclick="unlock()">Entrar</button>
-<button class="secondary" style="margin-top:10px" onclick="resetPin()">Olvidé PIN</button>
-</div>
-</div>
-
-<!-- HEADER -->
 <div class="header">
-<div class="small" id="hello"></div>
+<div class="small">Banking PRO AI v10</div>
 <div class="small" id="today"></div>
 
 <div class="small" style="margin-top:10px">Saldo disponible</div>
@@ -272,8 +244,15 @@ cursor:pointer;
 <div class="eye" onclick="toggleHide()">👁 Mostrar / ocultar montos</div>
 
 <div class="grid2" style="margin-top:12px">
-<div class="kpi"><span>Pendientes</span><strong id="pendingCount">0</strong></div>
-<div class="kpi"><span>Sincronizados</span><strong id="syncCount">0</strong></div>
+<div class="kpi">
+<span>Pendientes</span>
+<strong id="pendingCount">0</strong>
+</div>
+
+<div class="kpi">
+<span>Sincronizados</span>
+<strong id="syncCount">0</strong>
+</div>
 </div>
 </div>
 
@@ -311,7 +290,7 @@ cursor:pointer;
 <section class="tab" id="tab-dashboard">
 
 <div class="card">
-<div class="title">📊 Categorías</div>
+<div class="title">📊 Gastos por categoría</div>
 <canvas id="chart1"></canvas>
 </div>
 
@@ -335,7 +314,7 @@ cursor:pointer;
 </div>
 
 <div class="card">
-<div class="title">🚀 Metas inteligentes</div>
+<div class="title">🚀 Metas</div>
 <div id="goalList"></div>
 </div>
 
@@ -360,10 +339,6 @@ cursor:pointer;
 <button class="secondary" onclick="setTheme('dark')">🌙 Tema oscuro</button>
 <br><br>
 <button class="secondary" onclick="setTheme('light')">☀️ Tema claro</button>
-<br><br>
-<button class="secondary" onclick="createPin()">🔐 Crear / cambiar PIN</button>
-<br><br>
-<button class="secondary" onclick="lockNow()">🔒 Bloquear ahora</button>
 
 </div>
 
@@ -383,26 +358,13 @@ cursor:pointer;
 const URL="https://script.google.com/macros/s/AKfycbwXGhRN-TJxXf4hvwk_BFV52Javiqn6Lzz5ps6M1yTz9PJy-9kDcsUKJLzUY-mTS1Z2/exec";
 
 let data=[];
+let hidden=localStorage.getItem("hideMoney")==="1";
 let goals=JSON.parse(localStorage.getItem("goals")||"[]");
 let pending=JSON.parse(localStorage.getItem("pendingQueue")||"[]");
-let hidden=localStorage.getItem("hideMoney")==="1";
 
 let c1,c2;
 
 fecha.valueAsDate=new Date();
-
-init();
-load();
-
-/* INIT */
-function init(){
-
-const h=new Date().getHours();
-
-hello.innerText=
-h<12?"Buenos días ☀️":
-h<19?"Buenas tardes 🌤️":
-"Buenas noches 🌙";
 
 today.innerText=new Date().toLocaleDateString("es-CO",{
 weekday:"long",day:"numeric",month:"long"
@@ -410,13 +372,8 @@ weekday:"long",day:"numeric",month:"long"
 
 pendingCount.innerText=pending.length;
 
-const th=localStorage.getItem("theme")||"dark";
-setTheme(th,false);
-
-if(localStorage.getItem("pinCode")){
-lockScreen.style.display="flex";
-}
-}
+load();
+syncPending();
 
 /* TOAST */
 function toast(msg){
@@ -426,38 +383,6 @@ setTimeout(()=>toastEl.style.display="none",2200);
 }
 const toastEl=document.getElementById("toast");
 
-/* PIN */
-function createPin(){
-let p=prompt("Crea PIN de 4 dígitos");
-if(!p || p.length!==4) return;
-localStorage.setItem("pinCode",p);
-toast("PIN guardado");
-}
-
-function unlock(){
-let p=pinInput.value;
-if(p===localStorage.getItem("pinCode")){
-lockScreen.style.display="none";
-pinInput.value="";
-}else{
-toast("PIN incorrecto");
-}
-}
-
-function resetPin(){
-if(confirm("Eliminar PIN actual?")){
-localStorage.removeItem("pinCode");
-lockScreen.style.display="none";
-toast("PIN eliminado");
-}
-}
-
-function lockNow(){
-if(localStorage.getItem("pinCode")){
-lockScreen.style.display="flex";
-}
-}
-
 /* TABS */
 function goTab(tab,btn){
 document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
@@ -466,14 +391,7 @@ document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active")
 btn.classList.add("active");
 }
 
-/* THEME */
-function setTheme(mode,show=true){
-document.body.classList.toggle("light",mode==="light");
-localStorage.setItem("theme",mode);
-if(show) toast("Tema actualizado");
-}
-
-/* HIDE MONEY */
+/* MONEY */
 function toggleHide(){
 hidden=!hidden;
 localStorage.setItem("hideMoney",hidden?"1":"0");
@@ -485,16 +403,20 @@ if(hidden) return "••••••";
 return "$"+Number(n).toLocaleString("es-CO");
 }
 
+/* THEME */
+function setTheme(mode){
+document.body.classList.toggle("light",mode==="light");
+toast("Tema actualizado");
+}
+
 /* LOAD */
 async function load(){
 try{
-let r=await fetch(URL);
+let r=await fetch(URL+"?t="+Date.now());
 data=await r.json();
 syncCount.innerText=data.length;
 render();
-}catch(e){
-render();
-}
+}catch(e){}
 }
 
 /* SAVE */
@@ -516,7 +438,26 @@ return;
 saveBtn.disabled=true;
 saveBtn.innerText="Guardando...";
 
+/* OFFLINE */
+if(!navigator.onLine){
+
+pending.push(datos);
+localStorage.setItem("pendingQueue",JSON.stringify(pending));
+pendingCount.innerText=pending.length;
+
+descripcion.value="";
+monto.value="";
+
+toast("☁ Guardado offline");
+
+saveBtn.disabled=false;
+saveBtn.innerText="💾 Guardar";
+return;
+}
+
+/* ONLINE */
 try{
+
 await fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
@@ -525,15 +466,58 @@ body:JSON.stringify(datos)
 
 descripcion.value="";
 monto.value="";
-toast("Guardado");
+
+toast("✔ Guardado");
 await load();
 
 }catch(e){
-toast("Error");
+
+pending.push(datos);
+localStorage.setItem("pendingQueue",JSON.stringify(pending));
+pendingCount.innerText=pending.length;
+
+toast("☁ Guardado offline");
 }
 
 saveBtn.disabled=false;
 saveBtn.innerText="💾 Guardar";
+}
+
+/* SYNC */
+window.addEventListener("online",syncPending);
+
+async function syncPending(){
+
+if(!navigator.onLine) return;
+if(!pending.length) return;
+
+let enviados=0;
+
+while(pending.length){
+
+try{
+
+await fetch(URL,{
+method:"POST",
+headers:{"Content-Type":"text/plain;charset=utf-8"},
+body:JSON.stringify(pending[0])
+});
+
+pending.shift();
+enviados++;
+
+}catch(e){
+break;
+}
+}
+
+localStorage.setItem("pendingQueue",JSON.stringify(pending));
+pendingCount.innerText=pending.length;
+
+if(enviados){
+toast("✔ "+enviados+" sincronizados");
+load();
+}
 }
 
 /* DELETE */
@@ -544,13 +528,34 @@ if(!confirm("Eliminar movimiento")) return;
 data=data.filter(x=>String(x.ID)!==String(id));
 render();
 
+try{
 await fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
 body:JSON.stringify({action:"delete",ID:id})
 });
-
 toast("Eliminado");
+}catch(e){
+toast("No se pudo eliminar");
+}
+}
+
+/* GOALS */
+function addGoal(){
+
+let n=goalName.value.trim();
+let v=Number(goalValue.value);
+
+if(!n || v<=0) return;
+
+goals.push({n,v});
+localStorage.setItem("goals",JSON.stringify(goals));
+
+goalName.value="";
+goalValue.value="";
+
+render();
+toast("Meta creada");
 }
 
 /* RENDER */
@@ -609,24 +614,7 @@ html+=`<div class="alert good">🏦 Ahorro actual ${money(ah)}</div>`;
 alerts.innerHTML=html;
 }
 
-/* GOALS */
-function addGoal(){
-
-let n=goalName.value.trim();
-let v=Number(goalValue.value);
-
-if(!n || v<=0) return;
-
-goals.push({n,v});
-localStorage.setItem("goals",JSON.stringify(goals));
-
-goalName.value="";
-goalValue.value="";
-
-render();
-toast("Meta creada");
-}
-
+/* GOAL LIST */
 function renderGoals(ah){
 
 goalList.innerHTML="";
@@ -635,7 +623,6 @@ goals.forEach((g,i)=>{
 
 let p=Math.min((ah/g.v)*100,100);
 let faltan=Math.max(g.v-ah,0);
-let sem=Math.ceil(faltan/4);
 
 goalList.innerHTML+=`
 <div class="item">
@@ -643,7 +630,7 @@ goalList.innerHTML+=`
 <div class="small">${money(ah)} / ${money(g.v)}</div>
 <div class="progress"><div class="bar" style="width:${p}%"></div></div>
 <div class="small" style="margin-top:8px">
-Faltan ${money(faltan)} · Meta estimada ${sem} semanas
+Faltan ${money(faltan)}
 </div>
 <button class="small-btn" onclick="delGoal(${i})">🗑️</button>
 </div>`;
