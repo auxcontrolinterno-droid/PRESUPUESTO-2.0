@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-<title>Presupuesto PRO Banking</title>
+<title>Banking PRO</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -20,8 +20,6 @@ padding:14px;
 
 h1{font-size:30px;font-weight:800;margin-bottom:6px;}
 .sub{opacity:.6;margin-bottom:14px;font-size:13px;}
-
-button,input,select{font-family:'Inter',sans-serif;}
 
 .top{
 display:grid;
@@ -102,7 +100,7 @@ canvas{
 background:rgba(255,255,255,.03);
 border-radius:16px;
 padding:10px;
-margin-top:14px;
+margin-top:12px;
 }
 
 .toast{
@@ -117,7 +115,7 @@ z-index:9999;
 }
 
 @media(min-width:700px){
-.top{grid-template-columns:repeat(3,1fr);}
+.top{grid-template-columns:repeat(4,1fr);}
 }
 </style>
 </head>
@@ -130,13 +128,13 @@ z-index:9999;
 <div class="sub">control financiero inteligente</div>
 
 <button class="secondary" onclick="irDashboard()" style="margin-bottom:12px;">
-📊 Abrir Dashboard
+📊 Dashboard
 </button>
 
 <div class="top">
 
 <div class="card">
-<span>💸 Gastos de hoy</span>
+<span>💸 Gastos hoy</span>
 <strong id="hoy">$0</strong>
 </div>
 
@@ -150,6 +148,11 @@ z-index:9999;
 <strong id="balance">$0</strong>
 </div>
 
+<div class="card">
+<span>🏦 Ahorro</span>
+<strong id="ahorro">$0</strong>
+</div>
+
 </div>
 
 <div class="panel">
@@ -160,7 +163,7 @@ z-index:9999;
 <input type="text" id="descripcion" placeholder="Descripción" required>
 
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-<input type="number" id="monto" placeholder="Monto" required>
+<input type="text" id="monto" placeholder="Monto (4.000)" required>
 
 <select id="categoria">
 <option>💰 Ingreso</option>
@@ -169,10 +172,11 @@ z-index:9999;
 <option>🚗 Transporte</option>
 <option>💡 Servicios</option>
 <option>🎮 Entretenimiento</option>
+<option>🏦 Ahorro</option>
 </select>
 </div>
 
-<button class="primary" type="submit">Guardar movimiento</button>
+<button class="primary" type="submit">Guardar</button>
 
 </form>
 
@@ -199,6 +203,11 @@ z-index:9999;
 </div>
 
 <div class="card">
+<span>🏦 Ahorro</span>
+<strong id="ahorroTotal">$0</strong>
+</div>
+
+<div class="card">
 <span>⚖️ Balance</span>
 <strong id="balance2">$0</strong>
 </div>
@@ -215,6 +224,9 @@ z-index:9999;
 const URL="https://script.google.com/macros/s/AKfycbwXGhRN-TJxXf4hvwk_BFV52Javiqn6Lzz5ps6M1yTz9PJy-9kDcsUKJLzUY-mTS1Z2/exec";
 
 let data=[];
+let bloqueado=false;
+let chartPie=null;
+let chartBar=null;
 
 /* NAV */
 function irDashboard(){
@@ -246,31 +258,32 @@ render();
 dashboard();
 }
 
-/* RENDER LIST */
+/* RENDER */
 function render(){
 
 document.getElementById("registros").innerText=data.length;
 
+let ingresos=0,gastos=0,ahorro=0,hoyG=0;
+let hoy=new Date().toISOString().split("T")[0];
+
 let lista=document.getElementById("lista");
 lista.innerHTML="";
 
-let hoy=new Date().toISOString().split("T")[0];
-let gastosHoy=0;
-let ingresos=0,gastos=0;
-
 data.forEach(x=>{
 
-if(x.Tipo==="Ingreso") ingresos+=+x.Monto;
-else gastos+=+x.Monto;
+let monto=Number(x.Monto);
 
-if(x.Fecha===hoy && x.Tipo==="Gasto"){
-gastosHoy+=+x.Monto;
-}
+if(x.Tipo==="Ingreso") ingresos+=monto;
+else gastos+=monto;
 
+if(x.Categoría.includes("Ahorro")) ahorro+=monto;
+
+if(x.Fecha===hoy && x.Tipo==="Gasto") hoyG+=monto;
 });
 
-document.getElementById("hoy").innerText="$"+gastosHoy.toLocaleString();
+document.getElementById("hoy").innerText="$"+hoyG.toLocaleString();
 document.getElementById("balance").innerText="$"+(ingresos-gastos).toLocaleString();
+document.getElementById("ahorro").innerText="$"+ahorro.toLocaleString();
 
 data.slice().reverse().forEach(x=>{
 
@@ -279,48 +292,49 @@ let tipo=x.Tipo==="Ingreso"?"ingreso":"gasto";
 lista.innerHTML+=`
 <div class="item ${tipo}">
 <div class="title">${x.Categoría} - ${x.Descripción}</div>
-<div class="price">$${(+x.Monto).toLocaleString()}</div>
-
+<div class="price">$${Number(x.Monto).toLocaleString()}</div>
 <button class="delete" onclick="borrar('${x.ID}')">🗑️ eliminar</button>
 </div>
 `;
 });
 }
 
-/* DASHBOARD PRO */
+/* DASHBOARD */
 function dashboard(){
 
-let ingresos=0,gastos=0;
+let ingresos=0,gastos=0,ahorro=0;
 let cat={};
 
 data.forEach(x=>{
-if(x.Tipo==="Ingreso") ingresos+=+x.Monto;
-else gastos+=+x.Monto;
+let m=+x.Monto;
 
-cat[x.Categoría]=(cat[x.Categoría]||0)+(+x.Monto);
+if(x.Tipo==="Ingreso") ingresos+=m;
+else gastos+=m;
+
+if(x.Categoría.includes("Ahorro")) ahorro+=m;
+
+cat[x.Categoría]=(cat[x.Categoría]||0)+m;
 });
 
 document.getElementById("ingresos").innerText="$"+ingresos.toLocaleString();
 document.getElementById("gastos").innerText="$"+gastos.toLocaleString();
+document.getElementById("ahorroTotal").innerText="$"+ahorro.toLocaleString();
 document.getElementById("balance2").innerText="$"+(ingresos-gastos).toLocaleString();
 
-/* PIE */
-new Chart(document.getElementById("chartPie"),{
+/* charts fix */
+if(chartPie) chartPie.destroy();
+if(chartBar) chartBar.destroy();
+
+chartPie=new Chart(document.getElementById("chartPie"),{
 type:"doughnut",
-data:{
-labels:Object.keys(cat),
-datasets:[{data:Object.values(cat)}]
-}
+data:{labels:Object.keys(cat),datasets:[{data:Object.values(cat)}]}
 });
 
-/* BAR */
-new Chart(document.getElementById("chartBar"),{
+chartBar=new Chart(document.getElementById("chartBar"),{
 type:"bar",
 data:{
-labels:["Ingresos","Gastos"],
-datasets:[{
-data:[ingresos,gastos]
-}]
+labels:["Ingresos","Gastos","Ahorro"],
+datasets:[{data:[ingresos,gastos,ahorro]}]
 }
 });
 }
@@ -328,6 +342,8 @@ data:[ingresos,gastos]
 /* SAVE */
 document.getElementById("formulario").addEventListener("submit",async e=>{
 e.preventDefault();
+if(bloqueado) return;
+bloqueado=true;
 
 let r=await fetch(URL,{
 method:"POST",
@@ -336,37 +352,36 @@ body:JSON.stringify({
 Fecha:fecha.value,
 Categoría:categoria.value,
 Descripción:descripcion.value,
-Monto:monto.value,
+Monto:Number(monto.value.replace(/\./g,"")),
 Tipo:categoria.value.includes("Ingreso")?"Ingreso":"Gasto"
 })
 });
 
-let res=await r.json();
+await load();
+toast("Guardado ✔️");
 
-if(res.status==="ok") toast("Guardado ✔️");
-else toast("Error","#ef4444");
-
-load();
-
+bloqueado=false;
 formulario.reset();
+fecha.valueAsDate=new Date();
 });
 
 /* DELETE */
 async function borrar(id){
+if(bloqueado) return;
+if(!confirm("Eliminar?")) return;
 
-if(!confirm("Eliminar movimiento?")) return;
+bloqueado=true;
 
-let r=await fetch(URL,{
+await fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
 body:JSON.stringify({action:"delete",ID:id})
 });
 
-let res=await r.json();
+await load();
+toast("Eliminado ✔️","#ef4444");
 
-if(res.status==="deleted") toast("Eliminado ✔️","#ef4444");
-
-load();
+bloqueado=false;
 }
 
 /* INIT */
