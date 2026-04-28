@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Banking PRO Fase 2</title>
+<title>Banking PRO - Fase 2</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 
@@ -15,6 +15,8 @@ color:#fff;
 padding:14px;
 }
 
+h1{font-size:24px;margin-bottom:10px;}
+
 .card{
 background:rgba(255,255,255,.06);
 padding:14px;
@@ -22,15 +24,25 @@ border-radius:14px;
 margin-bottom:10px;
 }
 
-input,button{
+input,select,button{
 width:100%;
 padding:12px;
 margin-top:8px;
-border-radius:10px;
 border:none;
+border-radius:10px;
+font-size:14px;
 }
 
 .primary{background:#2563eb;color:#fff;font-weight:700;}
+.secondary{background:rgba(255,255,255,.12);color:#fff;}
+
+.list{display:grid;gap:10px;margin-top:10px;}
+
+.item{
+background:rgba(255,255,255,.05);
+padding:10px;
+border-radius:10px;
+}
 
 .progress{
 height:10px;
@@ -47,29 +59,9 @@ background:limegreen;
 transition:.3s;
 }
 
-.warning{
-color:#f59e0b;
-font-weight:700;
-margin-top:8px;
-}
-
-.danger{
-color:#ef4444;
-font-weight:700;
-margin-top:8px;
-}
-
-.list{
-margin-top:12px;
-display:grid;
-gap:10px;
-}
-
-.item{
-background:rgba(255,255,255,.05);
-padding:10px;
-border-radius:10px;
-}
+.warning{color:#f59e0b;font-weight:700;margin-top:6px;}
+.danger{color:#ef4444;font-weight:700;margin-top:6px;}
+.ok{color:#22c55e;font-weight:700;margin-top:6px;}
 </style>
 </head>
 
@@ -77,23 +69,48 @@ border-radius:10px;
 
 <h1>🏦 Banking PRO - Fase 2</h1>
 
+<!-- 💰 FORMULARIO MOVIMIENTOS -->
+<div class="card">
+
+<h3>📊 Nuevo movimiento</h3>
+
+<input type="date" id="fecha">
+<input type="text" id="descripcion" placeholder="Descripción">
+<input type="text" id="monto" placeholder="Ej: 4000">
+
+<select id="categoria">
+<option>💰 Ingreso</option>
+<option>🍔 Comida</option>
+<option>🏠 Vivienda</option>
+<option>🚗 Transporte</option>
+<option>💡 Servicios</option>
+<option>🎮 Entretenimiento</option>
+<option>🏦 Ahorro</option>
+</select>
+
+<button class="primary" onclick="guardar()">Guardar movimiento</button>
+
+</div>
+
 <!-- 💰 PRESUPUESTO -->
 <div class="card">
+
 <h3>💰 Presupuesto mensual</h3>
 
 <input type="number" id="budget" placeholder="Ej: 1000000">
-<button class="primary" onclick="setBudget()">Guardar presupuesto</button>
+<button class="secondary" onclick="setBudget()">Guardar presupuesto</button>
 
 <div class="progress">
 <div class="bar" id="bar"></div>
 </div>
 
 <div id="status"></div>
+
 </div>
 
-<!-- MOVIMIENTOS -->
+<!-- 📋 LISTA -->
 <div class="card">
-<h3>📊 Movimientos</h3>
+<h3>📋 Movimientos</h3>
 <div class="list" id="lista"></div>
 </div>
 
@@ -105,13 +122,45 @@ let data=[];
 let budget=localStorage.getItem("budget")||0;
 
 /* INIT */
+fecha.valueAsDate=new Date();
 load();
 
 /* LOAD */
 async function load(){
+try{
 let r=await fetch(URL);
 data=await r.json();
+}catch(e){
+data=[];
+}
 render();
+}
+
+/* GUARDAR MOVIMIENTO */
+async function guardar(){
+
+let datos={
+Fecha:fecha.value,
+Categoría:categoria.value,
+Descripción:descripcion.value,
+Monto:Number(monto.value.replace(/\./g,"")),
+Tipo:categoria.value.includes("Ingreso")?"Ingreso":"Gasto"
+};
+
+if(!datos.Descripción || !datos.Monto){
+alert("Completa los campos");
+return;
+}
+
+await fetch(URL,{
+method:"POST",
+headers:{"Content-Type":"text/plain;charset=utf-8"},
+body:JSON.stringify(datos)
+});
+
+monto.value="";
+descripcion.value="";
+load();
 }
 
 /* RENDER */
@@ -126,7 +175,8 @@ let hoy=new Date();
 data.forEach(x=>{
 
 let d=new Date(x.Fecha);
-if(d.getMonth()===hoy.getMonth() && x.Tipo==="Gasto"){
+
+if(x.Tipo==="Gasto" && d.getMonth()===hoy.getMonth()){
 gastoMes+=Number(x.Monto);
 }
 
@@ -139,39 +189,43 @@ ${x.Categoría} - ${x.Descripción}
 
 });
 
-/* 📊 PROGRESO */
-if(budget>0){
-
-let percent=(gastoMes/budget)*100;
-document.getElementById("bar").style.width=Math.min(percent,100)+"%";
-
-let status=document.getElementById("status");
-
-if(percent>=100){
-status.innerHTML="🔴 Te pasaste del presupuesto";
-status.className="danger";
-}else if(percent>=80){
-status.innerHTML="⚠️ Cuidado, estás cerca del límite";
-status.className="warning";
-}else{
-status.innerHTML="🟢 Vas bien este mes";
-status.className="";
+updateBudget(gastoMes);
 }
 
-}else{
-document.getElementById("status").innerHTML="Define un presupuesto mensual";
-}
-
-}
-
-/* SET BUDGET */
+/* PRESUPUESTO */
 function setBudget(){
 budget=document.getElementById("budget").value;
 localStorage.setItem("budget",budget);
 render();
 }
 
-/* INIT VALUE */
+/* PROGRESO */
+function updateBudget(gasto){
+
+if(!budget){
+status.innerHTML="Define un presupuesto mensual";
+return;
+}
+
+let percent=(gasto/budget)*100;
+bar.style.width=Math.min(percent,100)+"%";
+
+if(percent>=100){
+status.innerHTML="🔴 Te pasaste del presupuesto";
+status.className="danger";
+}
+else if(percent>=80){
+status.innerHTML="⚠️ Cerca del límite";
+status.className="warning";
+}
+else{
+status.innerHTML="🟢 Vas bien";
+status.className="ok";
+}
+
+}
+
+/* INIT BUDGET */
 if(budget){
 document.getElementById("budget").value=budget;
 }
