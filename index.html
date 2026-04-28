@@ -6,6 +6,7 @@
 <title>Banking PRO AI</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -17,45 +18,52 @@ padding:14px 14px 90px;
 max-width:760px;
 margin:auto;
 }
+.header,.card{
+background:rgba(255,255,255,.06);
+backdrop-filter:blur(14px);
+border:1px solid rgba(255,255,255,.08);
+border-radius:22px;
+padding:16px;
+margin-bottom:12px;
+}
 .header{
 background:linear-gradient(135deg,#111827,#1e293b);
-padding:18px;
-border-radius:22px;
-border:1px solid rgba(255,255,255,.08);
-margin-bottom:12px;
-box-shadow:0 14px 28px rgba(0,0,0,.22);
 }
 .small{font-size:12px;opacity:.72}
-.big{font-size:32px;font-weight:800;margin-top:4px;letter-spacing:-1px}
+.big{font-size:32px;font-weight:800;margin-top:4px}
 
 .statusbar{
 display:grid;
 grid-template-columns:repeat(3,1fr);
 gap:8px;
-margin-top:14px;
+margin-top:12px;
 }
 .pill{
-background:rgba(255,255,255,.07);
+background:rgba(255,255,255,.06);
 padding:10px;
 border-radius:14px;
 font-size:11px;
 text-align:center;
-line-height:1.35;
 }
-.pill strong{display:block;font-size:14px;margin-top:3px}
+.pill strong{
+display:block;
+font-size:14px;
+margin-top:4px;
+}
 
-.card{
-background:rgba(255,255,255,.06);
-padding:14px;
-border-radius:18px;
-border:1px solid rgba(255,255,255,.08);
-margin-bottom:12px;
-backdrop-filter:blur(14px);
+.title{
+font-size:17px;
+font-weight:800;
+margin-bottom:10px;
 }
-.title{font-size:17px;font-weight:800;margin-bottom:10px}
 
 .field{margin-bottom:10px}
-.field label{display:block;font-size:12px;opacity:.72;margin-bottom:5px}
+.field label{
+display:block;
+font-size:12px;
+opacity:.72;
+margin-bottom:5px;
+}
 
 input,select,button{
 width:100%;
@@ -64,6 +72,7 @@ outline:none;
 border-radius:14px;
 font-family:inherit;
 }
+
 input,select{
 padding:14px;
 background:#fff;
@@ -71,20 +80,16 @@ color:#111;
 font-size:14px;
 font-weight:600;
 }
+
 button{
 padding:14px;
 font-size:15px;
 font-weight:800;
 cursor:pointer;
-transition:.18s;
 }
-button:active{transform:scale(.98)}
+
 .primary{
 background:linear-gradient(135deg,#2563eb,#1d4ed8);
-color:#fff;
-}
-.secondary{
-background:rgba(255,255,255,.08);
 color:#fff;
 }
 
@@ -93,24 +98,43 @@ display:grid;
 grid-template-columns:1fr 1fr;
 gap:10px;
 }
+
 .kpi{
 background:rgba(255,255,255,.05);
 padding:12px;
 border-radius:14px;
 }
-.kpi span{display:block;font-size:12px;opacity:.72;margin-bottom:4px}
-.kpi strong{font-size:18px}
 
-.list{display:grid;gap:10px}
+.kpi span{
+display:block;
+font-size:12px;
+opacity:.72;
+margin-bottom:4px;
+}
+
+.kpi strong{
+font-size:18px;
+}
+
+.list{
+display:grid;
+gap:10px;
+}
+
 .item{
 background:rgba(255,255,255,.05);
 padding:12px;
 border-radius:14px;
 border-left:4px solid transparent;
 }
+
 .ingreso{border-left-color:#22c55e}
 .gasto{border-left-color:#ef4444}
-.price{font-weight:800;margin-top:6px}
+
+.price{
+font-weight:800;
+margin-top:6px;
+}
 
 .small-btn{
 margin-top:8px;
@@ -128,22 +152,16 @@ font-size:13px;
 margin-top:8px;
 line-height:1.4;
 }
+
 .good{background:rgba(34,197,94,.14);color:#22c55e}
 .mid{background:rgba(245,158,11,.14);color:#f59e0b}
 .bad{background:rgba(239,68,68,.14);color:#ef4444}
 
-.progress{
-height:10px;
-background:rgba(255,255,255,.08);
-border-radius:20px;
-overflow:hidden;
+canvas{
 margin-top:10px;
-}
-.bar{
-height:100%;
-width:0%;
-background:linear-gradient(90deg,#22c55e,#84cc16);
-transition:.3s;
+background:rgba(255,255,255,.03);
+border-radius:14px;
+padding:10px;
 }
 
 .tab{display:none}
@@ -162,13 +180,14 @@ border-top:1px solid rgba(255,255,255,.08);
 max-width:760px;
 margin:auto;
 }
+
 .nav button{
 padding:10px 6px;
 font-size:12px;
-font-weight:700;
 background:transparent;
 color:#cbd5e1;
 }
+
 .nav button.active{
 background:rgba(255,255,255,.08);
 color:#fff;
@@ -178,58 +197,37 @@ color:#fff;
 position:fixed;
 left:50%;
 bottom:82px;
-transform:translateX(-50%) translateY(30px);
+transform:translateX(-50%);
 background:#111827;
 padding:12px 16px;
 border-radius:14px;
 font-size:13px;
 font-weight:700;
-opacity:0;
-transition:.25s;
-pointer-events:none;
+display:none;
 z-index:99;
-}
-.toast.show{
-opacity:1;
-transform:translateX(-50%) translateY(0);
 }
 </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
 <div class="header">
-<div class="small" id="hello">Hola 👋</div>
+<div class="small" id="hello"></div>
 <div class="small" id="today"></div>
 
 <div class="small" style="margin-top:10px">Saldo disponible</div>
 <div class="big" id="saldoTop">$0</div>
 
-<!-- STATUS BAR RESTAURADA -->
 <div class="statusbar">
-<div class="pill">
-Estado
-<strong id="netState">🟢 Online</strong>
+<div class="pill">Estado<strong id="netState">🟢</strong></div>
+<div class="pill">Sincronizados<strong id="syncCount">0</strong></div>
+<div class="pill">Pendientes<strong id="pendingCount">0</strong></div>
 </div>
 
-<div class="pill">
-Sincronizados
-<strong id="syncCount">0</strong>
+<div class="small" style="margin-top:10px" id="lastSync">Sincronizado recién</div>
 </div>
 
-<div class="pill">
-Pendientes
-<strong id="pendingCount">0</strong>
-</div>
-</div>
-
-<div class="small" style="margin-top:10px" id="lastSync">
-Sincronizado recién
-</div>
-</div>
-
-<!-- TAB HOME -->
+<!-- HOME -->
 <section class="tab active" id="tab-home">
 
 <div class="card">
@@ -263,11 +261,12 @@ Sincronizado recién
 </select>
 </div>
 
-<button class="primary" id="saveBtn" onclick="guardar()">💾 Guardar movimiento</button>
+<button class="primary" onclick="guardar()" id="saveBtn">💾 Guardar</button>
 </div>
 
 <div class="card">
-<div class="title">📌 Resumen rápido</div>
+<div class="title">📌 Resumen</div>
+
 <div class="grid2">
 <div class="kpi"><span>Ingresos</span><strong id="ingresos">$0</strong></div>
 <div class="kpi"><span>Gastos</span><strong id="gastos">$0</strong></div>
@@ -278,31 +277,37 @@ Sincronizado recién
 
 </section>
 
-<!-- TAB DASH -->
+<!-- DASHBOARD -->
 <section class="tab" id="tab-dashboard">
-<div class="card">
-<div class="title">💰 Presupuesto mensual</div>
-
-<input type="number" id="budget">
-
-<button class="primary" style="margin-top:10px" onclick="setBudget()">
-Guardar presupuesto
-</button>
-
-<div class="progress">
-<div class="bar" id="bar"></div>
-</div>
-
-<div id="budgetText"></div>
-</div>
 
 <div class="card">
-<div class="title">🤖 Coach financiero</div>
+<div class="title">🤖 Coach financiero PRO</div>
 <div id="coach"></div>
 </div>
+
+<div class="card">
+<div class="title">📊 Gastos por categoría</div>
+<canvas id="chart1"></canvas>
+</div>
+
+<div class="card">
+<div class="title">📈 Últimos 7 movimientos</div>
+<canvas id="chart2"></canvas>
+</div>
+
+<div class="card">
+<div class="title">💰 Ingreso vs Gasto</div>
+<canvas id="chart3"></canvas>
+</div>
+
+<div class="card">
+<div class="title">🏦 Evolución ahorro</div>
+<canvas id="chart4"></canvas>
+</div>
+
 </section>
 
-<!-- TAB CALENDAR -->
+<!-- CALENDAR -->
 <section class="tab" id="tab-calendar">
 <div class="card">
 <div class="title">📆 Historial por fecha</div>
@@ -310,7 +315,7 @@ Guardar presupuesto
 </div>
 </section>
 
-<!-- TAB MORE -->
+<!-- LIST -->
 <section class="tab" id="tab-more">
 <div class="card">
 <div class="title">📋 Movimientos</div>
@@ -318,7 +323,6 @@ Guardar presupuesto
 </div>
 </section>
 
-<!-- NAV -->
 <nav class="nav">
 <button class="active" onclick="goTab('home',this)">🏠 Inicio</button>
 <button onclick="goTab('dashboard',this)">📊 Dashboard</button>
@@ -333,17 +337,16 @@ const URL="https://script.google.com/macros/s/AKfycbwXGhRN-TJxXf4hvwk_BFV52Javiq
 
 let data=[];
 let pending=JSON.parse(localStorage.getItem("pendingQueue")||"[]");
-let budget=localStorage.getItem("budget")||0;
+
+let c1,c2,c3,c4;
 
 fecha.valueAsDate=new Date();
-budget && (document.getElementById("budget").value=budget);
 
-initHeader();
-setNetwork();
+init();
 load();
 
-/* ===== HEADER ===== */
-function initHeader(){
+/* ===== INIT ===== */
+function init(){
 const h=new Date().getHours();
 
 hello.innerText=
@@ -354,13 +357,15 @@ h<19?"Buenas tardes 🌤️":
 today.innerText=new Date().toLocaleDateString("es-CO",{
 weekday:"long",day:"numeric",month:"long"
 });
+
+setNetwork();
 }
 
 /* ===== TOAST ===== */
 function toast(msg){
 toastEl.innerText=msg;
-toastEl.classList.add("show");
-setTimeout(()=>toastEl.classList.remove("show"),2200);
+toastEl.style.display="block";
+setTimeout(()=>toastEl.style.display="none",2200);
 }
 const toastEl=document.getElementById("toast");
 
@@ -375,13 +380,15 @@ btn.classList.add("active");
 
 /* ===== NETWORK ===== */
 function setNetwork(){
-netState.innerText=navigator.onLine?"🟢 Online":"🔴 Offline";
+netState.innerText=navigator.onLine?"🟢":"🔴";
 pendingCount.innerText=pending.length;
 }
+
 window.addEventListener("online",()=>{
 setNetwork();
 syncPending();
 });
+
 window.addEventListener("offline",setNetwork);
 
 /* ===== LOAD ===== */
@@ -420,22 +427,13 @@ return;
 saveBtn.disabled=true;
 saveBtn.innerText="Guardando...";
 
-/* VISUAL INMEDIATO */
-data.unshift({...datos,ID:"tmp"+Date.now()});
-render();
-
 if(!navigator.onLine){
-
 pending.push(datos);
 localStorage.setItem("pendingQueue",JSON.stringify(pending));
-
 pendingCount.innerText=pending.length;
-toast("☁ Guardado pendiente");
-
+toast("☁ Pendiente");
 saveBtn.disabled=false;
-saveBtn.innerText="💾 Guardar movimiento";
-descripcion.value="";
-monto.value="";
+saveBtn.innerText="💾 Guardar";
 return;
 }
 
@@ -447,25 +445,24 @@ body:JSON.stringify(datos)
 });
 
 toast("✔ Guardado");
+
 descripcion.value="";
 monto.value="";
+
 await load();
 
 }catch(e){
-pending.push(datos);
-localStorage.setItem("pendingQueue",JSON.stringify(pending));
-pendingCount.innerText=pending.length;
-toast("☁ Guardado pendiente");
+toast("Error");
 }
 
 saveBtn.disabled=false;
-saveBtn.innerText="💾 Guardar movimiento";
+saveBtn.innerText="💾 Guardar";
 }
 
-/* ===== SYNC PENDIENTES ===== */
+/* ===== SYNC ===== */
 async function syncPending(){
 
-if(!navigator.onLine || !pending.length) return;
+if(!pending.length) return;
 
 let enviados=0;
 
@@ -491,7 +488,7 @@ break;
 localStorage.setItem("pendingQueue",JSON.stringify(pending));
 pendingCount.innerText=pending.length;
 
-if(enviados>0){
+if(enviados){
 toast("✔ "+enviados+" sincronizados");
 await load();
 }
@@ -500,12 +497,11 @@ await load();
 /* ===== DELETE ===== */
 async function borrar(id){
 
-if(!confirm("¿Eliminar movimiento?")) return;
+if(!confirm("¿Eliminar?")) return;
 
 data=data.filter(x=>String(x.ID)!==String(id));
 render();
 
-try{
 await fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
@@ -513,11 +509,6 @@ body:JSON.stringify({action:"delete",ID:id})
 });
 
 toast("🗑 Eliminado");
-await load();
-
-}catch(e){
-toast("Error al borrar");
-}
 }
 
 /* ===== RENDER ===== */
@@ -526,24 +517,24 @@ function render(){
 lista.innerHTML="";
 calendarData.innerHTML="";
 
-let ing=0,gas=0,ah=0,gastoMes=0;
-const hoy=new Date();
+let ing=0,gas=0,ah=0;
+let categorias={};
+let ahorroAcum=[];
 
-data.slice().reverse().forEach(x=>{
+data.slice().reverse().forEach((x,i)=>{
 
 let m=Number(x.Monto)||0;
-let f=new Date(x.Fecha);
 
 if(x.Tipo==="Ingreso") ing+=m;
 else gas+=m;
 
 if(String(x.Categoría).includes("Ahorro")) ah+=m;
 
-if(
-x.Tipo==="Gasto" &&
-f.getMonth()===hoy.getMonth() &&
-f.getFullYear()===hoy.getFullYear()
-) gastoMes+=m;
+if(x.Tipo==="Gasto"){
+categorias[x.Categoría]=(categorias[x.Categoría]||0)+m;
+}
+
+ahorroAcum.push(ah);
 
 lista.innerHTML+=`
 <div class="item ${x.Tipo==="Ingreso"?"ingreso":"gasto"}">
@@ -560,58 +551,97 @@ calendarData.innerHTML+=`
 </div>`;
 });
 
-let saldo=ing-gas;
-
-saldoTop.innerText="$"+saldo.toLocaleString("es-CO");
+saldoTop.innerText="$"+(ing-gas).toLocaleString("es-CO");
 ingresos.innerText="$"+ing.toLocaleString("es-CO");
 gastos.innerText="$"+gas.toLocaleString("es-CO");
 ahorro.innerText="$"+ah.toLocaleString("es-CO");
 movs.innerText=data.length;
 
-renderBudget(gastoMes);
-renderCoach(ing,gas,ah);
+renderCoach(ing,gas,ah,categorias);
+renderCharts(ing,gas,categorias,ahorroAcum);
 }
 
-/* ===== BUDGET ===== */
-function setBudget(){
-budget=Number(document.getElementById("budget").value)||0;
-localStorage.setItem("budget",budget);
-render();
-toast("Presupuesto guardado");
+/* ===== COACH PRO ===== */
+function renderCoach(ing,gas,ah,cats){
+
+let topCat=Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
+let html="";
+
+if(gas>ing){
+html+=`<div class="alert bad">🔴 Gastas más de lo que ingresas.</div>`;
+}else{
+html+=`<div class="alert good">🟢 Balance positivo este mes.</div>`;
 }
 
-function renderBudget(gasto){
-
-if(!budget){
-budgetText.innerHTML="Define presupuesto";
-bar.style.width="0%";
-return;
+if(topCat){
+html+=`<div class="alert mid">📌 Mayor fuga: ${topCat[0]} ($${topCat[1].toLocaleString("es-CO")})</div>`;
 }
 
-let p=(gasto/budget)*100;
-bar.style.width=Math.min(p,100)+"%";
+html+=`<div class="alert good">🏦 Ahorro actual: $${ah.toLocaleString("es-CO")}</div>`;
 
-if(p>=100)
-budgetText.innerHTML='<div class="alert bad">🔴 Sobre presupuesto</div>';
-else if(p>=80)
-budgetText.innerHTML='<div class="alert mid">⚠️ Cerca del límite</div>';
-else
-budgetText.innerHTML='<div class="alert good">🟢 Bajo control</div>';
+let libre=ing-gas;
+html+=`<div class="alert mid">💡 Si sigues así cerrarías con $${libre.toLocaleString("es-CO")} libres.</div>`;
+
+if(gas>ing*0.7){
+html+=`<div class="alert bad">⚠️ Tus gastos ya consumen más del 70% de ingresos.</div>`;
 }
 
-/* ===== COACH ===== */
-function renderCoach(ing,gas,ah){
+coach.innerHTML=html;
+}
 
-let txt="🟢 Buen control financiero";
+/* ===== CHARTS ===== */
+function destroyCharts(){
+[c1,c2,c3,c4].forEach(x=>x&&x.destroy());
+}
 
-if(gas>ing) txt="🔴 Gastas más de lo que ingresas";
-else if(ah<ing*.10) txt="⚠️ Ahorro bajo";
-else if(gas>ing*.70) txt="🟡 Gastos elevados";
+function renderCharts(ing,gas,cats,ahorroAcum){
 
-coach.innerHTML=`
-<div class="alert good">${txt}</div>
-<div class="alert mid">🎯 Meta sugerida: $${(ing*.20).toLocaleString("es-CO")}</div>
-`;
+destroyCharts();
+
+/* Dona categorias */
+c1=new Chart(chart1,{
+type:"doughnut",
+data:{
+labels:Object.keys(cats),
+datasets:[{data:Object.values(cats)}]
+}
+});
+
+/* Linea ultimos 7 */
+let ult=data.slice(-7);
+c2=new Chart(chart2,{
+type:"line",
+data:{
+labels:ult.map(x=>x.Fecha),
+datasets:[{
+label:"Monto",
+data:ult.map(x=>x.Monto)
+}]
+}
+});
+
+/* Barras ingreso gasto */
+c3=new Chart(chart3,{
+type:"bar",
+data:{
+labels:["Ingresos","Gastos"],
+datasets:[{
+data:[ing,gas]
+}]
+}
+});
+
+/* Ahorro */
+c4=new Chart(chart4,{
+type:"line",
+data:{
+labels:ahorroAcum.map((_,i)=>i+1),
+datasets:[{
+label:"Ahorro",
+data:ahorroAcum
+}]
+}
+});
 }
 </script>
 
