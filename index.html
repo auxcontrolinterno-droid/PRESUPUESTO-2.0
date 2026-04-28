@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-<title>Banking PRO AI v11 - Fase 3 Elite</title>
+<title>Banking PRO AI v11 Elite</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -319,13 +319,24 @@ color:var(--muted);
 
 <!-- GOALS -->
 <section class="tab" id="tab-goals">
+
 <div class="card">
-<div class="title">🎯 Metas</div>
+<div class="title">🎯 Nueva meta</div>
+
+<input type="text" id="goalName" placeholder="Ej: Viaje Cartagena">
+<input type="number" id="goalValue" placeholder="Monto objetivo">
+
+<button class="primary" onclick="addGoal()">Guardar meta</button>
+</div>
+
+<div class="card">
+<div class="title">🚀 Mis metas</div>
 <div id="goalList"></div>
 </div>
+
 </section>
 
-<!-- MOVEMENTS -->
+<!-- LIST -->
 <section class="tab" id="tab-list">
 <div class="card">
 <div class="title">📋 Movimientos</div>
@@ -337,9 +348,11 @@ color:var(--muted);
 <section class="tab" id="tab-settings">
 <div class="card">
 <div class="title">⚙️ Ajustes</div>
+
 <button class="secondary" onclick="setTheme('dark')">🌙 Oscuro</button>
 <br><br>
 <button class="secondary" onclick="setTheme('light')">☀️ Claro</button>
+
 </div>
 </section>
 
@@ -366,7 +379,9 @@ let c1,c2,c3,c4;
 fecha.valueAsDate=new Date();
 
 today.innerText=new Date().toLocaleDateString("es-CO",{
-weekday:"long",day:"numeric",month:"long"
+weekday:"long",
+day:"numeric",
+month:"long"
 });
 
 pendingCount.innerText=pending.length;
@@ -386,6 +401,7 @@ const toastEl=document.getElementById("toast");
 function goTab(tab,btn){
 document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
 document.getElementById("tab-"+tab).classList.add("active");
+
 document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));
 btn.classList.add("active");
 }
@@ -438,31 +454,38 @@ saveBtn.disabled=true;
 saveBtn.innerText="Guardando...";
 
 if(!navigator.onLine){
+
 pending.push(datos);
 localStorage.setItem("pendingQueue",JSON.stringify(pending));
 pendingCount.innerText=pending.length;
+
 toast("☁ Guardado offline");
+
 saveBtn.disabled=false;
 saveBtn.innerText="💾 Guardar";
 return;
 }
 
 try{
+
 await fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
 body:JSON.stringify(datos)
 });
 
-toast("✔ Guardado");
 descripcion.value="";
 monto.value="";
+
+toast("✔ Guardado");
 await load();
 
 }catch(e){
+
 pending.push(datos);
 localStorage.setItem("pendingQueue",JSON.stringify(pending));
 pendingCount.innerText=pending.length;
+
 toast("☁ Guardado offline");
 }
 
@@ -522,12 +545,47 @@ body:JSON.stringify({action:"delete",ID:id})
 toast("Eliminado");
 }
 
+/* GOALS */
+function addGoal(){
+
+let n=goalName.value.trim();
+let v=Number(goalValue.value);
+
+if(!n || v<=0){
+toast("Completa la meta");
+return;
+}
+
+goals.push({
+nombre:n,
+valor:v
+});
+
+localStorage.setItem("goals",JSON.stringify(goals));
+
+goalName.value="";
+goalValue.value="";
+
+render();
+toast("🎯 Meta guardada");
+}
+
+function delGoal(i){
+goals.splice(i,1);
+localStorage.setItem("goals",JSON.stringify(goals));
+render();
+toast("Meta eliminada");
+}
+
 /* RENDER */
 function render(){
 
 lista.innerHTML="";
 
-let ing=0,gas=0,ah=0;
+let ing=0;
+let gas=0;
+let ah=0;
+
 let cats={};
 let meses={};
 let dias=[0,0,0,0,0,0,0];
@@ -547,6 +605,7 @@ cats[x.Categoría]=(cats[x.Categoría]||0)+m;
 
 let d=new Date(x.Fecha);
 let mes=(d.getMonth()+1)+"/"+d.getFullYear();
+
 meses[mes]=(meses[mes]||0)+m;
 dias[d.getDay()]+=m;
 
@@ -569,26 +628,65 @@ charts(ing,gas,cats,meses,dias);
 /* COACH */
 function coachAI(ing,gas,ah,cats){
 
-let txt="";
+let html="";
 
 if(gas>ing){
-txt+=`<div class="alert bad">🔴 Vas en déficit actual.</div>`;
+html+=`<div class="alert bad">🔴 Gastas más de lo que ingresas.</div>`;
 }else{
-txt+=`<div class="alert good">🟢 Tus finanzas van positivas.</div>`;
+html+=`<div class="alert good">🟢 Balance positivo actual.</div>`;
 }
 
 let top=Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
 
 if(top){
-txt+=`<div class="alert mid">⚠️ Mayor fuga de dinero: ${top[0]}.</div>`;
+html+=`<div class="alert mid">⚠️ Mayor fuga: ${top[0]}</div>`;
 }
 
-txt+=`<div class="alert good">🏦 Ahorro acumulado: ${money(ah)}</div>`;
+html+=`<div class="alert good">🏦 Ahorro actual ${money(ah)}</div>`;
 
-let proyectado=Math.round(gas*1.15);
-txt+=`<div class="alert mid">📅 Proyección cierre mensual gastos: ${money(proyectado)}</div>`;
+let pro=Math.round(gas*1.15);
 
-coach.innerHTML=txt;
+html+=`<div class="alert mid">📅 Proyección gastos cierre: ${money(pro)}</div>`;
+
+coach.innerHTML=html;
+}
+
+/* GOALS RENDER */
+function renderGoals(ah){
+
+goalList.innerHTML="";
+
+if(goals.length===0){
+goalList.innerHTML=`<div class="alert mid">No tienes metas creadas aún.</div>`;
+return;
+}
+
+goals.forEach((g,i)=>{
+
+let progreso=Math.min((ah/g.valor)*100,100);
+let faltan=Math.max(g.valor-ah,0);
+
+goalList.innerHTML+=`
+<div class="item">
+
+<div style="font-weight:800">${g.nombre}</div>
+
+<div class="small" style="margin-top:6px">
+${money(ah)} / ${money(g.valor)}
+</div>
+
+<div class="progress">
+<div class="bar" style="width:${progreso}%"></div>
+</div>
+
+<div class="small" style="margin-top:8px">
+Faltan ${money(faltan)}
+</div>
+
+<button class="small-btn" onclick="delGoal(${i})">🗑️ Eliminar</button>
+
+</div>`;
+});
 }
 
 /* INSIGHTS */
@@ -598,16 +696,9 @@ let top=Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
 let maxDay=Math.max(...dias);
 
 insights.innerHTML=`
-<div class="alert good">💳 Gasto total actual: ${money(gas)}</div>
-<div class="alert mid">📦 Categoría dominante: ${top?top[0]:"N/A"}</div>
+<div class="alert good">💳 Gasto total: ${money(gas)}</div>
+<div class="alert mid">📦 Dominante: ${top?top[0]:"N/A"}</div>
 <div class="alert bad">🔥 Día más caro: ${money(maxDay)}</div>
-`;
-}
-
-/* GOALS */
-function renderGoals(ah){
-goalList.innerHTML=`
-<div class="alert good">🏦 Ahorro real acumulado: ${money(ah)}</div>
 `;
 }
 
@@ -636,7 +727,11 @@ c3=new Chart(chart3,{
 type:"line",
 data:{
 labels:Object.keys(meses),
-datasets:[{data:Object.values(meses),fill:false,tension:.3}]
+datasets:[{
+data:Object.values(meses),
+fill:false,
+tension:.3
+}]
 }
 });
 
