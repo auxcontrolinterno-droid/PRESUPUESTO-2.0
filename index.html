@@ -8,6 +8,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f172a">
+
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 
@@ -21,13 +25,7 @@ padding:14px;
 h1{font-size:32px;font-weight:800;}
 .sub{opacity:.7;margin-bottom:14px;font-size:13px;}
 
-button,input,select{font-family:'Inter',sans-serif;}
-
-.tabs{
-display:flex;
-gap:10px;
-margin-bottom:14px;
-}
+.tabs{display:flex;gap:10px;margin-bottom:14px;}
 
 .tab{
 flex:1;
@@ -88,19 +86,12 @@ color:#fff;
 font-weight:800;
 }
 
-.secondary{
-background:rgba(255,255,255,.15);
-color:#fff;
-font-weight:700;
-}
-
 .list{margin-top:14px;display:grid;gap:10px;}
 
 .item{
 background:rgba(255,255,255,.06);
 padding:14px;
 border-radius:16px;
-position:relative;
 }
 
 .item.ingreso{border-left:4px solid #22c55e;}
@@ -115,6 +106,10 @@ padding:6px 10px;
 font-size:12px;
 border-radius:8px;
 }
+
+#dashboard{display:none;}
+
+canvas{background:rgba(255,255,255,.04);border-radius:14px;padding:10px;margin-top:10px;}
 
 /* TOAST */
 #toast{
@@ -132,11 +127,6 @@ font-weight:700;
 
 #toast.show{opacity:1;}
 
-/* DASHBOARD */
-#dashboard{display:none;}
-
-canvas{background:rgba(255,255,255,.04);border-radius:14px;padding:10px;margin-top:10px;}
-
 @media(min-width:700px){
 .top{grid-template-columns:repeat(3,1fr);}
 }
@@ -147,35 +137,21 @@ canvas{background:rgba(255,255,255,.04);border-radius:14px;padding:10px;margin-t
 
 <div id="toast"></div>
 
-<!-- ================= TABS ================= -->
+<!-- TABS -->
 <div class="tabs">
 <div class="tab active" onclick="showApp()">💸 App</div>
 <div class="tab" onclick="showDash()">📊 Dashboard</div>
 </div>
 
-<!-- ================= APP ================= -->
+<!-- APP -->
 <div id="app">
 
 <h1>Presupuesto PRO</h1>
 <div class="sub">control financiero inteligente</div>
 
 <div class="top">
-
-<div class="card">
-<span>Hoy gastado</span>
-<strong id="hoy">$0</strong>
-</div>
-
-<div class="card">
-<span>Pendientes offline</span>
-<strong id="pendientes">0</strong>
-</div>
-
-<div class="card">
-<span>Registros</span>
-<strong id="registros">0</strong>
-</div>
-
+<div class="card"><span>Hoy gastado</span><strong id="hoy">$0</strong></div>
+<div class="card"><span>Registros</span><strong id="registros">0</strong></div>
 </div>
 
 <div class="panel">
@@ -200,6 +176,7 @@ canvas{background:rgba(255,255,255,.04);border-radius:14px;padding:10px;margin-t
 </div>
 
 <button class="primary" type="submit">Guardar</button>
+
 </form>
 
 <div class="list" id="lista"></div>
@@ -207,7 +184,7 @@ canvas{background:rgba(255,255,255,.04);border-radius:14px;padding:10px;margin-t
 </div>
 </div>
 
-<!-- ================= DASHBOARD ================= -->
+<!-- DASHBOARD -->
 <div id="dashboard">
 
 <h1>📊 Dashboard</h1>
@@ -229,9 +206,8 @@ canvas{background:rgba(255,255,255,.04);border-radius:14px;padding:10px;margin-t
 const URL="https://script.google.com/macros/s/AKfycbwXGhRN-TJxXf4hvwk_BFV52Javiqn6Lzz5ps6M1yTz9PJy-9kDcsUKJLzUY-mTS1Z2/exec";
 
 let data=[];
-let cola=JSON.parse(localStorage.getItem("cola"))||[];
 
-/* ================= TOAST ================= */
+/* TOAST */
 function toast(msg){
 let t=document.getElementById("toast");
 t.innerText=msg;
@@ -239,31 +215,38 @@ t.classList.add("show");
 setTimeout(()=>t.classList.remove("show"),2000);
 }
 
-/* ================= TABS ================= */
+/* TABS */
 function showApp(){
 document.getElementById("app").style.display="block";
 document.getElementById("dashboard").style.display="none";
+document.querySelectorAll(".tab")[0].classList.add("active");
+document.querySelectorAll(".tab")[1].classList.remove("active");
 }
 
 function showDash(){
 document.getElementById("app").style.display="none";
 document.getElementById("dashboard").style.display="block";
+document.querySelectorAll(".tab")[1].classList.add("active");
+document.querySelectorAll(".tab")[0].classList.remove("active");
 load();
 }
 
-/* ================= LOAD ================= */
+/* LOAD */
 async function load(){
+try{
 let r=await fetch(URL);
 data=await r.json();
 render();
 dash();
+}catch(e){
+toast("Error de conexión");
+}
 }
 
-/* ================= RENDER ================= */
+/* RENDER */
 function render(){
 
 document.getElementById("registros").innerText=data.length;
-document.getElementById("pendientes").innerText=cola.length;
 
 let lista=document.getElementById("lista");
 lista.innerHTML="";
@@ -294,7 +277,7 @@ ${x.Descripción}
 document.getElementById("hoy").innerText="$"+gastoHoy.toLocaleString();
 }
 
-/* ================= DELETE ================= */
+/* DELETE */
 async function del(id){
 toast("Eliminando...");
 await fetch(URL,{
@@ -306,7 +289,7 @@ toast("Eliminado ✔");
 load();
 }
 
-/* ================= SAVE ================= */
+/* SAVE */
 document.getElementById("formulario").addEventListener("submit",async e=>{
 e.preventDefault();
 
@@ -330,7 +313,7 @@ toast("Guardado ✔");
 load();
 });
 
-/* ================= DASH ================= */
+/* DASHBOARD */
 function dash(){
 
 let i=0,g=0;
@@ -344,14 +327,9 @@ document.getElementById("ing").innerText="$"+i.toLocaleString();
 document.getElementById("gas").innerText="$"+g.toLocaleString();
 document.getElementById("bal").innerText="$"+(i-g).toLocaleString();
 
-new Chart(document.getElementById("chartMes"),{
-type:"doughnut",
-data:{labels:["Ingresos","Gastos"],datasets:[{data:[i,g]}]}
-});
-
 let cat={};
 data.forEach(x=>{
-cat[x.Categoría]=(cat[x.Categoría]||0)++x.Monto;
+cat[x.Categoría]=(cat[x.Categoría]||0)+(+x.Monto);
 });
 
 new Chart(document.getElementById("chartCat"),{
@@ -362,7 +340,7 @@ data:{labels:Object.keys(cat),datasets:[{data:Object.values(cat)}]}
 let meses={};
 data.forEach(x=>{
 let m=x.Fecha.slice(0,7);
-meses[m]=(meses[m]||0)+ (x.Tipo==="Ingreso"?1:-1)*x.Monto;
+meses[m]=(meses[m]||0)+(x.Tipo==="Ingreso"?1:-1)*(+x.Monto);
 });
 
 new Chart(document.getElementById("chartHist"),{
@@ -370,6 +348,18 @@ type:"bar",
 data:{labels:Object.keys(meses),datasets:[{data:Object.values(meses)}]}
 });
 
+new Chart(document.getElementById("chartMes"),{
+type:"doughnut",
+data:{labels:["Ingresos","Gastos"],datasets:[{data:[i,g]}]}
+});
+
+}
+
+/* PWA */
+if ("serviceWorker" in navigator) {
+navigator.serviceWorker.register("sw.js")
+.then(()=>console.log("PWA activa"))
+.catch(err=>console.log(err));
 }
 
 /* INIT */
