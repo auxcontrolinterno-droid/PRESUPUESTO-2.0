@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-<title>Banking PRO AI v11 Elite</title>
+<title>Banking PRO AI v12</title>
+<meta name="theme-color" content="#0f172a">
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -20,6 +21,9 @@
 --inputText:#111;
 --primary:#2563eb;
 --primary2:#1d4ed8;
+--ok:#22c55e;
+--bad:#ef4444;
+--warn:#f59e0b;
 }
 
 body.light{
@@ -29,7 +33,7 @@ body.light{
 --line:#e5e7eb;
 --text:#111827;
 --muted:#64748b;
---input:#fff;
+--input:#ffffff;
 --inputText:#111827;
 }
 
@@ -44,8 +48,8 @@ body{
 font-family:Inter,sans-serif;
 background:linear-gradient(180deg,var(--bg1),var(--bg2));
 color:var(--text);
-padding:14px 14px 105px;
-max-width:780px;
+padding:14px 14px 108px;
+max-width:820px;
 margin:auto;
 }
 
@@ -62,25 +66,15 @@ backdrop-filter:blur(14px);
 .small{font-size:12px;color:var(--muted)}
 .title{font-size:17px;font-weight:800;margin-bottom:10px}
 
-.grid2{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:10px;
-}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 
 .kpi{
 background:rgba(255,255,255,.04);
 padding:12px;
 border-radius:14px;
 }
-
-.kpi span{
-display:block;
-font-size:12px;
-color:var(--muted);
-margin-bottom:4px;
-}
-
+.kpi span{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
 .kpi strong{font-size:18px}
 
 input,select,button{
@@ -115,13 +109,19 @@ background:rgba(255,255,255,.08);
 color:var(--text);
 }
 
+.small-btn{
+padding:10px 12px;
+font-size:12px;
+width:auto;
+background:rgba(255,255,255,.08);
+color:var(--text);
+margin-top:8px;
+}
+
 .tab{display:none}
 .tab.active{display:block}
 
-.list{
-display:grid;
-gap:10px;
-}
+.list{display:grid;gap:10px}
 
 .item{
 background:rgba(255,255,255,.04);
@@ -130,21 +130,12 @@ border-radius:14px;
 border-left:4px solid transparent;
 }
 
-.ingreso{border-left-color:#22c55e}
-.gasto{border-left-color:#ef4444}
+.ingreso{border-left-color:var(--ok)}
+.gasto{border-left-color:var(--bad)}
 
 .price{
 font-weight:800;
 margin-top:6px;
-}
-
-.small-btn{
-padding:8px 10px;
-font-size:12px;
-margin-top:8px;
-width:auto;
-background:rgba(255,255,255,.08);
-color:var(--text);
 }
 
 .alert{
@@ -155,9 +146,9 @@ margin-top:8px;
 line-height:1.45;
 }
 
-.good{background:rgba(34,197,94,.14);color:#22c55e}
-.bad{background:rgba(239,68,68,.14);color:#ef4444}
-.mid{background:rgba(245,158,11,.14);color:#f59e0b}
+.good{background:rgba(34,197,94,.14);color:var(--ok)}
+.bad{background:rgba(239,68,68,.14);color:var(--bad)}
+.mid{background:rgba(245,158,11,.14);color:var(--warn)}
 
 .progress{
 height:10px;
@@ -184,13 +175,13 @@ padding:10px 12px calc(10px + env(safe-area-inset-bottom));
 background:rgba(5,10,20,.94);
 backdrop-filter:blur(16px);
 border-top:1px solid var(--line);
-max-width:780px;
+max-width:820px;
 margin:auto;
 }
 
 .nav button{
 padding:8px 4px;
-font-size:22px;
+font-size:24px;
 background:transparent;
 color:#cbd5e1;
 line-height:1;
@@ -230,13 +221,27 @@ margin-top:10px;
 cursor:pointer;
 color:var(--muted);
 }
+
+.fav-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:8px;
+}
+
+.timeline-day{
+font-size:12px;
+color:var(--muted);
+font-weight:800;
+margin:10px 0 4px;
+}
 </style>
 </head>
 
 <body>
 
 <div class="header">
-<div class="small">Banking PRO AI v11 Elite</div>
+
+<div class="small">Banking PRO AI v12</div>
 <div class="small" id="today"></div>
 
 <div class="small" style="margin-top:10px">Saldo disponible</div>
@@ -244,7 +249,8 @@ color:var(--muted);
 
 <div class="eye" onclick="toggleHide()">👁 Mostrar / ocultar montos</div>
 
-<div class="grid2" style="margin-top:12px">
+<div class="grid3" style="margin-top:12px">
+
 <div class="kpi">
 <span>Pendientes</span>
 <strong id="pendingCount">0</strong>
@@ -254,11 +260,23 @@ color:var(--muted);
 <span>Sincronizados</span>
 <strong id="syncCount">0</strong>
 </div>
+
+<div class="kpi">
+<span>Racha</span>
+<strong id="streakBox">0</strong>
 </div>
+
+</div>
+
 </div>
 
 <!-- HOME -->
 <section class="tab active" id="tab-home">
+
+<div class="card">
+<div class="title">🎛️ Centro de mando</div>
+<div id="cockpit"></div>
+</div>
 
 <div class="card">
 <div class="title">➕ Nuevo movimiento</div>
@@ -281,13 +299,23 @@ color:var(--muted);
 </div>
 
 <div class="card">
-<div class="title">🧠 Coach Financiero AI</div>
+<div class="title">⭐ Movimientos favoritos</div>
+<div class="fav-grid">
+<button class="secondary" onclick="quickFav('🍔 Comida','Almuerzo',18000)">🍔 Almuerzo</button>
+<button class="secondary" onclick="quickFav('🚗 Transporte','Taxi',10000)">🚗 Taxi</button>
+<button class="secondary" onclick="quickFav('🏠 Vivienda','Arriendo',900000)">🏠 Arriendo</button>
+<button class="secondary" onclick="quickFav('💰 Ingreso','Pago',500000)">💰 Pago</button>
+</div>
+</div>
+
+<div class="card">
+<div class="title">🧠 Coach Financiero</div>
 <div id="coach"></div>
 </div>
 
 </section>
 
-<!-- DASHBOARD -->
+<!-- DASH -->
 <section class="tab" id="tab-dashboard">
 
 <div class="card">
@@ -300,21 +328,6 @@ color:var(--muted);
 <canvas id="chart2"></canvas>
 </div>
 
-<div class="card">
-<div class="title">📉 Tendencia mensual</div>
-<canvas id="chart3"></canvas>
-</div>
-
-<div class="card">
-<div class="title">📆 Semana actual</div>
-<canvas id="chart4"></canvas>
-</div>
-
-<div class="card">
-<div class="title">💡 Insights rápidos</div>
-<div id="insights"></div>
-</div>
-
 </section>
 
 <!-- GOALS -->
@@ -323,7 +336,7 @@ color:var(--muted);
 <div class="card">
 <div class="title">🎯 Nueva meta</div>
 
-<input type="text" id="goalName" placeholder="Ej: Viaje Cartagena">
+<input type="text" id="goalName" placeholder="Ej: Viaje">
 <input type="number" id="goalValue" placeholder="Monto objetivo">
 
 <button class="primary" onclick="addGoal()">Guardar meta</button>
@@ -336,16 +349,19 @@ color:var(--muted);
 
 </section>
 
-<!-- LIST -->
+<!-- MOVEMENTS -->
 <section class="tab" id="tab-list">
+
 <div class="card">
-<div class="title">📋 Movimientos</div>
+<div class="title">📋 Timeline inteligente</div>
 <div class="list" id="lista"></div>
 </div>
+
 </section>
 
 <!-- SETTINGS -->
 <section class="tab" id="tab-settings">
+
 <div class="card">
 <div class="title">⚙️ Ajustes</div>
 
@@ -354,6 +370,7 @@ color:var(--muted);
 <button class="secondary" onclick="setTheme('light')">☀️ Claro</button>
 
 </div>
+
 </section>
 
 <nav class="nav">
@@ -373,23 +390,23 @@ let data=[];
 let pending=JSON.parse(localStorage.getItem("pendingQueue")||"[]");
 let hidden=localStorage.getItem("hideMoney")==="1";
 let goals=JSON.parse(localStorage.getItem("goals")||"[]");
+let streak=Number(localStorage.getItem("streak")||0);
 
-let c1,c2,c3,c4;
+let c1,c2;
 
 fecha.valueAsDate=new Date();
 
 today.innerText=new Date().toLocaleDateString("es-CO",{
-weekday:"long",
-day:"numeric",
-month:"long"
+weekday:"long",day:"numeric",month:"long"
 });
 
 pendingCount.innerText=pending.length;
+streakBox.innerText=streak;
 
 load();
 syncPending();
 
-/* TOAST */
+/* toast */
 function toast(msg){
 toastEl.innerText=msg;
 toastEl.style.display="block";
@@ -397,34 +414,32 @@ setTimeout(()=>toastEl.style.display="none",2200);
 }
 const toastEl=document.getElementById("toast");
 
-/* TABS */
+/* tabs */
 function goTab(tab,btn){
 document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
 document.getElementById("tab-"+tab).classList.add("active");
-
 document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));
 btn.classList.add("active");
 }
 
-/* MONEY */
+/* helpers */
+function money(n){
+if(hidden) return "••••••";
+return "$"+Number(n).toLocaleString("es-CO");
+}
+
 function toggleHide(){
 hidden=!hidden;
 localStorage.setItem("hideMoney",hidden?"1":"0");
 render();
 }
 
-function money(n){
-if(hidden) return "••••••";
-return "$"+Number(n).toLocaleString("es-CO");
-}
-
-/* THEME */
 function setTheme(mode){
 document.body.classList.toggle("light",mode==="light");
 toast("Tema actualizado");
 }
 
-/* LOAD */
+/* load */
 async function load(){
 try{
 let r=await fetch(URL+"?t="+Date.now());
@@ -434,7 +449,7 @@ render();
 }catch(e){}
 }
 
-/* SAVE */
+/* save */
 async function guardar(){
 
 let datos={
@@ -454,66 +469,78 @@ saveBtn.disabled=true;
 saveBtn.innerText="Guardando...";
 
 if(!navigator.onLine){
-
 pending.push(datos);
 localStorage.setItem("pendingQueue",JSON.stringify(pending));
 pendingCount.innerText=pending.length;
-
+doneSave();
 toast("☁ Guardado offline");
-
-saveBtn.disabled=false;
-saveBtn.innerText="💾 Guardar";
 return;
 }
 
 try{
-
 await fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
 body:JSON.stringify(datos)
 });
-
-descripcion.value="";
-monto.value="";
-
-toast("✔ Guardado");
 await load();
-
+toast("✔ Guardado");
 }catch(e){
-
 pending.push(datos);
 localStorage.setItem("pendingQueue",JSON.stringify(pending));
 pendingCount.innerText=pending.length;
-
 toast("☁ Guardado offline");
 }
 
-saveBtn.disabled=false;
-saveBtn.innerText="💾 Guardar";
+doneSave();
 }
 
-/* SYNC */
+function doneSave(){
+descripcion.value="";
+monto.value="";
+saveBtn.disabled=false;
+saveBtn.innerText="💾 Guardar";
+updateStreak();
+}
+
+/* quick favorite */
+function quickFav(cat,desc,val){
+categoria.value=cat;
+descripcion.value=desc;
+monto.value=val.toLocaleString("es-CO");
+toast("Favorito cargado");
+}
+
+/* streak */
+function updateStreak(){
+let today=new Date().toISOString().slice(0,10);
+let last=localStorage.getItem("lastSave");
+
+if(last!==today){
+streak++;
+localStorage.setItem("streak",streak);
+localStorage.setItem("lastSave",today);
+streakBox.innerText=streak;
+}
+}
+
+/* sync */
 window.addEventListener("online",syncPending);
 
 async function syncPending(){
-
 if(!navigator.onLine || !pending.length) return;
 
-let enviados=0;
+let sent=0;
 
 while(pending.length){
-
 try{
 await fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
 body:JSON.stringify(pending[0])
 });
-
 pending.shift();
-enviados++;
-
+sent++;
 }catch(e){
 break;
 }
@@ -522,32 +549,31 @@ break;
 localStorage.setItem("pendingQueue",JSON.stringify(pending));
 pendingCount.innerText=pending.length;
 
-if(enviados){
-toast("✔ "+enviados+" sincronizados");
+if(sent){
+toast("✔ "+sent+" sincronizados");
 load();
 }
 }
 
-/* DELETE */
+/* delete */
 async function borrar(id){
-
 if(!confirm("Eliminar movimiento")) return;
 
 data=data.filter(x=>String(x.ID)!==String(id));
 render();
 
+try{
 await fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
 body:JSON.stringify({action:"delete",ID:id})
 });
-
 toast("Eliminado");
+}catch(e){}
 }
 
-/* GOALS */
+/* goals */
 function addGoal(){
-
 let n=goalName.value.trim();
 let v=Number(goalValue.value);
 
@@ -556,11 +582,7 @@ toast("Completa la meta");
 return;
 }
 
-goals.push({
-nombre:n,
-valor:v
-});
-
+goals.push({nombre:n,valor:v});
 localStorage.setItem("goals",JSON.stringify(goals));
 
 goalName.value="";
@@ -574,23 +596,20 @@ function delGoal(i){
 goals.splice(i,1);
 localStorage.setItem("goals",JSON.stringify(goals));
 render();
-toast("Meta eliminada");
 }
 
-/* RENDER */
+/* render */
 function render(){
 
 lista.innerHTML="";
 
-let ing=0;
-let gas=0;
-let ah=0;
+let ing=0,gas=0,ah=0,cats={};
 
-let cats={};
-let meses={};
-let dias=[0,0,0,0,0,0,0];
+let sorted=[...data].sort((a,b)=>new Date(b.Fecha)-new Date(a.Fecha));
 
-data.slice().reverse().forEach(x=>{
+let lastDay="";
+
+sorted.forEach(x=>{
 
 let m=Number(x.Monto)||0;
 
@@ -603,11 +622,10 @@ if(x.Tipo==="Gasto"){
 cats[x.Categoría]=(cats[x.Categoría]||0)+m;
 }
 
-let d=new Date(x.Fecha);
-let mes=(d.getMonth()+1)+"/"+d.getFullYear();
-
-meses[mes]=(meses[mes]||0)+m;
-dias[d.getDay()]+=m;
+if(x.Fecha!==lastDay){
+lista.innerHTML+=`<div class="timeline-day">${labelDay(x.Fecha)}</div>`;
+lastDay=x.Fecha;
+}
 
 lista.innerHTML+=`
 <div class="item ${x.Tipo==="Ingreso"?"ingreso":"gasto"}">
@@ -619,93 +637,118 @@ lista.innerHTML+=`
 
 saldoTop.innerText=money(ing-gas);
 
-coachAI(ing,gas,ah,cats);
+renderCockpit(ing,gas,ah);
+renderCoach(ing,gas,cats);
 renderGoals(ah);
-renderInsights(gas,cats,dias);
-charts(ing,gas,cats,meses,dias);
+charts(cats,ing,gas);
 }
 
-/* COACH */
-function coachAI(ing,gas,ah,cats){
+/* timeline labels */
+function labelDay(f){
+let d=new Date(f+"T00:00:00");
+let t=new Date();
+let y=new Date();
+y.setDate(t.getDate()-1);
 
-let html="";
+let iso=x=>x.toISOString().slice(0,10);
+
+if(f===iso(t)) return "HOY";
+if(f===iso(y)) return "AYER";
+
+return d.toLocaleDateString("es-CO",{day:"numeric",month:"short"});
+}
+
+/* cockpit */
+function renderCockpit(ing,gas,ah){
+
+let hoyGastado=data
+.filter(x=>x.Fecha===new Date().toISOString().slice(0,10) && x.Tipo==="Gasto")
+.reduce((a,b)=>a+Number(b.Monto||0),0);
+
+let disponibleDia=Math.max((ing-gas)/7,0);
+
+cockpit.innerHTML=`
+<div class="grid2">
+<div class="kpi">
+<span>Hoy gastado</span>
+<strong>${money(hoyGastado)}</strong>
+</div>
+
+<div class="kpi">
+<span>Puedes gastar hoy</span>
+<strong>${money(disponibleDia)}</strong>
+</div>
+
+<div class="kpi">
+<span>Ahorro real</span>
+<strong>${money(ah)}</strong>
+</div>
+
+<div class="kpi">
+<span>Balance</span>
+<strong>${money(ing-gas)}</strong>
+</div>
+</div>`;
+}
+
+/* coach */
+function renderCoach(ing,gas,cats){
+
+let txt="";
 
 if(gas>ing){
-html+=`<div class="alert bad">🔴 Gastas más de lo que ingresas.</div>`;
+txt+=`<div class="alert bad">🔴 Gastas más de lo que ingresas.</div>`;
 }else{
-html+=`<div class="alert good">🟢 Balance positivo actual.</div>`;
+txt+=`<div class="alert good">🟢 Vas bien este periodo.</div>`;
 }
 
 let top=Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
-
 if(top){
-html+=`<div class="alert mid">⚠️ Mayor fuga: ${top[0]}</div>`;
+txt+=`<div class="alert mid">⚠️ Mayor fuga: ${top[0]}</div>`;
 }
 
-html+=`<div class="alert good">🏦 Ahorro actual ${money(ah)}</div>`;
+txt+=`<div class="alert good">🔥 Racha actual: ${streak} días</div>`;
 
-let pro=Math.round(gas*1.15);
-
-html+=`<div class="alert mid">📅 Proyección gastos cierre: ${money(pro)}</div>`;
-
-coach.innerHTML=html;
+coach.innerHTML=txt;
 }
 
-/* GOALS RENDER */
+/* goals */
 function renderGoals(ah){
 
 goalList.innerHTML="";
 
-if(goals.length===0){
-goalList.innerHTML=`<div class="alert mid">No tienes metas creadas aún.</div>`;
+if(!goals.length){
+goalList.innerHTML=`<div class="alert mid">No tienes metas aún.</div>`;
 return;
 }
 
 goals.forEach((g,i)=>{
 
-let progreso=Math.min((ah/g.valor)*100,100);
+let p=Math.min((ah/g.valor)*100,100);
 let faltan=Math.max(g.valor-ah,0);
 
 goalList.innerHTML+=`
 <div class="item">
-
 <div style="font-weight:800">${g.nombre}</div>
-
-<div class="small" style="margin-top:6px">
-${money(ah)} / ${money(g.valor)}
-</div>
+<div class="small">${money(ah)} / ${money(g.valor)}</div>
 
 <div class="progress">
-<div class="bar" style="width:${progreso}%"></div>
+<div class="bar" style="width:${p}%"></div>
 </div>
 
 <div class="small" style="margin-top:8px">
 Faltan ${money(faltan)}
 </div>
 
-<button class="small-btn" onclick="delGoal(${i})">🗑️ Eliminar</button>
-
+<button class="small-btn" onclick="delGoal(${i})">🗑️</button>
 </div>`;
 });
 }
 
-/* INSIGHTS */
-function renderInsights(gas,cats,dias){
+/* charts */
+function charts(cats,ing,gas){
 
-let top=Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
-let maxDay=Math.max(...dias);
-
-insights.innerHTML=`
-<div class="alert good">💳 Gasto total: ${money(gas)}</div>
-<div class="alert mid">📦 Dominante: ${top?top[0]:"N/A"}</div>
-<div class="alert bad">🔥 Día más caro: ${money(maxDay)}</div>
-`;
-}
-
-/* CHARTS */
-function charts(ing,gas,cats,meses,dias){
-
-[c1,c2,c3,c4].forEach(x=>x&&x.destroy());
+[c1,c2].forEach(x=>x&&x.destroy());
 
 c1=new Chart(chart1,{
 type:"doughnut",
@@ -720,26 +763,6 @@ type:"bar",
 data:{
 labels:["Ingresos","Gastos"],
 datasets:[{data:[ing,gas]}]
-}
-});
-
-c3=new Chart(chart3,{
-type:"line",
-data:{
-labels:Object.keys(meses),
-datasets:[{
-data:Object.values(meses),
-fill:false,
-tension:.3
-}]
-}
-});
-
-c4=new Chart(chart4,{
-type:"bar",
-data:{
-labels:["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"],
-datasets:[{data:dias}]
 }
 });
 }
