@@ -2,22 +2,18 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-<title>Banking PRO</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Banking PRO Fase 2</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif;}
-
 body{
+font-family:Inter;
 background:#0b1020;
 color:#fff;
 padding:14px;
 }
-
-h1{font-size:28px;margin-bottom:10px;}
 
 .card{
 background:rgba(255,255,255,.06);
@@ -26,242 +22,158 @@ border-radius:14px;
 margin-bottom:10px;
 }
 
-input,select,button{
+input,button{
 width:100%;
 padding:12px;
 margin-top:8px;
-border:none;
 border-radius:10px;
-font-size:14px;
+border:none;
 }
 
-button{cursor:pointer;font-weight:700;}
+.primary{background:#2563eb;color:#fff;font-weight:700;}
 
-.primary{background:#2563eb;color:#fff;}
-.secondary{background:rgba(255,255,255,.15);color:#fff;}
+.progress{
+height:10px;
+background:rgba(255,255,255,.1);
+border-radius:20px;
+overflow:hidden;
+margin-top:10px;
+}
 
-.list{margin-top:15px;display:grid;gap:10px;}
+.bar{
+height:100%;
+width:0%;
+background:limegreen;
+transition:.3s;
+}
+
+.warning{
+color:#f59e0b;
+font-weight:700;
+margin-top:8px;
+}
+
+.danger{
+color:#ef4444;
+font-weight:700;
+margin-top:8px;
+}
+
+.list{
+margin-top:12px;
+display:grid;
+gap:10px;
+}
 
 .item{
 background:rgba(255,255,255,.05);
-padding:12px;
-border-radius:12px;
-}
-
-.ingreso{border-left:4px solid #22c55e;}
-.gasto{border-left:4px solid #ef4444;}
-
-.title{font-weight:700;}
-.price{margin-top:5px;font-weight:800;}
-
-.actions{
-margin-top:8px;
-display:flex;
-gap:8px;
-}
-
-.actions button{
-padding:6px;
-font-size:12px;
-flex:1;
-}
-
-.filter{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:8px;
-margin-bottom:10px;
+padding:10px;
+border-radius:10px;
 }
 </style>
 </head>
 
 <body>
 
-<h1>🏦 Banking PRO</h1>
+<h1>🏦 Banking PRO - Fase 2</h1>
 
-<!-- FILTROS -->
-<div class="filter">
-<select id="filtroTiempo" onchange="aplicarFiltros()">
-<option value="all">Todos</option>
-<option value="today">Hoy</option>
-<option value="week">Semana</option>
-<option value="month">Mes</option>
-</select>
-
-<select id="filtroCategoria" onchange="aplicarFiltros()">
-<option value="all">Todas categorías</option>
-<option>💰 Ingreso</option>
-<option>🍔 Comida</option>
-<option>🏠 Vivienda</option>
-<option>🚗 Transporte</option>
-<option>💡 Servicios</option>
-<option>🎮 Entretenimiento</option>
-<option>🏦 Ahorro</option>
-</select>
-</div>
-
-<!-- FORM -->
+<!-- 💰 PRESUPUESTO -->
 <div class="card">
-<input type="date" id="fecha">
-<input type="text" id="descripcion" placeholder="Descripción">
-<input type="text" id="monto" placeholder="4.000">
+<h3>💰 Presupuesto mensual</h3>
 
-<select id="categoria">
-<option>💰 Ingreso</option>
-<option>🍔 Comida</option>
-<option>🏠 Vivienda</option>
-<option>🚗 Transporte</option>
-<option>💡 Servicios</option>
-<option>🎮 Entretenimiento</option>
-<option>🏦 Ahorro</option>
-</select>
+<input type="number" id="budget" placeholder="Ej: 1000000">
+<button class="primary" onclick="setBudget()">Guardar presupuesto</button>
 
-<button class="primary" onclick="guardar()">Guardar</button>
+<div class="progress">
+<div class="bar" id="bar"></div>
 </div>
 
-<!-- LISTA -->
+<div id="status"></div>
+</div>
+
+<!-- MOVIMIENTOS -->
+<div class="card">
+<h3>📊 Movimientos</h3>
 <div class="list" id="lista"></div>
+</div>
 
 <script>
 
 const URL="https://script.google.com/macros/s/AKfycbwXGhRN-TJxXf4hvwk_BFV52Javiqn6Lzz5ps6M1yTz9PJy-9kDcsUKJLzUY-mTS1Z2/exec";
 
 let data=[];
+let budget=localStorage.getItem("budget")||0;
 
 /* INIT */
-fecha.valueAsDate=new Date();
 load();
 
 /* LOAD */
 async function load(){
 let r=await fetch(URL);
 data=await r.json();
-render(data);
+render();
 }
 
 /* RENDER */
-function render(arr){
+function render(){
 
 let lista=document.getElementById("lista");
 lista.innerHTML="";
 
-arr.forEach(x=>{
+let gastoMes=0;
+let hoy=new Date();
+
+data.forEach(x=>{
+
+let d=new Date(x.Fecha);
+if(d.getMonth()===hoy.getMonth() && x.Tipo==="Gasto"){
+gastoMes+=Number(x.Monto);
+}
 
 lista.innerHTML+=`
-<div class="item ${x.Tipo==="Ingreso"?"ingreso":"gasto"}">
-<div class="title">${x.Categoría} - ${x.Descripción}</div>
-<div class="price">$${Number(x.Monto).toLocaleString()}</div>
-
-<div class="actions">
-<button onclick="editar('${x.ID}')">✏️</button>
-<button onclick="borrar('${x.ID}')">🗑️</button>
-</div>
-
+<div class="item">
+${x.Categoría} - ${x.Descripción}
+<br><b>$${Number(x.Monto).toLocaleString()}</b>
 </div>
 `;
 
 });
+
+/* 📊 PROGRESO */
+if(budget>0){
+
+let percent=(gastoMes/budget)*100;
+document.getElementById("bar").style.width=Math.min(percent,100)+"%";
+
+let status=document.getElementById("status");
+
+if(percent>=100){
+status.innerHTML="🔴 Te pasaste del presupuesto";
+status.className="danger";
+}else if(percent>=80){
+status.innerHTML="⚠️ Cuidado, estás cerca del límite";
+status.className="warning";
+}else{
+status.innerHTML="🟢 Vas bien este mes";
+status.className="";
 }
 
-/* FILTROS */
-function aplicarFiltros(){
-
-let t=filtroTiempo.value;
-let c=filtroCategoria.value;
-
-let hoy=new Date();
-
-let filtrado=data.filter(x=>{
-
-let d=new Date(x.Fecha);
-
-let okT=true;
-let okC=true;
-
-/* tiempo */
-if(t==="today") okT=d.toDateString()===hoy.toDateString();
-
-if(t==="week"){
-let diff=(hoy-d)/(1000*60*60*24);
-okT=diff<=7;
+}else{
+document.getElementById("status").innerHTML="Define un presupuesto mensual";
 }
-
-if(t==="month"){
-okT=d.getMonth()===hoy.getMonth();
-}
-
-/* categoría */
-if(c!=="all") okC=x.Categoría===c;
-
-return okT && okC;
-
-});
-
-render(filtrado);
-}
-
-/* GUARDAR */
-async function guardar(){
-
-let datos={
-Fecha:fecha.value,
-Categoría:categoria.value,
-Descripción:descripcion.value,
-Monto:Number(monto.value.replace(/\./g,"")),
-Tipo:categoria.value.includes("Ingreso")?"Ingreso":"Gasto"
-};
-
-await fetch(URL,{
-method:"POST",
-headers:{"Content-Type":"text/plain;charset=utf-8"},
-body:JSON.stringify(datos)
-});
-
-load();
-}
-
-/* BORRAR */
-function borrar(id){
-
-data=data.filter(x=>x.ID!=id);
-render(data);
-
-fetch(URL,{
-method:"POST",
-headers:{"Content-Type":"text/plain;charset=utf-8"},
-body:JSON.stringify({action:"delete",ID:id})
-});
 
 }
 
-/* EDITAR */
-function editar(id){
+/* SET BUDGET */
+function setBudget(){
+budget=document.getElementById("budget").value;
+localStorage.setItem("budget",budget);
+render();
+}
 
-let item=data.find(x=>x.ID==id);
-if(!item) return;
-
-let desc=prompt("Descripción:",item.Descripción);
-if(desc===null) return;
-
-let monto=prompt("Monto:",item.Monto);
-if(monto===null) return;
-
-item.Descripción=desc;
-item.Monto=Number(monto.replace(/\./g,""));
-
-render(data);
-
-fetch(URL,{
-method:"POST",
-headers:{"Content-Type":"text/plain;charset=utf-8"},
-body:JSON.stringify({
-action:"edit",
-ID:id,
-Descripción:item.Descripción,
-Monto:item.Monto
-})
-});
-
+/* INIT VALUE */
+if(budget){
+document.getElementById("budget").value=budget;
 }
 
 </script>
