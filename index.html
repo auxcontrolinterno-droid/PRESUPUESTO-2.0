@@ -299,13 +299,8 @@ margin:10px 0 4px;
 </div>
 
 <div class="card">
-<div class="title">⭐ Movimientos favoritos</div>
-<div class="fav-grid">
-<button class="secondary" onclick="quickFav('🍔 Comida','Almuerzo',18000)">🍔 Almuerzo</button>
-<button class="secondary" onclick="quickFav('🚗 Transporte','Taxi',10000)">🚗 Taxi</button>
-<button class="secondary" onclick="quickFav('🏠 Vivienda','Arriendo',900000)">🏠 Arriendo</button>
-<button class="secondary" onclick="quickFav('💰 Ingreso','Pago',500000)">💰 Pago</button>
-</div>
+<div class="title">⭐ Favoritos automáticos</div>
+<div class="fav-grid" id="favList"></div>
 </div>
 
 <div class="card">
@@ -504,10 +499,12 @@ updateStreak();
 }
 
 /* quick favorite */
-function quickFav(cat,desc,val){
+function usarFavorito(cat,des,monto){
+
 categoria.value=cat;
-descripcion.value=desc;
-monto.value=val.toLocaleString("es-CO");
+descripcion.value=des;
+monto.value=Number(monto).toLocaleString("es-CO");
+
 toast("Favorito cargado");
 }
 
@@ -641,6 +638,53 @@ renderCockpit(ing,gas,ah);
 renderCoach(ing,gas,cats);
 renderGoals(ah);
 charts(cats,ing,gas);
+renderFavorites();
+}
+function renderFavorites(){
+
+let map={};
+
+data.forEach(x=>{
+
+let key=x.Categoría+"|"+x.Descripción+"|"+x.Monto;
+
+if(!map[key]){
+map[key]={
+cat:x.Categoría,
+des:x.Descripción,
+monto:x.Monto,
+count:0
+};
+}
+
+map[key].count++;
+});
+
+let top=Object.values(map)
+.sort((a,b)=>b.count-a.count)
+.slice(0,4); // máximo 4
+
+favList.innerHTML="";
+
+if(!top.length){
+favList.innerHTML=`<div class="small">Aún sin favoritos</div>`;
+return;
+}
+
+top.forEach(f=>{
+
+favList.innerHTML+=`
+<button class="secondary"
+onclick="usarFavorito('${f.cat}','${f.des}',${f.monto})">
+
+${f.cat}<br>
+<small>${f.des}</small><br>
+<small>${money(f.monto)}</small>
+
+</button>
+`;
+
+});
 }
 
 /* timeline labels */
