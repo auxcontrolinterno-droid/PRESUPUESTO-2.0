@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Banking PRO 4 Stable</title>
+<title>Banking PRO AI</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 
@@ -23,6 +23,7 @@ backdrop-filter:blur(14px);
 padding:14px;
 border-radius:14px;
 margin-bottom:10px;
+border:1px solid rgba(255,255,255,.08);
 }
 
 input,select,button{
@@ -66,12 +67,12 @@ margin-top:6px;
 }
 
 .actions button{
-width:auto;
 padding:6px 10px;
 font-size:12px;
 background:rgba(255,255,255,.15);
 color:#fff;
 border-radius:8px;
+border:none;
 }
 
 /* PROGRESS */
@@ -90,7 +91,7 @@ background:limegreen;
 transition:.3s;
 }
 
-/* ALERTS */
+/* ALERTAS */
 .alert{
 margin-top:8px;
 font-size:13px;
@@ -106,9 +107,9 @@ border-radius:10px;
 
 <body>
 
-<h1>🏦 Banking PRO</h1>
+<h1>🏦 Banking PRO AI</h1>
 
-<!-- FORMULARIO (NO TOCADO) -->
+<!-- FORM -->
 <div class="card">
 
 <input type="date" id="fecha">
@@ -145,19 +146,17 @@ border-radius:10px;
 
 </div>
 
-<!-- MOVIMIENTOS (RESTORED COMPLETO) -->
+<!-- DASHBOARD -->
 <div class="card">
 
-<h3>📋 Movimientos</h3>
-
-<div class="list" id="lista"></div>
+<div id="insights"></div>
 
 </div>
 
-<!-- INSIGHTS -->
+<!-- MOVIMIENTOS -->
 <div class="card">
-<h3>🧠 Análisis</h3>
-<div id="insights"></div>
+<h3>📋 Movimientos</h3>
+<div class="list" id="lista"></div>
 </div>
 
 <script>
@@ -178,7 +177,7 @@ data=await r.json();
 render();
 }
 
-/* GUARDAR (NO TOCADO) */
+/* SAVE */
 async function guardar(){
 
 let datos={
@@ -200,10 +199,10 @@ descripcion.value="";
 load();
 }
 
-/* BORRAR (FUNCIONAL) */
+/* DELETE */
 function borrar(id){
 
-if(!confirm("Eliminar?")) return;
+if(!confirm("Eliminar movimiento?")) return;
 
 data=data.filter(x=>x.ID!=id);
 render();
@@ -216,7 +215,7 @@ body:JSON.stringify({action:"delete",ID:id})
 
 }
 
-/* RENDER COMPLETO (MOVIMIENTOS RESTAURADOS) */
+/* RENDER */
 function render(){
 
 let lista=document.getElementById("lista");
@@ -256,6 +255,7 @@ ${x.Categoría} - ${x.Descripción}
 
 updateBudget(gastoMes);
 generateInsights(ing,gas,ah);
+predictiveAI(ing,gas);
 }
 
 /* PRESUPUESTO */
@@ -265,7 +265,7 @@ localStorage.setItem("budget",budget);
 render();
 }
 
-/* BARRA PROGRESO (RESTORED) */
+/* BARRA */
 function updateBudget(gasto){
 
 if(!budget){
@@ -291,7 +291,7 @@ status.className="alert good";
 
 }
 
-/* 🧠 FASE 4 INSIGHTS */
+/* 🧠 FASE 4 */
 function generateInsights(ing,gas,ah){
 
 let ins=document.getElementById("insights");
@@ -299,13 +299,39 @@ ins.innerHTML="";
 
 let promedio=gas/data.length || 0;
 
-if(gas>ing){
-ins.innerHTML+=`<div class="alert bad">🔴 Gastas más de lo que ingresas</div>`;
+ins.innerHTML+=`<div class="alert good">💰 Ingresos: $${ing.toLocaleString()}</div>`;
+ins.innerHTML+=`<div class="alert mid">💸 Gastos: $${gas.toLocaleString()}</div>`;
+ins.innerHTML+=`<div class="alert good">🏦 Ahorro: $${ah.toLocaleString()}</div>`;
+ins.innerHTML+=`<div class="alert mid">📊 Promedio gasto: $${promedio.toFixed(0)}</div>`;
 }
 
-ins.innerHTML+=`<div class="alert good">📊 Promedio gasto: $${promedio.toFixed(0)}</div>`;
-ins.innerHTML+=`<div class="alert good">🏦 Ahorro total: $${ah.toLocaleString()}</div>`;
+/* 🔮 FASE 5 PREDICTIVA */
+function predictiveAI(ing,gas){
 
+let hoy=new Date();
+let diasMes=new Date(hoy.getFullYear(),hoy.getMonth()+1,0).getDate();
+let diaActual=hoy.getDate();
+
+let gastoDiario=gas/diaActual;
+let proyeccion=gastoDiario*diasMes;
+let balance=ing-proyeccion;
+
+let html="";
+
+html+=`<div class="alert good">📊 Gasto diario: $${gastoDiario.toFixed(0)}</div>`;
+html+=`<div class="alert mid">🔮 Proyección mes: $${proyeccion.toLocaleString()}</div>`;
+
+if(balance<0){
+html+=`<div class="alert bad">🔴 ALERTA: te quedarías sin dinero este mes</div>`;
+}
+else if(balance<ing*0.2){
+html+=`<div class="alert mid">⚠️ Riesgo de sobre gasto</div>`;
+}
+else{
+html+=`<div class="alert good">🟢 Finanzas saludables proyectadas</div>`;
+}
+
+document.getElementById("insights").innerHTML+=html;
 }
 
 </script>
