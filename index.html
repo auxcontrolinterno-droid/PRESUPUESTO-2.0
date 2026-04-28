@@ -8,39 +8,118 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 
 <style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
 body{
-font-family:Inter;
+font-family:Inter,sans-serif;
 background:linear-gradient(180deg,#070b16,#0b1020);
 color:#fff;
 padding:14px;
 }
 
-h1{font-size:24px;margin-bottom:10px;}
+h1{
+font-size:24px;
+margin-bottom:12px;
+font-weight:800;
+}
 
 .card{
 background:rgba(255,255,255,.06);
 backdrop-filter:blur(14px);
-padding:14px;
-border-radius:14px;
-margin-bottom:10px;
 border:1px solid rgba(255,255,255,.08);
+padding:14px;
+border-radius:16px;
+margin-bottom:12px;
 }
 
-input,select,button{
+/* ===== NUEVO MOVIMIENTO ===== */
+.movement-card{
+padding:18px;
+border-radius:18px;
+background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.04));
+box-shadow:0 10px 30px rgba(0,0,0,.18);
+}
+
+.section-title{
+font-size:18px;
+font-weight:800;
+margin-bottom:14px;
+}
+
+.field{
+margin-bottom:12px;
+}
+
+.field label{
+display:block;
+font-size:12px;
+opacity:.75;
+margin-bottom:6px;
+}
+
+.field input,
+.field select{
 width:100%;
-padding:12px;
+padding:13px;
 border:none;
-border-radius:10px;
-margin-top:8px;
+outline:none;
+border-radius:12px;
+background:rgba(255,255,255,.95);
+color:#111;
+font-weight:600;
 font-size:14px;
+}
+
+.field input::placeholder{
+color:#777;
+}
+
+.save-btn{
+width:100%;
+padding:14px;
+border:none;
+border-radius:14px;
+font-size:15px;
+font-weight:800;
+color:#fff;
+background:linear-gradient(135deg,#2563eb,#1d4ed8);
+box-shadow:0 10px 25px rgba(37,99,235,.35);
+cursor:pointer;
+}
+
+.save-btn:active{
+transform:scale(.98);
+}
+
+/* ===== BOTONES ===== */
+button{
+cursor:pointer;
 }
 
 .primary{
 background:#2563eb;
 color:#fff;
 font-weight:700;
+border:none;
+padding:12px;
+border-radius:10px;
+width:100%;
 }
 
+.small-btn{
+padding:7px 10px;
+border:none;
+border-radius:8px;
+font-size:12px;
+background:rgba(255,255,255,.14);
+color:#fff;
+}
+
+/* ===== LISTA ===== */
 .list{
 display:grid;
 gap:10px;
@@ -49,37 +128,34 @@ margin-top:10px;
 
 .item{
 background:rgba(255,255,255,.05);
-padding:10px;
-border-radius:10px;
-border-left:3px solid transparent;
+padding:12px;
+border-radius:12px;
+border-left:4px solid transparent;
 }
 
-.ingreso{border-left-color:#22c55e;}
-.gasto{border-left-color:#ef4444;}
+.ingreso{
+border-left-color:#22c55e;
+}
+
+.gasto{
+border-left-color:#ef4444;
+}
 
 .price{
 font-weight:800;
-margin-top:4px;
+margin-top:5px;
+font-size:15px;
 }
 
 .actions{
-margin-top:6px;
+margin-top:8px;
 }
 
-.actions button{
-padding:6px 10px;
-font-size:12px;
-background:rgba(255,255,255,.15);
-color:#fff;
-border-radius:8px;
-border:none;
-}
-
-/* PROGRESS */
+/* ===== PRESUPUESTO ===== */
 .progress{
 height:10px;
-background:rgba(255,255,255,.1);
-border-radius:20px;
+background:rgba(255,255,255,.08);
+border-radius:30px;
 overflow:hidden;
 margin-top:10px;
 }
@@ -87,21 +163,32 @@ margin-top:10px;
 .bar{
 height:100%;
 width:0%;
-background:limegreen;
-transition:.3s;
+background:linear-gradient(90deg,#22c55e,#84cc16);
+transition:.35s;
 }
 
-/* ALERTAS */
+/* ===== ALERTAS ===== */
 .alert{
-margin-top:8px;
-font-size:13px;
-padding:8px;
+padding:9px 10px;
 border-radius:10px;
+font-size:13px;
+margin-top:8px;
 }
 
-.good{background:rgba(34,197,94,.15);color:#22c55e;}
-.mid{background:rgba(245,158,11,.15);color:#f59e0b;}
-.bad{background:rgba(239,68,68,.15);color:#ef4444;}
+.good{
+background:rgba(34,197,94,.14);
+color:#22c55e;
+}
+
+.mid{
+background:rgba(245,158,11,.14);
+color:#f59e0b;
+}
+
+.bad{
+background:rgba(239,68,68,.14);
+color:#ef4444;
+}
 </style>
 </head>
 
@@ -109,13 +196,28 @@ border-radius:10px;
 
 <h1>🏦 Banking PRO AI</h1>
 
-<!-- FORM -->
-<div class="card">
+<!-- NUEVO MOVIMIENTO -->
+<div class="card movement-card">
 
+<h3 class="section-title">➕ Nuevo movimiento</h3>
+
+<div class="field">
+<label>Fecha</label>
 <input type="date" id="fecha">
-<input type="text" id="descripcion" placeholder="Descripción">
-<input type="text" id="monto" placeholder="Ej: 4.000">
+</div>
 
+<div class="field">
+<label>Descripción</label>
+<input type="text" id="descripcion" placeholder="Ej: Almuerzo, Nómina...">
+</div>
+
+<div class="field">
+<label>Monto</label>
+<input type="text" id="monto" placeholder="Ej: 4.000">
+</div>
+
+<div class="field">
+<label>Categoría</label>
 <select id="categoria">
 <option>💰 Ingreso</option>
 <option>🍔 Comida</option>
@@ -125,18 +227,22 @@ border-radius:10px;
 <option>🎮 Entretenimiento</option>
 <option>🏦 Ahorro</option>
 </select>
+</div>
 
-<button class="primary" onclick="guardar()">Guardar movimiento</button>
+<button class="save-btn" onclick="guardar()">
+💾 Guardar movimiento
+</button>
 
 </div>
 
 <!-- PRESUPUESTO -->
 <div class="card">
 
-<h3>💰 Presupuesto mensual</h3>
+<h3 style="margin-bottom:10px;">💰 Presupuesto mensual</h3>
 
-<input type="number" id="budget">
-<button onclick="setBudget()">Guardar presupuesto</button>
+<input type="number" id="budget" placeholder="Ej: 1000000" style="width:100%;padding:12px;border:none;border-radius:10px;margin-bottom:8px;">
+
+<button class="primary" onclick="setBudget()">Guardar presupuesto</button>
 
 <div class="progress">
 <div class="bar" id="bar"></div>
@@ -146,47 +252,62 @@ border-radius:10px;
 
 </div>
 
-<!-- DASHBOARD -->
+<!-- IA -->
 <div class="card">
-
+<h3 style="margin-bottom:10px;">🧠 Análisis inteligente</h3>
 <div id="insights"></div>
-
 </div>
 
 <!-- MOVIMIENTOS -->
 <div class="card">
-<h3>📋 Movimientos</h3>
+<h3 style="margin-bottom:10px;">📋 Movimientos</h3>
 <div class="list" id="lista"></div>
 </div>
 
 <script>
-
 const URL="https://script.google.com/macros/s/AKfycbwXGhRN-TJxXf4hvwk_BFV52Javiqn6Lzz5ps6M1yTz9PJy-9kDcsUKJLzUY-mTS1Z2/exec";
 
 let data=[];
 let budget=localStorage.getItem("budget")||0;
 
 /* INIT */
-fecha.valueAsDate=new Date();
+document.getElementById("fecha").valueAsDate=new Date();
+document.getElementById("budget").value=budget;
+
 load();
 
 /* LOAD */
 async function load(){
-let r=await fetch(URL);
+try{
+const r=await fetch(URL);
 data=await r.json();
+}catch(e){
+data=[];
+}
 render();
 }
 
-/* SAVE */
+/* GUARDAR */
 async function guardar(){
+
+const btn=document.querySelector(".save-btn");
+btn.disabled=true;
+btn.innerText="Guardando...";
 
 let datos={
 Fecha:fecha.value,
 Categoría:categoria.value,
-Descripción:descripcion.value,
+Descripción:descripcion.value.trim(),
 Monto:Number(monto.value.replace(/\./g,"")),
 Tipo:categoria.value.includes("Ingreso")?"Ingreso":"Gasto"
 };
+
+if(!datos.Descripción || datos.Monto<=0){
+alert("Completa los datos");
+btn.disabled=false;
+btn.innerText="💾 Guardar movimiento";
+return;
+}
 
 await fetch(URL,{
 method:"POST",
@@ -194,15 +315,19 @@ headers:{"Content-Type":"text/plain;charset=utf-8"},
 body:JSON.stringify(datos)
 });
 
-monto.value="";
 descripcion.value="";
+monto.value="";
+
+btn.disabled=false;
+btn.innerText="💾 Guardar movimiento";
+
 load();
 }
 
-/* DELETE */
+/* BORRAR */
 function borrar(id){
 
-if(!confirm("Eliminar movimiento?")) return;
+if(!confirm("¿Eliminar movimiento?")) return;
 
 data=data.filter(x=>x.ID!=id);
 render();
@@ -212,7 +337,6 @@ method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
 body:JSON.stringify({action:"delete",ID:id})
 });
-
 }
 
 /* RENDER */
@@ -221,41 +345,46 @@ function render(){
 let lista=document.getElementById("lista");
 lista.innerHTML="";
 
-let ing=0,gas=0,ah=0;
+let ingresos=0;
+let gastos=0;
+let ahorro=0;
 let gastoMes=0;
-let hoy=new Date();
 
-data.forEach(x=>{
+const hoy=new Date();
 
-let m=+x.Monto;
-let d=new Date(x.Fecha);
+data.slice().reverse().forEach(x=>{
 
-if(x.Tipo==="Ingreso") ing+=m;
-else gas+=m;
+let montoNum=Number(x.Monto);
+let fechaMov=new Date(x.Fecha);
 
-if(x.Categoría.includes("Ahorro")) ah+=m;
+if(x.Tipo==="Ingreso") ingresos+=montoNum;
+else gastos+=montoNum;
 
-if(x.Tipo==="Gasto" && d.getMonth()===hoy.getMonth()){
-gastoMes+=m;
+if(x.Categoría.includes("Ahorro")) ahorro+=montoNum;
+
+if(
+x.Tipo==="Gasto" &&
+fechaMov.getMonth()===hoy.getMonth() &&
+fechaMov.getFullYear()===hoy.getFullYear()
+){
+gastoMes+=montoNum;
 }
 
 lista.innerHTML+=`
 <div class="item ${x.Tipo==="Ingreso"?"ingreso":"gasto"}">
-${x.Categoría} - ${x.Descripción}
-<div class="price">$${m.toLocaleString()}</div>
-
+<div>${x.Categoría} - ${x.Descripción}</div>
+<div class="price">$${montoNum.toLocaleString("es-CO")}</div>
 <div class="actions">
-<button onclick="borrar('${x.ID}')">🗑️ borrar</button>
+<button class="small-btn" onclick="borrar('${x.ID}')">🗑️ Borrar</button>
 </div>
-
 </div>
 `;
 
 });
 
 updateBudget(gastoMes);
-generateInsights(ing,gas,ah);
-predictiveAI(ing,gas);
+generateInsights(ingresos,gastos,ahorro);
+predictiveAI(ingresos,gastos);
 }
 
 /* PRESUPUESTO */
@@ -268,8 +397,12 @@ render();
 /* BARRA */
 function updateBudget(gasto){
 
-if(!budget){
+const status=document.getElementById("status");
+const bar=document.getElementById("bar");
+
+if(!budget || budget<=0){
 status.innerHTML="Define un presupuesto mensual";
+bar.style.width="0%";
 return;
 }
 
@@ -277,36 +410,35 @@ let percent=(gasto/budget)*100;
 bar.style.width=Math.min(percent,100)+"%";
 
 if(percent>=100){
-status.innerHTML="🔴 Te pasaste del presupuesto";
-status.className="alert bad";
+status.innerHTML='<div class="alert bad">🔴 Te pasaste del presupuesto</div>';
 }
 else if(percent>=80){
-status.innerHTML="⚠️ Cerca del límite";
-status.className="alert mid";
+status.innerHTML='<div class="alert mid">⚠️ Cerca del límite</div>';
 }
 else{
-status.innerHTML="🟢 Controlado";
-status.className="alert good";
+status.innerHTML='<div class="alert good">🟢 Bajo control</div>';
+}
 }
 
-}
-
-/* 🧠 FASE 4 */
+/* IA BASE */
 function generateInsights(ing,gas,ah){
 
-let ins=document.getElementById("insights");
-ins.innerHTML="";
+const insights=document.getElementById("insights");
 
-let promedio=gas/data.length || 0;
+let promedio=data.length ? gas/data.length : 0;
 
-ins.innerHTML+=`<div class="alert good">💰 Ingresos: $${ing.toLocaleString()}</div>`;
-ins.innerHTML+=`<div class="alert mid">💸 Gastos: $${gas.toLocaleString()}</div>`;
-ins.innerHTML+=`<div class="alert good">🏦 Ahorro: $${ah.toLocaleString()}</div>`;
-ins.innerHTML+=`<div class="alert mid">📊 Promedio gasto: $${promedio.toFixed(0)}</div>`;
+insights.innerHTML=`
+<div class="alert good">💰 Ingresos: $${ing.toLocaleString("es-CO")}</div>
+<div class="alert mid">💸 Gastos: $${gas.toLocaleString("es-CO")}</div>
+<div class="alert good">🏦 Ahorro: $${ah.toLocaleString("es-CO")}</div>
+<div class="alert mid">📊 Promedio gasto: $${promedio.toFixed(0)}</div>
+`;
 }
 
-/* 🔮 FASE 5 PREDICTIVA */
+/* FASE 5 PREDICTIVA */
 function predictiveAI(ing,gas){
+
+const insights=document.getElementById("insights");
 
 let hoy=new Date();
 let diasMes=new Date(hoy.getFullYear(),hoy.getMonth()+1,0).getDate();
@@ -316,24 +448,19 @@ let gastoDiario=gas/diaActual;
 let proyeccion=gastoDiario*diasMes;
 let balance=ing-proyeccion;
 
-let html="";
-
-html+=`<div class="alert good">📊 Gasto diario: $${gastoDiario.toFixed(0)}</div>`;
-html+=`<div class="alert mid">🔮 Proyección mes: $${proyeccion.toLocaleString()}</div>`;
+let html=`
+<div class="alert good">📅 Gasto diario: $${gastoDiario.toFixed(0)}</div>
+<div class="alert mid">🔮 Proyección fin de mes: $${proyeccion.toLocaleString("es-CO")}</div>
+`;
 
 if(balance<0){
-html+=`<div class="alert bad">🔴 ALERTA: te quedarías sin dinero este mes</div>`;
-}
-else if(balance<ing*0.2){
-html+=`<div class="alert mid">⚠️ Riesgo de sobre gasto</div>`;
-}
-else{
-html+=`<div class="alert good">🟢 Finanzas saludables proyectadas</div>`;
+html+=`<div class="alert bad">🔴 Riesgo: podrías quedar negativo</div>`;
+}else{
+html+=`<div class="alert good">🟢 Proyección saludable</div>`;
 }
 
-document.getElementById("insights").innerHTML+=html;
+insights.innerHTML+=html;
 }
-
 </script>
 
 </body>
