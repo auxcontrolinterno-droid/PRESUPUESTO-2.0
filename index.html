@@ -21,12 +21,7 @@ padding:14px;
 h1{font-size:30px;font-weight:800;margin-bottom:6px;}
 .sub{opacity:.6;margin-bottom:14px;font-size:13px;}
 
-.top{
-display:grid;
-grid-template-columns:1fr;
-gap:12px;
-margin-bottom:16px;
-}
+.top{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:16px;}
 
 .card{
 background:rgba(255,255,255,.06);
@@ -113,10 +108,6 @@ border-radius:12px;
 font-weight:700;
 z-index:9999;
 }
-
-@media(min-width:700px){
-.top{grid-template-columns:repeat(4,1fr);}
-}
 </style>
 </head>
 
@@ -144,13 +135,13 @@ z-index:9999;
 </div>
 
 <div class="card">
-<span>⚖️ Balance</span>
-<strong id="balance">$0</strong>
+<span>🏦 Ahorro</span>
+<strong id="ahorro">$0</strong>
 </div>
 
 <div class="card">
-<span>🏦 Ahorro</span>
-<strong id="ahorro">$0</strong>
+<span>⏳ Pendientes offline</span>
+<strong id="pendientes">0</strong>
 </div>
 
 </div>
@@ -163,7 +154,7 @@ z-index:9999;
 <input type="text" id="descripcion" placeholder="Descripción" required>
 
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-<input type="text" id="monto" placeholder="Monto (4.000)" required>
+<input type="text" id="monto" placeholder="4.000" required>
 
 <select id="categoria">
 <option>💰 Ingreso</option>
@@ -176,7 +167,7 @@ z-index:9999;
 </select>
 </div>
 
-<button class="primary" type="submit">Guardar</button>
+<button class="primary" id="btnSave" type="submit">Guardar</button>
 
 </form>
 
@@ -188,34 +179,23 @@ z-index:9999;
 <!-- DASHBOARD -->
 <div id="dashboard">
 
-<button class="secondary" onclick="irApp()" style="margin-bottom:10px;">⬅ Volver</button>
+<button class="secondary" onclick="irApp()">⬅ Volver</button>
+
+<br><br>
+
+<input id="buscar" placeholder="🔍 Buscar movimientos..." style="width:100%;padding:12px;border-radius:10px;border:none;margin-bottom:10px;">
 
 <div class="top">
 
-<div class="card">
-<span>💰 Ingresos</span>
-<strong id="ingresos">$0</strong>
-</div>
-
-<div class="card">
-<span>💸 Gastos</span>
-<strong id="gastos">$0</strong>
-</div>
-
-<div class="card">
-<span>🏦 Ahorro</span>
-<strong id="ahorroTotal">$0</strong>
-</div>
-
-<div class="card">
-<span>⚖️ Balance</span>
-<strong id="balance2">$0</strong>
-</div>
+<div class="card"><span>Ingresos</span><strong id="ingresos">$0</strong></div>
+<div class="card"><span>Gastos</span><strong id="gastos">$0</strong></div>
+<div class="card"><span>Ahorro</span><strong id="ahorroTotal">$0</strong></div>
+<div class="card"><span>Balance</span><strong id="balance">$0</strong></div>
 
 </div>
 
-<canvas id="chartPie"></canvas>
-<canvas id="chartBar"></canvas>
+<canvas id="pie"></canvas>
+<canvas id="bar"></canvas>
 
 </div>
 
@@ -224,9 +204,9 @@ z-index:9999;
 const URL="https://script.google.com/macros/s/AKfycbwXGhRN-TJxXf4hvwk_BFV52Javiqn6Lzz5ps6M1yTz9PJy-9kDcsUKJLzUY-mTS1Z2/exec";
 
 let data=[];
+let pendientesLocal=JSON.parse(localStorage.getItem("pendientes")||"[]");
 let bloqueado=false;
-let chartPie=null;
-let chartBar=null;
+let pie=null,bar=null;
 
 /* NAV */
 function irDashboard(){
@@ -255,7 +235,31 @@ async function load(){
 let r=await fetch(URL);
 data=await r.json();
 render();
-dashboard();
+dash();
+syncOffline();
+}
+
+/* OFFLINE */
+function renderPendientes(){
+document.getElementById("pendientes").innerText=pendientesLocal.length;
+}
+
+async function syncOffline(){
+
+if(!navigator.onLine || pendientesLocal.length===0) return;
+
+for(let item of pendientesLocal){
+await fetch(URL,{
+method:"POST",
+headers:{"Content-Type":"text/plain;charset=utf-8"},
+body:JSON.stringify(item)
+});
+}
+
+pendientesLocal=[];
+localStorage.removeItem("pendientes");
+toast("Sincronizado ✔️");
+load();
 }
 
 /* RENDER */
@@ -263,110 +267,152 @@ function render(){
 
 document.getElementById("registros").innerText=data.length;
 
-let ingresos=0,gastos=0,ahorro=0,hoyG=0;
 let hoy=new Date().toISOString().split("T")[0];
+let gastosHoy=0,ing=0,gas=0,ah=0;
 
 let lista=document.getElementById("lista");
 lista.innerHTML="";
 
 data.forEach(x=>{
 
-let monto=Number(x.Monto);
+let m=+x.Monto;
 
-if(x.Tipo==="Ingreso") ingresos+=monto;
-else gastos+=monto;
+if(x.Tipo==="Ingreso") ing+=m;
+else gas+=m;
 
-if(x.Categoría.includes("Ahorro")) ahorro+=monto;
+if(x.Categoría.includes("Ahorro")) ah+=m;
 
-if(x.Fecha===hoy && x.Tipo==="Gasto") hoyG+=monto;
+if(x.Fecha===hoy && x.Tipo==="Gasto") gastosHoy+=m;
 });
 
-document.getElementById("hoy").innerText="$"+hoyG.toLocaleString();
-document.getElementById("balance").innerText="$"+(ingresos-gastos).toLocaleString();
-document.getElementById("ahorro").innerText="$"+ahorro.toLocaleString();
+document.getElementById("hoy").innerText="$"+gastosHoy.toLocaleString();
+document.getElementById("ahorro").innerText="$"+ah.toLocaleString();
+
+renderPendientes();
 
 data.slice().reverse().forEach(x=>{
 
-let tipo=x.Tipo==="Ingreso"?"ingreso":"gasto";
-
 lista.innerHTML+=`
-<div class="item ${tipo}">
+<div class="item ${x.Tipo==="Ingreso"?"ingreso":"gasto"}">
 <div class="title">${x.Categoría} - ${x.Descripción}</div>
-<div class="price">$${Number(x.Monto).toLocaleString()}</div>
-<button class="delete" onclick="borrar('${x.ID}')">🗑️ eliminar</button>
+<div class="price">$${(+x.Monto).toLocaleString()}</div>
+<button class="delete" onclick="borrar('${x.ID}')">🗑️ borrar</button>
 </div>
 `;
 });
 }
 
 /* DASHBOARD */
-function dashboard(){
+function dash(){
 
-let ingresos=0,gastos=0,ahorro=0;
+let ing=0,gas=0,ah=0;
 let cat={};
 
 data.forEach(x=>{
 let m=+x.Monto;
 
-if(x.Tipo==="Ingreso") ingresos+=m;
-else gastos+=m;
+if(x.Tipo==="Ingreso") ing+=m;
+else gas+=m;
 
-if(x.Categoría.includes("Ahorro")) ahorro+=m;
+if(x.Categoría.includes("Ahorro")) ah+=m;
 
 cat[x.Categoría]=(cat[x.Categoría]||0)+m;
 });
 
-document.getElementById("ingresos").innerText="$"+ingresos.toLocaleString();
-document.getElementById("gastos").innerText="$"+gastos.toLocaleString();
-document.getElementById("ahorroTotal").innerText="$"+ahorro.toLocaleString();
-document.getElementById("balance2").innerText="$"+(ingresos-gastos).toLocaleString();
+document.getElementById("ingresos").innerText="$"+ing.toLocaleString();
+document.getElementById("gastos").innerText="$"+gas.toLocaleString();
+document.getElementById("ahorroTotal").innerText="$"+ah.toLocaleString();
+document.getElementById("balance").innerText="$"+(ing-gas).toLocaleString();
 
-/* charts fix */
-if(chartPie) chartPie.destroy();
-if(chartBar) chartBar.destroy();
+if(pie) pie.destroy();
+if(bar) bar.destroy();
 
-chartPie=new Chart(document.getElementById("chartPie"),{
+pie=new Chart(document.getElementById("pie"),{
 type:"doughnut",
 data:{labels:Object.keys(cat),datasets:[{data:Object.values(cat)}]}
 });
 
-chartBar=new Chart(document.getElementById("chartBar"),{
+bar=new Chart(document.getElementById("bar"),{
 type:"bar",
-data:{
-labels:["Ingresos","Gastos","Ahorro"],
-datasets:[{data:[ingresos,gastos,ahorro]}]
-}
+data:{labels:["Ingresos","Gastos","Ahorro"],datasets:[{data:[ing,gas,ah]}]}
 });
 }
+
+/* SEARCH */
+document.getElementById("buscar").addEventListener("input",function(){
+
+let v=this.value.toLowerCase();
+
+let f=data.filter(x=>
+x.Descripción.toLowerCase().includes(v) ||
+x.Categoría.toLowerCase().includes(v) ||
+String(x.Monto).includes(v)
+);
+
+let lista=document.getElementById("lista");
+lista.innerHTML="";
+
+f.forEach(x=>{
+lista.innerHTML+=`
+<div class="item ${x.Tipo==="Ingreso"?"ingreso":"gasto"}">
+<div class="title">${x.Categoría} - ${x.Descripción}</div>
+<div class="price">$${(+x.Monto).toLocaleString()}</div>
+</div>
+`;
+});
+
+});
 
 /* SAVE */
 document.getElementById("formulario").addEventListener("submit",async e=>{
 e.preventDefault();
+
 if(bloqueado) return;
 bloqueado=true;
 
-let r=await fetch(URL,{
-method:"POST",
-headers:{"Content-Type":"text/plain;charset=utf-8"},
-body:JSON.stringify({
+let btn=document.getElementById("btnSave");
+btn.disabled=true;
+btn.innerText="Guardando...";
+
+let datos={
 Fecha:fecha.value,
 Categoría:categoria.value,
 Descripción:descripcion.value,
 Monto:Number(monto.value.replace(/\./g,"")),
 Tipo:categoria.value.includes("Ingreso")?"Ingreso":"Gasto"
-})
+};
+
+if(!navigator.onLine){
+
+pendientesLocal.push(datos);
+localStorage.setItem("pendientes",JSON.stringify(pendientesLocal));
+
+toast("Guardado offline 📴","#f59e0b");
+
+}else{
+
+await fetch(URL,{
+method:"POST",
+headers:{"Content-Type":"text/plain;charset=utf-8"},
+body:JSON.stringify(datos)
 });
 
-await load();
 toast("Guardado ✔️");
+}
 
+await load();
+
+btn.disabled=false;
+btn.innerText="Guardar";
 bloqueado=false;
+
 formulario.reset();
 fecha.valueAsDate=new Date();
 });
 
 /* DELETE */
 async function borrar(id){
+
 if(bloqueado) return;
 if(!confirm("Eliminar?")) return;
 
