@@ -3,13 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f172a">
 <title>Presupuesto PRO</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+-webkit-tap-highlight-color:transparent;
+}
+
 body{
 font-family:'Inter',sans-serif;
 background:radial-gradient(circle at top,#1a2a4a,#070b16);
@@ -17,44 +25,59 @@ color:#fff;
 padding:14px;
 }
 
-/* NAV */
-.nav{
-display:flex;
-gap:10px;
-margin-bottom:14px;
-}
-.nav button{
-flex:1;
-padding:12px;
-border-radius:12px;
-font-weight:800;
-background:rgba(255,255,255,.1);
-color:#fff;
-border:none;
-}
-.nav .active{
-background:#2563eb;
+h1{font-size:34px;font-weight:800;margin-bottom:4px;}
+.sub{opacity:.7;margin-bottom:18px;font-size:13px;}
+
+button,input,select{
+font-family:'Inter',sans-serif;
 }
 
-/* VISTAS */
-.view{display:none}
-.view.active{display:block}
+.top{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:16px;}
 
-/* FORM */
+.card{
+background:rgba(255,255,255,.07);
+backdrop-filter:blur(12px);
+padding:18px;
+border-radius:20px;
+border:1px solid rgba(255,255,255,.08);
+}
+
+.card span{font-size:12px;opacity:.7;}
+.card strong{font-size:26px;font-weight:800;}
+
+.panel{
+background:rgba(255,255,255,.06);
+backdrop-filter:blur(14px);
+padding:16px;
+border-radius:26px;
+border:1px solid rgba(255,255,255,.08);
+}
+
+form{display:grid;gap:12px;}
+
 input,select,button{
 width:100%;
-padding:14px;
-border-radius:12px;
+padding:16px;
+font-size:16px;
 border:none;
-margin-bottom:10px;
-font-size:15px;
+outline:none;
+border-radius:14px;
 }
 
-/* BOTONES */
+input,select{
+background:rgba(255,255,255,.95);
+color:#111;
+}
+
+#monto{text-align:right;font-weight:700;font-size:18px;}
+
+.row{display:grid;grid-template-columns:1fr;gap:12px;}
+
+button{font-weight:800;cursor:pointer;}
+
 .primary{
-background:#2563eb;
+background:linear-gradient(135deg,#0ea5e9,#2563eb);
 color:#fff;
-font-weight:800;
 }
 
 .secondary{
@@ -62,63 +85,110 @@ background:rgba(255,255,255,.15);
 color:#fff;
 }
 
-/* LISTA */
+.list{display:grid;gap:10px;margin-top:18px;}
+
 .item{
-background:rgba(255,255,255,.08);
-padding:12px;
-border-radius:14px;
-margin-top:10px;
-}
-
-.ingreso{border-left:4px solid #22c55e}
-.gasto{border-left:4px solid #ef4444}
-
-.price.ingreso{color:#22c55e}
-.price.gasto{color:#ef4444}
-
-/* DASHBOARD */
-.card{
-background:rgba(255,255,255,.08);
+background:rgba(255,255,255,.06);
 padding:14px;
-border-radius:14px;
-margin-bottom:10px;
+border-radius:18px;
+position:relative;
 }
 
-canvas{background:white;border-radius:12px;padding:10px}
+.item.ingreso::before,
+.item.gasto::before{
+content:"";
+position:absolute;
+left:0;top:0;bottom:0;width:4px;
+}
+
+.item.ingreso::before{background:#22c55e;}
+.item.gasto::before{background:#ef4444;}
+
+.item-title{font-weight:700;}
+.price{font-weight:800;}
+
+#dashboard{display:none;}
+
+.back{margin-bottom:12px;}
+
+@media(min-width:700px){
+.top{grid-template-columns:repeat(3,1fr);}
+.row{grid-template-columns:1fr 1fr;}
+}
 </style>
 </head>
 
 <body>
 
-<!-- NAV -->
-<div class="nav">
-<button id="btnForm" class="active" onclick="show('form')">💸 Movimientos</button>
-<button id="btnDash" onclick="show('dash')">📊 Dashboard</button>
+<!-- ================= APP ================= -->
+<div id="app">
+
+<h1>💸 Presupuesto PRO</h1>
+<div class="sub">control inteligente de tus movimientos</div>
+
+<button class="secondary" onclick="irDashboard()" style="margin-bottom:12px;">
+📊 Ver Dashboard
+</button>
+
+<div class="top">
+<div class="card">
+<span>Hoy gastado</span>
+<strong id="hoy">$0</strong>
 </div>
-
-<!-- FORM -->
-<div id="form" class="view active">
-
-<input type="date" id="fecha">
-<input type="text" id="descripcion" placeholder="Descripción">
-<input type="text" id="monto" placeholder="Monto">
-
-<select id="categoria">
-<option>Ingreso</option>
-<option>Gasto</option>
-</select>
-
-<button class="primary" onclick="guardar()">Guardar</button>
-
-<div id="lista"></div>
-</div>
-
-<!-- DASHBOARD -->
-<div id="dash" class="view">
 
 <div class="card">
-<h3>Resumen</h3>
-<div id="resumen"></div>
+<span>Registros</span>
+<strong id="registros">0</strong>
+</div>
+
+<div class="card">
+<span>Pendientes</span>
+<strong id="pendientes">0</strong>
+</div>
+</div>
+
+<div class="panel">
+
+<form id="formulario">
+
+<input type="date" id="fecha" required>
+<input type="text" id="descripcion" placeholder="Descripción" required>
+
+<div class="row">
+<input type="text" id="monto" placeholder="Monto" required>
+
+<select id="categoria">
+<option>💰 Ingreso</option>
+<option>🏠 Vivienda</option>
+<option>🍔 Comida</option>
+<option>🚗 Transporte</option>
+<option>💡 Servicios</option>
+<option>🎮 Entretenimiento</option>
+<option>🏦 Ahorro</option>
+</select>
+</div>
+
+<div class="row">
+<button class="primary" type="submit">Guardar</button>
+<button class="secondary" type="button" onclick="guardarSeguir()">Guardar y seguir</button>
+</div>
+
+</form>
+
+<div class="list" id="lista"></div>
+
+</div>
+</div>
+
+<!-- ================= DASHBOARD ================= -->
+<div id="dashboard">
+
+<button class="secondary back" onclick="irApp()">⬅ Volver</button>
+
+<div class="top">
+<div class="card"><span>Ingresos</span><strong id="ingresos">$0</strong></div>
+<div class="card"><span>Gastos</span><strong id="gastos">$0</strong></div>
+<div class="card"><span>Balance</span><strong id="balance">$0</strong></div>
 </div>
 
 <canvas id="chart"></canvas>
@@ -127,101 +197,127 @@ canvas{background:white;border-radius:12px;padding:10px}
 
 <script>
 
-const URL="TU_SCRIPT_URL";
+const URL_SCRIPT="https://script.google.com/macros/s/AKfycbwXGhRN-TJxXf4hvwk_BFV52Javiqn6Lzz5ps6M1yTz9PJy-9kDcsUKJLzUY-mTS1Z2/exec";
 
-let data=[];
+let historial=[];
 
-/* CAMBIO DE VISTAS */
-function show(v){
-
-document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));
-document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));
-
-document.getElementById(v).classList.add("active");
-
-if(v==="form") document.getElementById("btnForm").classList.add("active");
-if(v==="dash"){
-document.getElementById("btnDash").classList.add("active");
-renderDash();
+/* ================= NAV ================= */
+function irDashboard(){
+document.getElementById("app").style.display="none";
+document.getElementById("dashboard").style.display="block";
+cargarDatos();
 }
 
+function irApp(){
+document.getElementById("dashboard").style.display="none";
+document.getElementById("app").style.display="block";
 }
 
-/* CARGAR */
-async function load(){
-let r=await fetch(URL);
-data=await r.json();
-renderList();
+/* ================= HELPERS ================= */
+function money(n){
+return "$"+Number(n).toLocaleString("es-CO");
 }
 
-/* GUARDAR */
-async function guardar(){
-
-let obj={
-Fecha:document.getElementById("fecha").value,
-Descripción:document.getElementById("descripcion").value,
-Monto:Number(document.getElementById("monto").value),
-Tipo:document.getElementById("categoria").value
-};
-
-await fetch(URL,{
-method:"POST",
-body:JSON.stringify(obj)
-});
-
-load();
+/* ================= FETCH DATA ================= */
+async function cargarDatos(){
+let r=await fetch(URL_SCRIPT);
+historial=await r.json();
+render();
+renderDashboard();
 }
 
-/* LISTA */
-function renderList(){
+/* ================= RENDER APP ================= */
+function render(){
 
-let html="";
+document.getElementById("registros").innerHTML=historial.length;
 
-data.slice().reverse().forEach(x=>{
+let lista=document.getElementById("lista");
+lista.innerHTML="";
 
-let cls=x.Tipo==="Ingreso"?"ingreso":"gasto";
-let sign=x.Tipo==="Ingreso"?"+":"-";
+historial.slice().reverse().forEach(x=>{
 
-html+=`
-<div class="item ${cls}">
-<strong>${x.Descripción}</strong><br>
-<small>${x.Fecha}</small><br>
-<div class="price ${cls}">${sign}$${x.Monto}</div>
+let tipo=x.Tipo==="Ingreso"?"ingreso":"gasto";
+let signo=x.Tipo==="Ingreso"?"+":"-";
+
+lista.innerHTML+=`
+<div class="item ${tipo}">
+<div class="item-title">${x.Categoría} - ${x.Descripción}</div>
+<div class="price">${signo}${money(x.Monto)}</div>
 </div>
 `;
+
+});
+}
+
+/* ================= DASHBOARD ================= */
+function renderDashboard(){
+
+let ingresos=0;
+let gastos=0;
+
+historial.forEach(x=>{
+if(x.Tipo==="Ingreso") ingresos+=Number(x.Monto);
+else gastos+=Number(x.Monto);
 });
 
-document.getElementById("lista").innerHTML=html;
+document.getElementById("ingresos").innerHTML=money(ingresos);
+document.getElementById("gastos").innerHTML=money(gastos);
+document.getElementById("balance").innerHTML=money(ingresos-gastos);
 
 }
 
-/* DASHBOARD */
-function renderDash(){
-
-let i=0,g=0;
-
-data.forEach(x=>{
-if(x.Tipo==="Ingreso") i+=Number(x.Monto);
-else g+=Number(x.Monto);
+/* ================= SEND ================= */
+async function enviar(datos){
+return await fetch(URL_SCRIPT,{
+method:"POST",
+headers:{"Content-Type":"text/plain;charset=utf-8"},
+body:JSON.stringify(datos)
 });
-
-document.getElementById("resumen").innerHTML=`
-Ingresos: $${i}<br>
-Gastos: $${g}<br>
-Balance: $${i-g}
-`;
-
-new Chart(document.getElementById("chart"),{
-type:"doughnut",
-data:{
-labels:["Ingresos","Gastos"],
-datasets:[{data:[i,g]}]
-}
-});
-
 }
 
-load();
+/* ================= SAVE ================= */
+async function guardar(){
+
+let fecha=document.getElementById("fecha").value;
+let descripcion=document.getElementById("descripcion").value.trim();
+let monto=Number(document.getElementById("monto").value.replace(/\./g,""));
+let categoria=document.getElementById("categoria").value;
+
+if(!descripcion || monto<=0){
+alert("Datos inválidos");
+return;
+}
+
+let tipo=categoria.includes("Ingreso")?"Ingreso":"Gasto";
+let f=new Date(fecha);
+
+let datos={
+Fecha:fecha,
+Categoría:categoria,
+Descripción:descripcion,
+Monto:monto,
+Tipo:tipo,
+Mes:f.getMonth()+1,
+Año:f.getFullYear()
+};
+
+await enviar(datos);
+
+await cargarDatos();
+
+document.getElementById("descripcion").value="";
+document.getElementById("monto").value="";
+}
+
+/* ================= FORM ================= */
+document.getElementById("formulario").addEventListener("submit",e=>{
+e.preventDefault();
+guardar();
+});
+
+/* ================= INIT ================= */
+document.getElementById("fecha").valueAsDate=new Date();
+cargarDatos();
 
 </script>
 
