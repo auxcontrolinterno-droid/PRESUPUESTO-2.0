@@ -12,6 +12,7 @@
 margin:0;
 padding:0;
 box-sizing:border-box;
+-webkit-tap-highlight-color:transparent;
 }
 
 body{
@@ -19,37 +20,89 @@ font-family:Inter,sans-serif;
 background:linear-gradient(180deg,#070b16,#0b1020);
 color:#fff;
 padding:14px;
+max-width:720px;
+margin:auto;
 }
 
-h1{
-font-size:24px;
+/* ================= HEADER PREMIUM ================= */
+.header{
+background:linear-gradient(135deg,#111827,#1e293b);
+border:1px solid rgba(255,255,255,.08);
+padding:18px;
+border-radius:22px;
+margin-bottom:14px;
+box-shadow:0 12px 30px rgba(0,0,0,.25);
+}
+
+.header-top{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:10px;
 margin-bottom:12px;
-font-weight:800;
 }
 
+.greeting{
+font-size:14px;
+opacity:.8;
+}
+
+.date{
+font-size:12px;
+opacity:.65;
+}
+
+.balance-label{
+font-size:13px;
+opacity:.75;
+margin-bottom:4px;
+}
+
+.balance{
+font-size:32px;
+font-weight:800;
+letter-spacing:-1px;
+}
+
+.variation{
+margin-top:6px;
+font-size:13px;
+font-weight:700;
+color:#22c55e;
+}
+
+/* ================= STATUS ================= */
+.sync-bar{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:10px;
+font-size:12px;
+opacity:.85;
+margin:10px 2px 14px;
+}
+
+.online{color:#22c55e;}
+.offline{color:#ef4444;}
+
+/* ================= CARDS ================= */
 .card{
 background:rgba(255,255,255,.06);
 backdrop-filter:blur(14px);
 border:1px solid rgba(255,255,255,.08);
 padding:14px;
-border-radius:16px;
-margin-bottom:12px;
-}
-
-/* ===== NUEVO MOVIMIENTO ===== */
-.movement-card{
-padding:18px;
 border-radius:18px;
-background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.04));
-box-shadow:0 10px 30px rgba(0,0,0,.18);
+margin-bottom:12px;
+box-shadow:0 10px 24px rgba(0,0,0,.14);
 }
 
 .section-title{
 font-size:18px;
 font-weight:800;
-margin-bottom:14px;
+margin-bottom:12px;
 }
 
+/* ================= FORM ================= */
 .field{
 margin-bottom:12px;
 }
@@ -61,106 +114,50 @@ opacity:.75;
 margin-bottom:6px;
 }
 
-.field input,
-.field select{
+input,select,button{
 width:100%;
-padding:13px;
 border:none;
 outline:none;
-border-radius:12px;
+border-radius:14px;
+font-family:inherit;
+}
+
+input,select{
+padding:14px;
 background:rgba(255,255,255,.95);
 color:#111;
-font-weight:600;
 font-size:14px;
+font-weight:600;
 }
 
-.field input::placeholder{
-color:#777;
-}
-
-.save-btn{
-width:100%;
+button{
 padding:14px;
-border:none;
-border-radius:14px;
 font-size:15px;
 font-weight:800;
-color:#fff;
-background:linear-gradient(135deg,#2563eb,#1d4ed8);
-box-shadow:0 10px 25px rgba(37,99,235,.35);
 cursor:pointer;
+transition:.18s ease;
 }
 
-.save-btn:disabled{
-opacity:.7;
-cursor:not-allowed;
-}
-
-.save-btn:active{
+button:active{
 transform:scale(.98);
 }
 
-/* ===== BOTONES ===== */
-button{
-cursor:pointer;
-}
-
 .primary{
-background:#2563eb;
+background:linear-gradient(135deg,#2563eb,#1d4ed8);
 color:#fff;
-font-weight:700;
-border:none;
-padding:12px;
-border-radius:10px;
-width:100%;
+box-shadow:0 12px 24px rgba(37,99,235,.25);
 }
 
-.small-btn{
-padding:7px 10px;
-border:none;
-border-radius:8px;
-font-size:12px;
-background:rgba(255,255,255,.14);
-color:#fff;
+.primary:disabled{
+opacity:.65;
+cursor:not-allowed;
 }
 
-/* ===== LISTA ===== */
-.list{
-display:grid;
-gap:10px;
-margin-top:10px;
-}
-
-.item{
-background:rgba(255,255,255,.05);
-padding:12px;
-border-radius:12px;
-border-left:4px solid transparent;
-}
-
-.ingreso{
-border-left-color:#22c55e;
-}
-
-.gasto{
-border-left-color:#ef4444;
-}
-
-.price{
-font-weight:800;
-margin-top:5px;
-font-size:15px;
-}
-
-.actions{
-margin-top:8px;
-}
-
-/* ===== PRESUPUESTO ===== */
+/* ================= PROGRESS ================= */
 .progress{
 height:10px;
 background:rgba(255,255,255,.08);
-border-radius:30px;
+border-radius:20px;
 overflow:hidden;
 margin-top:10px;
 }
@@ -172,13 +169,49 @@ background:linear-gradient(90deg,#22c55e,#84cc16);
 transition:.35s;
 }
 
-/* ===== ALERTAS ===== */
-.alert{
-padding:9px 10px;
+/* ================= LISTA ================= */
+.list{
+display:grid;
+gap:10px;
+}
+
+.item{
+background:rgba(255,255,255,.05);
+padding:12px;
+border-radius:14px;
+border-left:4px solid transparent;
+animation:fadeIn .25s ease;
+}
+
+.ingreso{border-left-color:#22c55e;}
+.gasto{border-left-color:#ef4444;}
+
+.price{
+font-weight:800;
+margin-top:6px;
+font-size:15px;
+}
+
+.actions{
+margin-top:8px;
+}
+
+.small-btn{
+padding:8px 10px;
+font-size:12px;
 border-radius:10px;
+background:rgba(255,255,255,.12);
+color:#fff;
+width:auto;
+}
+
+/* ================= ALERTS ================= */
+.alert{
+padding:10px;
+border-radius:12px;
 font-size:13px;
 margin-top:8px;
-line-height:1.35;
+line-height:1.4;
 }
 
 .good{
@@ -195,17 +228,65 @@ color:#f59e0b;
 background:rgba(239,68,68,.14);
 color:#ef4444;
 }
+
+/* ================= TOAST ================= */
+.toast{
+position:fixed;
+left:50%;
+bottom:22px;
+transform:translateX(-50%) translateY(30px);
+background:#111827;
+color:#fff;
+padding:12px 16px;
+border-radius:14px;
+font-size:13px;
+font-weight:700;
+opacity:0;
+pointer-events:none;
+transition:.28s;
+z-index:999;
+border:1px solid rgba(255,255,255,.08);
+}
+
+.toast.show{
+opacity:1;
+transform:translateX(-50%) translateY(0);
+}
+
+/* ================= ANIMATIONS ================= */
+@keyframes fadeIn{
+from{opacity:0;transform:translateY(8px);}
+to{opacity:1;transform:translateY(0);}
+}
 </style>
 </head>
 
 <body>
 
-<h1>🏦 Banking PRO AI</h1>
+<!-- HEADER PREMIUM -->
+<div class="header">
+<div class="header-top">
+<div>
+<div class="greeting" id="greeting">Hola 👋</div>
+<div class="date" id="todayDate"></div>
+</div>
+<div id="netState" class="online">🟢 Online</div>
+</div>
+
+<div class="balance-label">Saldo disponible</div>
+<div class="balance" id="mainBalance">$0</div>
+<div class="variation" id="variation">+0% este mes</div>
+</div>
+
+<!-- BARRA CONFIANZA -->
+<div class="sync-bar">
+<div id="syncText">Sincronizado recién</div>
+<div id="pendingText">Pendientes: 0</div>
+</div>
 
 <!-- NUEVO MOVIMIENTO -->
-<div class="card movement-card">
-
-<h3 class="section-title">➕ Nuevo movimiento</h3>
+<div class="card">
+<div class="section-title">➕ Nuevo movimiento</div>
 
 <div class="field">
 <label>Fecha</label>
@@ -235,40 +316,41 @@ color:#ef4444;
 </select>
 </div>
 
-<button class="save-btn" onclick="guardar()">
+<button class="primary" id="saveBtn" onclick="guardar()">
 💾 Guardar movimiento
 </button>
-
 </div>
 
 <!-- PRESUPUESTO -->
 <div class="card">
+<div class="section-title">💰 Presupuesto mensual</div>
 
-<h3 style="margin-bottom:10px;">💰 Presupuesto mensual</h3>
+<input type="number" id="budget" placeholder="Ej: 1000000">
 
-<input type="number" id="budget" placeholder="Ej: 1000000" style="width:100%;padding:12px;border:none;border-radius:10px;margin-bottom:8px;">
-
-<button class="primary" onclick="setBudget()">Guardar presupuesto</button>
+<button class="primary" style="margin-top:10px;" onclick="setBudget()">
+Guardar presupuesto
+</button>
 
 <div class="progress">
 <div class="bar" id="bar"></div>
 </div>
 
 <div id="status"></div>
-
 </div>
 
 <!-- IA -->
 <div class="card">
-<h3 style="margin-bottom:10px;">🧠 Análisis inteligente</h3>
+<div class="section-title">🧠 Análisis inteligente</div>
 <div id="insights"></div>
 </div>
 
 <!-- MOVIMIENTOS -->
 <div class="card">
-<h3 style="margin-bottom:10px;">📋 Movimientos</h3>
+<div class="section-title">📋 Movimientos</div>
 <div class="list" id="lista"></div>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <script>
 const URL="https://script.google.com/macros/s/AKfycbwXGhRN-TJxXf4hvwk_BFV52Javiqn6Lzz5ps6M1yTz9PJy-9kDcsUKJLzUY-mTS1Z2/exec";
@@ -277,28 +359,78 @@ let data=[];
 let budget=localStorage.getItem("budget")||0;
 
 /* INIT */
-document.getElementById("fecha").valueAsDate=new Date();
-document.getElementById("budget").value=budget;
+fecha.valueAsDate=new Date();
+budget && (document.getElementById("budget").value=budget);
 
+setHeaderClock();
+setNetworkUI();
 load();
 
-/* LOAD */
+/* ================= UI HELPERS ================= */
+
+function toast(msg){
+const t=document.getElementById("toast");
+t.innerText=msg;
+t.classList.add("show");
+setTimeout(()=>t.classList.remove("show"),2200);
+}
+
+function setHeaderClock(){
+const h=new Date().getHours();
+let txt="Hola 👋";
+
+if(h<12) txt="Buenos días ☀️";
+else if(h<19) txt="Buenas tardes 🌤️";
+else txt="Buenas noches 🌙";
+
+document.getElementById("greeting").innerText=txt;
+
+document.getElementById("todayDate").innerText=
+new Date().toLocaleDateString("es-CO",{
+weekday:"long",
+day:"numeric",
+month:"long"
+});
+}
+
+function setNetworkUI(){
+const online=navigator.onLine;
+document.getElementById("netState").innerHTML=
+online ? "🟢 Online":"🔴 Offline";
+
+document.getElementById("netState").className=
+online ? "online":"offline";
+}
+
+window.addEventListener("online",()=>{
+setNetworkUI();
+toast("🟢 Conexión restablecida");
+load();
+});
+
+window.addEventListener("offline",()=>{
+setNetworkUI();
+toast("🔴 Sin conexión");
+});
+
+/* ================= LOAD ================= */
+
 async function load(){
 try{
 const r=await fetch(URL);
 data=await r.json();
+document.getElementById("syncText").innerText="Sincronizado recién";
 }catch(e){
-data=[];
+document.getElementById("syncText").innerText="Sin conexión";
 }
 render();
 }
 
-/* GUARDAR */
+/* ================= GUARDAR ================= */
+
 async function guardar(){
 
-const btn=document.querySelector(".save-btn");
-btn.disabled=true;
-btn.innerText="Guardando...";
+const btn=document.getElementById("saveBtn");
 
 let datos={
 Fecha:fecha.value,
@@ -309,11 +441,12 @@ Tipo:categoria.value.includes("Ingreso")?"Ingreso":"Gasto"
 };
 
 if(!datos.Descripción || datos.Monto<=0){
-alert("Completa los datos");
-btn.disabled=false;
-btn.innerText="💾 Guardar movimiento";
+toast("Completa los datos");
 return;
 }
+
+btn.disabled=true;
+btn.innerText="Guardando...";
 
 try{
 await fetch(URL,{
@@ -321,34 +454,44 @@ method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
 body:JSON.stringify(datos)
 });
-}catch(e){}
+
+toast("✔ Movimiento guardado");
 
 descripcion.value="";
 monto.value="";
 
-btn.disabled=false;
-btn.innerText="💾 Guardar movimiento";
+await load();
 
-load();
+}catch(e){
+toast("❌ Error al guardar");
 }
 
-/* BORRAR */
-function borrar(id){
+btn.disabled=false;
+btn.innerText="💾 Guardar movimiento";
+}
+
+/* ================= BORRAR ================= */
+
+async function borrar(id){
 
 if(!confirm("¿Eliminar movimiento?")) return;
 
 data=data.filter(x=>String(x.ID)!==String(id));
 render();
 
-fetch(URL,{
+toast("🗑 Movimiento eliminado");
+
+try{
+await fetch(URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
 body:JSON.stringify({action:"delete",ID:id})
-}).catch(()=>{});
-
+});
+}catch(e){}
 }
 
-/* RENDER */
+/* ================= RENDER ================= */
+
 function render(){
 
 let lista=document.getElementById("lista");
@@ -363,26 +506,26 @@ const hoy=new Date();
 
 data.slice().reverse().forEach(x=>{
 
-let montoNum=Number(x.Monto)||0;
-let fechaMov=new Date(x.Fecha);
+const m=Number(x.Monto)||0;
+const f=new Date(x.Fecha);
 
-if(x.Tipo==="Ingreso") ingresos+=montoNum;
-else gastos+=montoNum;
+if(x.Tipo==="Ingreso") ingresos+=m;
+else gastos+=m;
 
-if(String(x.Categoría).includes("Ahorro")) ahorro+=montoNum;
+if(String(x.Categoría).includes("Ahorro")) ahorro+=m;
 
 if(
 x.Tipo==="Gasto" &&
-fechaMov.getMonth()===hoy.getMonth() &&
-fechaMov.getFullYear()===hoy.getFullYear()
+f.getMonth()===hoy.getMonth() &&
+f.getFullYear()===hoy.getFullYear()
 ){
-gastoMes+=montoNum;
+gastoMes+=m;
 }
 
 lista.innerHTML+=`
 <div class="item ${x.Tipo==="Ingreso"?"ingreso":"gasto"}">
 <div>${x.Categoría} - ${x.Descripción}</div>
-<div class="price">$${montoNum.toLocaleString("es-CO")}</div>
+<div class="price">$${m.toLocaleString("es-CO")}</div>
 <div class="actions">
 <button class="small-btn" onclick="borrar('${x.ID}')">🗑️ Borrar</button>
 </div>
@@ -391,26 +534,37 @@ lista.innerHTML+=`
 
 });
 
+/* HEADER */
+const saldo=ingresos-gastos;
+document.getElementById("mainBalance").innerText=
+"$"+saldo.toLocaleString("es-CO");
+
+let variacion=ingresos?((saldo/ingresos)*100):0;
+document.getElementById("variation").innerText=
+(variacion>=0?"+":"")+variacion.toFixed(0)+"% este mes";
+
+/* PENDIENTES */
+document.getElementById("pendingText").innerText="Pendientes: 0";
+
+/* RESTO */
 updateBudget(gastoMes);
 generateInsights(ingresos,gastos,ahorro);
 predictiveAI(ingresos,gastos);
 smartCoach(ingresos,gastos,ahorro);
 }
 
-/* PRESUPUESTO */
+/* ================= PRESUPUESTO ================= */
+
 function setBudget(){
 budget=Number(document.getElementById("budget").value)||0;
 localStorage.setItem("budget",budget);
 render();
+toast("✔ Presupuesto guardado");
 }
 
-/* BARRA */
 function updateBudget(gasto){
 
-const status=document.getElementById("status");
-const bar=document.getElementById("bar");
-
-if(!budget || budget<=0){
+if(!budget){
 status.innerHTML="Define un presupuesto mensual";
 bar.style.width="0%";
 return;
@@ -421,19 +575,16 @@ bar.style.width=Math.min(percent,100)+"%";
 
 if(percent>=100){
 status.innerHTML='<div class="alert bad">🔴 Te pasaste del presupuesto</div>';
-}
-else if(percent>=80){
+}else if(percent>=80){
 status.innerHTML='<div class="alert mid">⚠️ Cerca del límite</div>';
-}
-else{
+}else{
 status.innerHTML='<div class="alert good">🟢 Bajo control</div>';
 }
 }
 
-/* IA BASE */
-function generateInsights(ing,gas,ah){
+/* ================= IA ================= */
 
-const insights=document.getElementById("insights");
+function generateInsights(ing,gas,ah){
 
 let promedio=data.length ? gas/data.length : 0;
 
@@ -445,10 +596,7 @@ insights.innerHTML=`
 `;
 }
 
-/* FASE 5 PREDICTIVA */
 function predictiveAI(ing,gas){
-
-const insights=document.getElementById("insights");
 
 let hoy=new Date();
 let diasMes=new Date(hoy.getFullYear(),hoy.getMonth()+1,0).getDate();
@@ -464,7 +612,7 @@ let html=`
 `;
 
 if(balance<0){
-html+=`<div class="alert bad">🔴 Riesgo: podrías quedar negativo</div>`;
+html+=`<div class="alert bad">🔴 Riesgo financiero detectado</div>`;
 }else{
 html+=`<div class="alert good">🟢 Proyección saludable</div>`;
 }
@@ -472,33 +620,23 @@ html+=`<div class="alert good">🟢 Proyección saludable</div>`;
 insights.innerHTML+=html;
 }
 
-/* FASE 6.3 IA PERSONALIZADA */
 function smartCoach(ing,gas,ah){
 
-const insights=document.getElementById("insights");
-
-let comida=0;
-let transporte=0;
-let entretenimiento=0;
+let comida=0,transporte=0,entretenimiento=0;
 
 data.forEach(x=>{
-
 let m=Number(x.Monto)||0;
-
 if(String(x.Categoría).includes("Comida")) comida+=m;
 if(String(x.Categoría).includes("Transporte")) transporte+=m;
 if(String(x.Categoría).includes("Entretenimiento")) entretenimiento+=m;
-
 });
 
-/* META AUTOMÁTICA */
 let meta=0;
 
-if(ing<1000000) meta=ing*0.10;
-else if(ing<3000000) meta=ing*0.20;
-else meta=ing*0.30;
+if(ing<1000000) meta=ing*.10;
+else if(ing<3000000) meta=ing*.20;
+else meta=ing*.30;
 
-/* PRIORIDAD */
 let categorias=[
 ["🍔 Comida",comida],
 ["🚗 Transporte",transporte],
@@ -506,44 +644,21 @@ let categorias=[
 ].sort((a,b)=>b[1]-a[1]);
 
 let top=categorias[0];
-let ahorroPotencial=top[1]*0.15;
+let ahorroPotencial=top[1]*.15;
 
-let html="";
-
-html+=`
-<div class="alert mid">
-🎯 Meta sugerida de ahorro: $${meta.toLocaleString("es-CO")}
-</div>
+let html=`
+<div class="alert mid">🎯 Meta sugerida ahorro: $${meta.toLocaleString("es-CO")}</div>
+<div class="alert good">📌 Prioridad actual: ${top[0]}</div>
+<div class="alert mid">💡 Si reduces ${top[0]} 15%, ahorrarías $${ahorroPotencial.toLocaleString("es-CO")}</div>
 `;
 
 if(ah<meta){
-html+=`
-<div class="alert bad">
-⚠️ Vas por debajo de tu meta de ahorro
-</div>
-`;
+html+=`<div class="alert bad">⚠️ Vas por debajo de la meta</div>`;
 }else{
-html+=`
-<div class="alert good">
-🟢 Vas cumpliendo tu meta de ahorro
-</div>
-`;
+html+=`<div class="alert good">🟢 Meta de ahorro encaminada</div>`;
 }
 
-html+=`
-<div class="alert mid">
-💡 Si reduces ${top[0]} un 15%, ahorrarías $${ahorroPotencial.toLocaleString("es-CO")}
-</div>
-`;
-
-html+=`
-<div class="alert good">
-📌 Prioridad financiera actual: ${top[0]}
-</div>
-`;
-
 insights.innerHTML+=html;
-
 }
 </script>
 
