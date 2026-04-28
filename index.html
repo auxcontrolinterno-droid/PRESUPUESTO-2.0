@@ -8,7 +8,6 @@
 <title>Presupuesto PRO</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -20,7 +19,7 @@ color:#fff;
 padding:14px;
 }
 
-h1{font-size:34px;font-weight:800;margin-bottom:4px;}
+h1{font-size:32px;font-weight:800;margin-bottom:4px;}
 .sub{opacity:.7;margin-bottom:18px;font-size:13px;}
 
 button,input,select{font-family:'Inter',sans-serif;}
@@ -88,10 +87,10 @@ left:0;top:0;bottom:0;width:4px;
 .item.gasto::before{background:#ef4444;}
 
 .item-title{font-weight:700;}
-.price{font-weight:800;}
+.price{font-weight:800;margin-top:4px;}
 
 .delete{
-margin-top:8px;
+margin-top:10px;
 background:rgba(239,68,68,.2);
 color:#fff;
 padding:8px;
@@ -103,6 +102,19 @@ font-size:12px;
 
 .back{margin-bottom:12px;}
 
+/* TOAST */
+.toast{
+position:fixed;
+bottom:20px;
+left:50%;
+transform:translateX(-50%);
+padding:12px 18px;
+border-radius:12px;
+font-weight:700;
+z-index:9999;
+color:#fff;
+}
+
 @media(min-width:700px){
 .top{grid-template-columns:repeat(3,1fr);}
 .row{grid-template-columns:1fr 1fr;}
@@ -112,17 +124,18 @@ font-size:12px;
 
 <body>
 
+<!-- APP -->
 <div id="app">
 
 <h1>💸 Presupuesto PRO</h1>
-<div class="sub">control inteligente de tus movimientos</div>
+<div class="sub">control simple y rápido de tus movimientos</div>
 
 <button class="secondary" onclick="irDashboard()" style="margin-bottom:12px;">
 📊 Ver Dashboard
 </button>
 
 <div class="top">
-<div class="card"><span>Hoy gastado</span><strong id="hoy">$0</strong></div>
+<div class="card"><span>Hoy</span><strong id="hoy">$0</strong></div>
 <div class="card"><span>Registros</span><strong id="registros">0</strong></div>
 <div class="card"><span>Pendientes</span><strong id="pendientes">0</strong></div>
 </div>
@@ -148,9 +161,7 @@ font-size:12px;
 </select>
 </div>
 
-<div class="row">
 <button class="primary" type="submit">Guardar</button>
-</div>
 
 </form>
 
@@ -168,10 +179,6 @@ font-size:12px;
 <div class="card"><span>Ingresos</span><strong id="ingresos">$0</strong></div>
 <div class="card"><span>Gastos</span><strong id="gastos">$0</strong></div>
 <div class="card"><span>Balance</span><strong id="balance">$0</strong></div>
-<div class="card"><span>Total mov.</span><strong id="totalMov">0</strong></div>
-<div class="card"><span>Promedio gasto</span><strong id="promedio">$0</strong></div>
-<div class="card"><span>Mayor gasto</span><strong id="mayor">$0</strong></div>
-<div class="card"><span>Categoría top</span><strong id="topCat">-</strong></div>
 </div>
 
 </div>
@@ -182,6 +189,7 @@ const URL_SCRIPT="https://script.google.com/macros/s/AKfycbwXGhRN-TJxXf4hvwk_BFV
 
 let historial=[];
 
+/* NAV */
 function irDashboard(){
 document.getElementById("app").style.display="none";
 document.getElementById("dashboard").style.display="block";
@@ -193,10 +201,22 @@ document.getElementById("dashboard").style.display="none";
 document.getElementById("app").style.display="block";
 }
 
+/* MONEY */
 function money(n){
 return "$"+Number(n).toLocaleString("es-CO");
 }
 
+/* TOAST */
+function toast(msg,color="#22c55e"){
+let t=document.createElement("div");
+t.className="toast";
+t.innerText=msg;
+t.style.background=color;
+document.body.appendChild(t);
+setTimeout(()=>t.remove(),2000);
+}
+
+/* LOAD */
 async function cargarDatos(){
 let r=await fetch(URL_SCRIPT);
 historial=await r.json();
@@ -204,16 +224,16 @@ render();
 renderDashboard();
 }
 
+/* RENDER LIST */
 function render(){
 
-document.getElementById("registros").innerHTML=historial.length;
+document.getElementById("registros").innerText=historial.length;
 
 let lista=document.getElementById("lista");
 lista.innerHTML="";
 
-historial.slice().reverse().forEach((x,i)=>{
+historial.slice().reverse().forEach(x=>{
 
-let indexReal = historial.length-1-i;
 let tipo=x.Tipo==="Ingreso"?"ingreso":"gasto";
 let signo=x.Tipo==="Ingreso"?"+":"-";
 
@@ -222,101 +242,97 @@ lista.innerHTML+=`
 <div class="item-title">${x.Categoría} - ${x.Descripción}</div>
 <div class="price">${signo}${money(x.Monto)}</div>
 
-<button class="delete" onclick="borrar(${indexReal})">🗑️ Borrar</button>
+<button class="delete" onclick="borrar('${x.ID}')">🗑️ Borrar</button>
 </div>
 `;
-
 });
 }
 
+/* DASHBOARD SIMPLE */
 function renderDashboard(){
 
-let ingresos=0,gastos=0,totalGastos=0,max=0;
-let categorias={};
+let ingresos=0,gastos=0;
 
 historial.forEach(x=>{
-
-categorias[x.Categoría]=(categorias[x.Categoría]||0)+1;
-
 if(x.Tipo==="Ingreso") ingresos+=Number(x.Monto);
-else{
-gastos+=Number(x.Monto);
-totalGastos+=Number(x.Monto);
-if(Number(x.Monto)>max) max=Number(x.Monto);
-}
-
+else gastos+=Number(x.Monto);
 });
 
-let topCat=Object.keys(categorias).sort((a,b)=>categorias[b]-categorias[a])[0]||"-";
-
-document.getElementById("ingresos").innerHTML=money(ingresos);
-document.getElementById("gastos").innerHTML=money(gastos);
-document.getElementById("balance").innerHTML=money(ingresos-gastos);
-document.getElementById("totalMov").innerHTML=historial.length;
-document.getElementById("mayor").innerHTML=money(max);
-document.getElementById("topCat").innerHTML=topCat;
-
-let prom = historial.length ? totalGastos / historial.length : 0;
-document.getElementById("promedio").innerHTML=money(prom);
-
+document.getElementById("ingresos").innerText=money(ingresos);
+document.getElementById("gastos").innerText=money(gastos);
+document.getElementById("balance").innerText=money(ingresos-gastos);
 }
 
-async function enviar(datos){
+/* SEND */
+async function enviar(data){
 return await fetch(URL_SCRIPT,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
-body:JSON.stringify(datos)
+body:JSON.stringify(data)
 });
 }
 
-async function borrar(index){
+/* DELETE */
+async function borrar(id){
 
-await fetch(URL_SCRIPT,{
+if(!confirm("¿Eliminar este movimiento?")) return;
+
+let r=await fetch(URL_SCRIPT,{
 method:"POST",
 headers:{"Content-Type":"text/plain;charset=utf-8"},
-body:JSON.stringify({action:"delete",index:index})
+body:JSON.stringify({action:"delete",ID:id})
 });
+
+let res=await r.json();
+
+if(res.status==="deleted"){
+toast("Eliminado ✔️","#ef4444");
+}else{
+toast("Error al eliminar","#ef4444");
+}
 
 await cargarDatos();
 }
 
-async function guardar(){
+/* SAVE */
+document.getElementById("formulario").addEventListener("submit",async e=>{
+e.preventDefault();
 
 let fecha=document.getElementById("fecha").value;
 let descripcion=document.getElementById("descripcion").value.trim();
-let monto=Number(document.getElementById("monto").value.replace(/\./g,""));
+let monto=Number(document.getElementById("monto").value);
 let categoria=document.getElementById("categoria").value;
 
 if(!descripcion || monto<=0){
-alert("Datos inválidos");
+toast("Datos inválidos","#ef4444");
 return;
 }
 
 let tipo=categoria.includes("Ingreso")?"Ingreso":"Gasto";
-let f=new Date(fecha);
 
-let datos={
+let r=await enviar({
 Fecha:fecha,
 Categoría:categoria,
 Descripción:descripcion,
 Monto:monto,
-Tipo:tipo,
-Mes:f.getMonth()+1,
-Año:f.getFullYear()
-};
+Tipo:tipo
+});
 
-await enviar(datos);
-await cargarDatos();
+let res=await r.json();
+
+if(res.status==="ok"){
+toast("Guardado ✔️");
+}else{
+toast("Error al guardar","#ef4444");
+}
 
 document.getElementById("descripcion").value="";
 document.getElementById("monto").value="";
-}
 
-document.getElementById("formulario").addEventListener("submit",e=>{
-e.preventDefault();
-guardar();
+await cargarDatos();
 });
 
+/* INIT */
 document.getElementById("fecha").valueAsDate=new Date();
 cargarDatos();
 
