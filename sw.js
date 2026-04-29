@@ -1,7 +1,6 @@
-const CACHE_NAME = "PRESUPUESTO-2.0";
+const CACHE_NAME = "PRESUPUESTO-2.1";
 
 const FILES_TO_CACHE = [
-  "./",
   "./index.html",
   "./manifest.json",
   "./sw.js"
@@ -34,8 +33,15 @@ self.addEventListener("activate", (event) => {
 // FETCH (modo offline)
 self.addEventListener("fetch", (event) => {
   event.respondWith(
-    fetch(event.request).catch(() => {
-      return caches.match(event.request);
-    })
+    fetch(event.request)
+      .then((response) => {
+        return caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, response.clone());
+          return response;
+        });
+      })
+      .catch(() => {
+        return caches.match(event.request);
+      })
   );
 });
