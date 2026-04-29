@@ -395,12 +395,7 @@ margin:10px 0 4px;
 
 <script>
 const URL="https://script.google.com/macros/s/AKfycbwXGhRN-TJxXf4hvwk_BFV52Javiqn6Lzz5ps6M1yTz9PJy-9kDcsUKJLzUY-mTS1Z2/exec";
-const cockpit = document.getElementById("cockpit");
-const lista = document.getElementById("lista");
-const favList = document.getElementById("favList");
-const goalList = document.getElementById("goalList");
-const syncCount = document.getElementById("syncCount");
-  
+
 let data=[];
 let pending=JSON.parse(localStorage.getItem("pendingQueue")||"[]");
 let hidden=localStorage.getItem("hideMoney")==="1";
