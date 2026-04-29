@@ -1,4 +1,4 @@
-const CACHE_NAME = "PRESUPUESTO-2.2";
+const CACHE_NAME = "PRESUPUESTO-2.2.1";
 
 const FILES_TO_CACHE = [
   "./index.html",
