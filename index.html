@@ -157,7 +157,6 @@
       background:rgba(34,211,238,.2);color:var(--cross);
     }
 
-    /* Cross transfer card */
     .cross-card{
       background:rgba(34,211,238,.07);
       border:1px solid rgba(34,211,238,.25);
@@ -165,7 +164,6 @@
     }
     .cross-card .title{color:var(--cross)}
 
-    /* Resumen consolidado */
     .consolidado-card{
       background:rgba(255,255,255,.04);
       border:1px solid var(--line);
@@ -220,6 +218,10 @@
     .modal h3{font-size:18px;font-weight:800;margin-bottom:8px}
     .modal p{font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5}
     .modal-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+    .consolidado-loading{
+      text-align:center;padding:16px;font-size:12px;color:var(--muted);
+    }
   </style>
 </head>
 <body>
@@ -251,10 +253,12 @@
   <!-- HOME -->
   <section class="tab active" id="tab-home">
 
-    <!-- Resumen consolidado CORREGIDO -->
     <div class="consolidado-card" id="crossCard" style="display:none">
-      <div class="title">📊 Resumen consolidado</div>
-      <div class="consolidado-row" id="crossSummary"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="title" style="margin-bottom:0">📊 Resumen consolidado</div>
+        <button class="small-btn" onclick="refreshConsolidado()" style="font-size:11px">🔄 Actualizar</button>
+      </div>
+      <div id="crossSummary"></div>
       <div id="crossTraspasos" style="margin-top:10px"></div>
     </div>
 
@@ -272,7 +276,6 @@
 
     <div class="card">
       <div class="title">➕ Nuevo movimiento <span class="ctx-label" id="movCtxLabel">Personal</span></div>
-      <!-- 4 tabs: ingreso, gasto, transferencia interna, traspaso entre contextos -->
       <div class="mode-tabs">
         <div class="mode-tab active" onclick="setMode('ingreso',this)">💰 Ingreso</div>
         <div class="mode-tab"        onclick="setMode('gasto',this)">💸 Gasto</div>
@@ -282,7 +285,6 @@
 
       <input type="date" id="fecha">
 
-      <!-- Normal: ingreso / gasto -->
       <div class="form-section active" id="fs-normal">
         <label>Cuenta</label>
         <select id="cuentaSel"></select>
@@ -292,7 +294,6 @@
         <input type="text" id="montoInput"  placeholder="Monto  ej: 20.000">
       </div>
 
-      <!-- Transferencia interna -->
       <div class="form-section" id="fs-transfer">
         <label>Cuenta origen (sale el dinero)</label>
         <select id="cuentaOrigen"></select>
@@ -303,7 +304,6 @@
         <input type="text" id="descTransfer"  placeholder="Descripción (opcional)">
       </div>
 
-      <!-- Traspaso entre contextos Personal ↔ Negocio -->
       <div class="form-section" id="fs-traspaso">
         <div class="alert info" style="margin-bottom:12px">
           💡 Mueve dinero entre tus finanzas <b>personales</b> y tu <b>negocio</b>. Se registra en ambos contextos.
@@ -424,6 +424,15 @@
       </select>
       <button class="primary" onclick="addCategoria()">➕ Agregar categoría</button>
     </div>
+
+    <div class="card">
+      <div class="title">🧹 Limpiar datos</div>
+      <div class="alert mid" style="margin-bottom:12px">
+        Usa esto solo si el consolidado muestra datos incorrectos. Limpia el caché local de un contexto específico.
+      </div>
+      <button class="secondary" onclick="limpiarCache('personal')" style="margin-bottom:8px">🗑️ Limpiar caché Personal</button>
+      <button class="secondary" onclick="limpiarCache('negocio')">🗑️ Limpiar caché Negocio</button>
+    </div>
   </section>
 
   <nav class="nav">
@@ -452,7 +461,7 @@
     /* ══════════════════════════════════════
        CONFIG
     ══════════════════════════════════════ */
-    const API_URL    = "https://script.google.com/macros/s/AKfycbwXGhRN-TJxXf4hvwk_BFV52Javiqn6Lzz5ps6M1yTz9PJy-9kDcsUKJLzUY-mTS1Z2/exec";
+    const API_URL    = "https://script.google.com/macros/s/AKfycbyUpcWZz6q9l3woOpnB90db5LxS8ZjU5EpH_OwZL9DbQo54_NtDoe0zEF7CnCgBbDtT/exec";
     const ACC_COLORS = ["#2563eb","#22c55e","#f59e0b","#ec4899","#a78bfa","#14b8a6"];
 
     const CATS_DEFAULT_PERSONAL = [
@@ -528,9 +537,26 @@
     function keyFor(base) {
       return contexto === "negocio" ? base + "Negocio" : base;
     }
-    // Obtener key de un contexto específico (para consolidado y traspasos)
     function keyForCtx(base, ctx) {
       return ctx === "negocio" ? base + "Negocio" : base;
+    }
+
+    /* ══════════════════════════════════════
+       LIMPIAR CACHÉ
+    ══════════════════════════════════════ */
+    function limpiarCache(ctx) {
+      if (!confirm(`¿Limpiar caché local de ${ctx}? Los datos del servidor se recargarán.`)) return;
+      localStorage.removeItem(keyForCtx("dataCache", ctx));
+      localStorage.removeItem(keyForCtx("pendingQueue", ctx));
+      if (ctx === contexto) {
+        data = []; pending = [];
+        elSyncCount.innerText = 0;
+        elPendingCount.innerText = 0;
+        render();
+        load();
+      }
+      renderCrossCard();
+      toast(`✔ Caché de ${ctx} limpiado`);
     }
 
     /* ══════════════════════════════════════
@@ -576,7 +602,7 @@
       poblarSelectsCuentas();
       poblarSelectCategoria(modoActual === "ingreso" ? "ingreso" : "gasto");
       actualizarLabelsContexto();
-      poblarSelectsTraspaso(); // ← pobla cuentas del contexto opuesto
+      poblarSelectsTraspaso();
       render();
       renderCrossCard();
       load();
@@ -610,36 +636,38 @@
       $("listTitle").innerHTML       = "📋 " + txt + " · Movimientos del mes";
       $("ctxSaldoLabel").innerText   = isNeg ? "Capital disponible del negocio" : "Saldo total disponible";
 
-      // Actualizar label del tab traspaso
       let tabT = $("tabTraspaso");
       if (tabT) tabT.textContent = isNeg ? "🔀 → Personal" : "🔀 → Negocio";
     }
 
     /* ══════════════════════════════════════
-       CONSOLIDADO CORREGIDO
-       Lee cada contexto con su key correcta
+       CONSOLIDADO — LEE DEL SERVIDOR
+       Cada contexto tiene su propia URL con ?ctx=
     ══════════════════════════════════════ */
-    function calcCtxData(ctx) {
-      // Cuentas de este contexto
-      let cuentasKey = keyForCtx("cuentas", ctx);
-      let defaultC = ctx === "negocio"
-        ? [{ id:"caja_neg", saldoInicial:0 }, { id:"banco_neg", saldoInicial:0 }]
-        : [{ id:"nequi", saldoInicial:0 }, { id:"davivienda", saldoInicial:0 }, { id:"efectivo", saldoInicial:0 }];
-      let cuentasCtx = JSON.parse(localStorage.getItem(cuentasKey) || JSON.stringify(defaultC));
-      cuentasCtx = cuentasCtx.map(c => ({ saldoInicial:0, ...c }));
 
-      // Movimientos de este contexto
-      let dataKey = keyForCtx("dataCache", ctx);
-      let pendingKey = keyForCtx("pendingQueue", ctx);
-      let arr = JSON.parse(localStorage.getItem(dataKey) || "[]");
-      let pend = JSON.parse(localStorage.getItem(pendingKey) || "[]");
-      let todos = [...arr, ...pend];
+    // Carga datos frescos del servidor para un contexto específico
+    // sin tocar las variables globales del contexto activo
+    async function fetchCtxData(ctx) {
+      try {
+        let r = await fetch(API_URL + "?t=" + Date.now() + "&ctx=" + ctx);
+        let arr = await r.json();
+        if (!Array.isArray(arr)) arr = [];
+        // Actualizar caché local de ese contexto
+        localStorage.setItem(keyForCtx("dataCache", ctx), JSON.stringify(arr));
+        return arr;
+      } catch(e) {
+        // Fallback al caché local si no hay red
+        let cached = localStorage.getItem(keyForCtx("dataCache", ctx));
+        return cached ? JSON.parse(cached) : [];
+      }
+    }
 
-      // Calcular saldos
+    // Calcula saldos/ingresos/gastos a partir de un array de movimientos y cuentas
+    function calcCtxFromArray(arr, pend, cuentasCtx) {
       let saldos = {};
       cuentasCtx.forEach(c => { saldos[c.id] = Number(c.saldoInicial) || 0; });
 
-      todos.forEach(x => {
+      [...arr, ...pend].forEach(x => {
         let m = Number(x.Monto) || 0;
         if (x.Tipo === "Transferencia") {
           if (saldos[x.CuentaOrigen]  !== undefined) saldos[x.CuentaOrigen]  -= m;
@@ -658,71 +686,105 @@
         }
       });
 
-      let ing = todos.reduce((a,x) => x.Tipo==="Ingreso" ? a+Number(x.Monto||0):a, 0);
-      let gas = todos.reduce((a,x) => x.Tipo==="Gasto"   ? a+Number(x.Monto||0):a, 0);
-      let sal = Object.values(saldos).reduce((a,b) => a+b, 0);
+      let todos = [...arr, ...pend];
+      let ing = todos.reduce((a,x) => x.Tipo==="Ingreso"  ? a+Number(x.Monto||0):a, 0);
+      let gas = todos.reduce((a,x) => x.Tipo==="Gasto"    ? a+Number(x.Monto||0):a, 0);
+      let sal = Object.values(saldos).reduce((a,b)=>a+b,0);
+      let traspasoEntradas = todos.filter(x=>x.Tipo==="TraspasoEntrada").reduce((a,x)=>a+Number(x.Monto||0),0);
+      let traspasoSalidas  = todos.filter(x=>x.Tipo==="TraspasoSalida").reduce((a,x)=>a+Number(x.Monto||0),0);
 
-      // Traspasos que afectan este contexto
-      let traspasoEntradas = todos.filter(x => x.Tipo==="TraspasoEntrada").reduce((a,x)=>a+Number(x.Monto||0),0);
-      let traspasoSalidas  = todos.filter(x => x.Tipo==="TraspasoSalida").reduce((a,x)=>a+Number(x.Monto||0),0);
-
-      return { ing, gas, sal, cuentasCtx, saldos, traspasoEntradas, traspasoSalidas };
+      return { ing, gas, sal, saldos, traspasoEntradas, traspasoSalidas };
     }
 
-    function renderCrossCard() {
-      let p = calcCtxData("personal");
-      let n = calcCtxData("negocio");
-      let cross = $("crossCard");
-      let summary = $("crossSummary");
-      let traspasos = $("crossTraspasos");
+    function getCuentasCtx(ctx) {
+      let defaultPersonal = [
+        { id:"nequi",      nombre:"Nequi",      icon:"📱", saldoInicial:0 },
+        { id:"davivienda", nombre:"Davivienda",  icon:"🏦", saldoInicial:0 },
+        { id:"efectivo",   nombre:"Efectivo",    icon:"💵", saldoInicial:0 }
+      ];
+      let defaultNegocio = [
+        { id:"caja_neg",   nombre:"Caja",        icon:"🏪", saldoInicial:0 },
+        { id:"banco_neg",  nombre:"Banco Neg.",  icon:"🏦", saldoInicial:0 },
+      ];
+      let def = ctx === "negocio" ? defaultNegocio : defaultPersonal;
+      let stored = JSON.parse(localStorage.getItem(keyForCtx("cuentas", ctx)) || JSON.stringify(def));
+      return stored.map(c => ({ saldoInicial:0, ...c }));
+    }
 
+    async function renderCrossCard() {
+      let cross   = $("crossCard");
+      let summary = $("crossSummary");
+      let traspos = $("crossTraspasos");
+
+      // Mostrar estado de carga
+      cross.style.display = "block";
+      summary.innerHTML = `<div class="consolidado-loading">⏳ Cargando datos...</div>`;
+      traspos.innerHTML  = "";
+
+      // Obtener datos frescos de AMBOS contextos del servidor
+      let [arrP, arrN] = await Promise.all([
+        fetchCtxData("personal"),
+        fetchCtxData("negocio")
+      ]);
+
+      let pendP = JSON.parse(localStorage.getItem("pendingQueue")         || "[]");
+      let pendN = JSON.parse(localStorage.getItem("pendingQueueNegocio")  || "[]");
+
+      let cuentasP = getCuentasCtx("personal");
+      let cuentasN = getCuentasCtx("negocio");
+
+      let p = calcCtxFromArray(arrP, pendP, cuentasP);
+      let n = calcCtxFromArray(arrN, pendN, cuentasN);
+
+      // Si no hay absolutamente nada, ocultar
       if (!p.ing && !p.gas && !n.ing && !n.gas && !p.sal && !n.sal) {
         cross.style.display = "none"; return;
       }
-      cross.style.display = "block";
+
+      let totalSal = p.sal + n.sal;
 
       summary.innerHTML = `
-        <div class="consolidado-ctx personal-ctx">
-          <div style="font-size:12px;font-weight:800;color:var(--primary);margin-bottom:8px">👤 Personal</div>
-          <div style="font-size:22px;font-weight:800;color:${p.sal>=0?"var(--ok)":"var(--bad)"}">${money2(p.sal)}</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:4px">disponible</div>
-          <div style="font-size:11px;margin-top:6px">
-            <span style="color:var(--ok)">+${money2(p.ing)}</span>
-            <span style="color:var(--muted);margin:0 4px">·</span>
-            <span style="color:var(--bad)">-${money2(p.gas)}</span>
+        <div class="consolidado-row">
+          <div class="consolidado-ctx personal-ctx">
+            <div style="font-size:12px;font-weight:800;color:var(--primary);margin-bottom:8px">👤 Personal</div>
+            <div style="font-size:22px;font-weight:800;color:${p.sal>=0?"var(--ok)":"var(--bad)"}">${money2(p.sal)}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px">disponible</div>
+            <div style="font-size:11px;margin-top:6px">
+              <span style="color:var(--ok)">+${money2(p.ing)}</span>
+              <span style="color:var(--muted);margin:0 4px">·</span>
+              <span style="color:var(--bad)">-${money2(p.gas)}</span>
+            </div>
+          </div>
+          <div class="consolidado-ctx negocio-ctx">
+            <div style="font-size:12px;font-weight:800;color:var(--biz);margin-bottom:8px">🏪 Negocio</div>
+            <div style="font-size:22px;font-weight:800;color:${n.sal>=0?"var(--ok)":"var(--bad)"}">${money2(n.sal)}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px">capital</div>
+            <div style="font-size:11px;margin-top:6px">
+              <span style="color:var(--ok)">+${money2(n.ing)}</span>
+              <span style="color:var(--muted);margin:0 4px">·</span>
+              <span style="color:var(--bad)">-${money2(n.gas)}</span>
+            </div>
           </div>
         </div>
-        <div class="consolidado-ctx negocio-ctx">
-          <div style="font-size:12px;font-weight:800;color:var(--biz);margin-bottom:8px">🏪 Negocio</div>
-          <div style="font-size:22px;font-weight:800;color:${n.sal>=0?"var(--ok)":"var(--bad)"}">${money2(n.sal)}</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:4px">capital</div>
-          <div style="font-size:11px;margin-top:6px">
-            <span style="color:var(--ok)">+${money2(n.ing)}</span>
-            <span style="color:var(--muted);margin:0 4px">·</span>
-            <span style="color:var(--bad)">-${money2(n.gas)}</span>
-          </div>
-        </div>`;
-
-      // Total consolidado
-      let totalSal = p.sal + n.sal;
-      summary.innerHTML += `
-        <div class="kpi" style="grid-column:1/-1;margin-top:4px;border:1px solid rgba(34,211,238,.2);background:rgba(34,211,238,.07)">
+        <div class="kpi" style="margin-top:10px;border:1px solid rgba(34,211,238,.2);background:rgba(34,211,238,.07)">
           <span style="color:var(--cross)">💼 Total consolidado</span>
           <strong style="color:${totalSal>=0?"var(--ok)":"var(--bad)"}">${money2(totalSal)}</strong>
         </div>`;
 
-      // Resumen de traspasos si los hay
       let tP = p.traspasoEntradas - p.traspasoSalidas;
       let tN = n.traspasoEntradas - n.traspasoSalidas;
       if (p.traspasoEntradas || p.traspasoSalidas || n.traspasoEntradas || n.traspasoSalidas) {
-        traspasos.innerHTML = `
+        traspos.innerHTML = `
           <div style="font-size:11px;color:var(--cross);font-weight:700;margin-bottom:4px">🔀 Traspasos entre contextos este mes</div>
           <div style="font-size:11px;color:var(--muted)">
             Personal: ${tP>=0?"+":""}${money2(tP)} neto &nbsp;·&nbsp; Negocio: ${tN>=0?"+":""}${money2(tN)} neto
           </div>`;
-      } else {
-        traspasos.innerHTML = "";
       }
+    }
+
+    function refreshConsolidado() {
+      renderCrossCard();
+      toast("🔄 Actualizando consolidado...");
     }
 
     function money2(n) {
@@ -794,7 +856,6 @@
       if (elCuentaDestino.options.length > 1) elCuentaDestino.selectedIndex = 1;
     }
 
-    /* Pobla los selects del traspaso entre contextos */
     function poblarSelectsTraspaso() {
       let selOrigen  = $("traspasoOrigen");
       let selDestino = $("traspasoDestino");
@@ -805,17 +866,8 @@
       let ctxOrig  = dir === "p2n" ? "personal" : "negocio";
       let ctxDest  = dir === "p2n" ? "negocio"  : "personal";
 
-      let keyO = keyForCtx("cuentas", ctxOrig);
-      let keyD = keyForCtx("cuentas", ctxDest);
-      let defO = ctxOrig === "negocio"
-        ? [{ id:"caja_neg", nombre:"Caja", icon:"🏪" }, { id:"banco_neg", nombre:"Banco Neg.", icon:"🏦" }]
-        : [{ id:"nequi", nombre:"Nequi", icon:"📱" }, { id:"davivienda", nombre:"Davivienda", icon:"🏦" }, { id:"efectivo", nombre:"Efectivo", icon:"💵" }];
-      let defD = ctxDest === "negocio"
-        ? [{ id:"caja_neg", nombre:"Caja", icon:"🏪" }, { id:"banco_neg", nombre:"Banco Neg.", icon:"🏦" }]
-        : [{ id:"nequi", nombre:"Nequi", icon:"📱" }, { id:"davivienda", nombre:"Davivienda", icon:"🏦" }, { id:"efectivo", nombre:"Efectivo", icon:"💵" }];
-
-      let cuentasOrig = JSON.parse(localStorage.getItem(keyO) || JSON.stringify(defO));
-      let cuentasDest = JSON.parse(localStorage.getItem(keyD) || JSON.stringify(defD));
+      let cuentasOrig = getCuentasCtx(ctxOrig);
+      let cuentasDest = getCuentasCtx(ctxDest);
 
       selOrigen.innerHTML = "";
       cuentasOrig.forEach(c => {
@@ -876,7 +928,7 @@
     }
 
     /* ══════════════════════════════════════
-       SALDOS (considera traspasos)
+       SALDOS
     ══════════════════════════════════════ */
     function calcSaldosCuentas() {
       let saldos = {};
@@ -1026,7 +1078,6 @@
         poblarSelectCategoria(mode === "ingreso" ? "ingreso" : "gasto");
       }
 
-      // Color del botón guardar
       elSaveBtn.className = mode === "traspaso" ? "cross-btn" : "primary";
       elSaveBtn.innerText = mode === "traspaso" ? "🔀 Registrar traspaso" : "💾 Guardar";
     }
@@ -1092,6 +1143,7 @@
       try {
         let r = await fetch(API_URL + "?t=" + Date.now() + "&ctx=" + contexto);
         let fresh = await r.json();
+        if (!Array.isArray(fresh)) return;
         if (JSON.stringify(fresh) !== JSON.stringify(data)) {
           data = fresh;
           localStorage.setItem(keyFor("dataCache"), JSON.stringify(data));
@@ -1103,10 +1155,9 @@
     }
 
     /* ══════════════════════════════════════
-       GUARDAR (incluye traspaso entre ctxs)
+       GUARDAR
     ══════════════════════════════════════ */
     async function guardar() {
-      /* ── TRASPASO ENTRE CONTEXTOS ── */
       if (modoActual === "traspaso") {
         await guardarTraspaso(); return;
       }
@@ -1201,16 +1252,11 @@
       let ctxOrig = dir === "p2n" ? "personal" : "negocio";
       let ctxDest = dir === "p2n" ? "negocio"  : "personal";
 
-      // Verificar saldo del origen
-      let keyOrigCuentas = keyForCtx("cuentas", ctxOrig);
-      let defOrigCuentas = ctxOrig === "negocio"
-        ? [{ id:"caja_neg", saldoInicial:0 }, { id:"banco_neg", saldoInicial:0 }]
-        : [{ id:"nequi", saldoInicial:0 }, { id:"davivienda", saldoInicial:0 }, { id:"efectivo", saldoInicial:0 }];
-      let cuentasOrig = JSON.parse(localStorage.getItem(keyOrigCuentas) || JSON.stringify(defOrigCuentas));
-
+      let cuentasOrig = getCuentasCtx(ctxOrig);
       let dataOrig    = JSON.parse(localStorage.getItem(keyForCtx("dataCache", ctxOrig)) || "[]");
       let pendingOrig = JSON.parse(localStorage.getItem(keyForCtx("pendingQueue", ctxOrig)) || "[]");
-      let saldosOrig  = {};
+
+      let saldosOrig = {};
       cuentasOrig.forEach(c => { saldosOrig[c.id] = Number(c.saldoInicial)||0; });
       [...dataOrig, ...pendingOrig].forEach(x => {
         let mx = Number(x.Monto)||0;
@@ -1236,9 +1282,9 @@
         return;
       }
 
-      // Registro en contexto ORIGEN (TraspasoSalida)
+      let ref = Date.now();
       let regOrigen = {
-        ID: "trspaso_out_" + Date.now(),
+        ID: "trspaso_out_" + ref,
         Fecha: fecha,
         Tipo: "TraspasoSalida",
         Cuenta: cuentaOrigenId,
@@ -1246,12 +1292,11 @@
         Descripción: desc + " → " + (ctxDest === "negocio" ? "🏪 Negocio" : "👤 Personal"),
         Monto: m,
         Contexto: ctxOrig,
-        TraspasoRef: Date.now()
+        TraspasoRef: ref
       };
 
-      // Registro en contexto DESTINO (TraspasoEntrada)
       let regDestino = {
-        ID: "trspaso_in_" + Date.now(),
+        ID: "trspaso_in_" + ref,
         Fecha: fecha,
         Tipo: "TraspasoEntrada",
         Cuenta: cuentaDestinoId,
@@ -1259,19 +1304,16 @@
         Descripción: desc + " ← " + (ctxOrig === "negocio" ? "🏪 Negocio" : "👤 Personal"),
         Monto: m,
         Contexto: ctxDest,
-        TraspasoRef: regOrigen.TraspasoRef
+        TraspasoRef: ref
       };
 
-      // Guardar en localStorage del origen
       dataOrig.push(regOrigen);
       localStorage.setItem(keyForCtx("dataCache", ctxOrig), JSON.stringify(dataOrig));
 
-      // Guardar en localStorage del destino
       let dataDest = JSON.parse(localStorage.getItem(keyForCtx("dataCache", ctxDest)) || "[]");
       dataDest.push(regDestino);
       localStorage.setItem(keyForCtx("dataCache", ctxDest), JSON.stringify(dataDest));
 
-      // Si estamos en el contexto origen o destino, actualizar data en memoria
       if (contexto === ctxOrig) {
         data = dataOrig;
         elSyncCount.innerText = data.length;
@@ -1280,7 +1322,6 @@
         elSyncCount.innerText = data.length;
       }
 
-      // Limpiar campos
       $("montoTrspaso").value = $("descTrspaso").value = "";
       render();
       renderCrossCard();
@@ -1289,13 +1330,11 @@
       let dirLabel = dir === "p2n" ? "👤 Personal → 🏪 Negocio" : "🏪 Negocio → 👤 Personal";
       toast(`✔ Traspaso registrado: ${dirLabel} $${Number(m).toLocaleString("es-CO")}`);
 
-      // Enviar a Google Sheets si hay conexión
       if (navigator.onLine) {
         try {
           await fetch(API_URL, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body: JSON.stringify(regOrigen) });
           await fetch(API_URL, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body: JSON.stringify(regDestino) });
         } catch(e) {
-          // Guardar pendientes del contexto opuesto
           let pendDest = JSON.parse(localStorage.getItem(keyForCtx("pendingQueue", ctxDest)) || "[]");
           pendDest.push(regDestino);
           localStorage.setItem(keyForCtx("pendingQueue", ctxDest), JSON.stringify(pendDest));
@@ -1516,7 +1555,6 @@
       let disponible = Math.max((ing-gas)/7,0);
       let isNeg = contexto === "negocio";
 
-      // Traspasos del mes en el contexto actual
       let traspasoSalidas  = data.filter(x=>x.Tipo==="TraspasoSalida").reduce((a,x)=>a+Number(x.Monto||0),0);
       let traspasoEntradas = data.filter(x=>x.Tipo==="TraspasoEntrada").reduce((a,x)=>a+Number(x.Monto||0),0);
       let traspasoNeto     = traspasoEntradas - traspasoSalidas;
@@ -1667,7 +1705,6 @@
     load();
     syncPending();
 
-    // Listener para que al cambiar la dirección del traspaso se actualicen las cuentas
     document.getElementById("traspasoDireccion").addEventListener("change", poblarSelectsTraspaso);
 
   </script>
