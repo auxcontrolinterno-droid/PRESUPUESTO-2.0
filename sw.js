@@ -1,4 +1,4 @@
-const CACHE_NAME = "presupuesto-ai v2.2.31";
+const CACHE_NAME = "presupuesto-ai v2.2.41";
 
 const FILES_TO_CACHE = [
   "./",
