@@ -504,21 +504,29 @@ load();
 }  
   
 /* delete */  
-async function borrar(id){  
-if(!confirm("Eliminar movimiento")) return;  
-  
-data=data.filter(x=>String(x.ID)!==String(id));  
-render();  
-  
-try{  
-await fetch(URL,{  
-method:"POST",  
-headers:{"Content-Type":"text/plain;charset=utf-8"},  
-body:JSON.stringify({action:"delete",ID:id})  
-});  
-toast("Eliminado");  
-}catch(e){}  
-}  
+async function borrar(i){
+
+if(!confirm("Eliminar movimiento")) return;
+
+// eliminar en frontend
+let item = data[i];
+data.splice(i,1);
+render();
+
+try{
+await fetch(URL,{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+action:"delete",
+data:item
+})
+});
+toast("Eliminado");
+}catch(e){
+toast("Error al eliminar en servidor");
+}
+}
   
 /* goals */  
 function addGoal(){  
@@ -536,7 +544,7 @@ localStorage.setItem("goals",JSON.stringify(goals));
 goalName.value="";  
 goalValue.value="";  
   
-render();  
+
 toast("🎯 Meta guardada");  
 }  
 
@@ -605,7 +613,8 @@ render();
 }  
   
 /* render */  
-function render(){  
+
+renderCockpit(ing,gas,afunction render(){  
   
 lista.innerHTML="";  
   
@@ -658,13 +667,14 @@ lista.innerHTML+=`
 <div class="item ${x.Tipo==="Ingreso"?"ingreso":"gasto"}">  
 <div>${x.Categoría} - ${x.Descripción}</div>  
 <div class="price">${money(m)}</div>  
-<button class="small-btn" onclick="borrar('${x.ID}')">🗑️</button>  
+<button class="small-btn" 
+onclick="borrar(${i})"
+>🗑️</button>  
 </div>`;  
 });  
   
 saldoTop.innerText=money(ing-gas);  
-  
-renderCockpit(ing,gas,ah);  
+  h);  
 renderCoach(ing,gas,cats);  
 renderGoals(ah);  
 charts(cats,ing,gas);  
