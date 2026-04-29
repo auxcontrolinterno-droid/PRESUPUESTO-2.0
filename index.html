@@ -795,18 +795,30 @@
     /* ══════════════════════════════════════
        LOAD
     ══════════════════════════════════════ */
-    async function load() {
-      try {
-        let r = await fetch(API_URL + "?t=" + Date.now());
-        data  = await r.json();
-        elSyncCount.innerText = data.length;
-        render();
-      } catch(e) {
-        console.error("Error cargando datos:", e);
-        render();
-      }
-    }
+   async function load() {
+  // Mostrar datos en caché inmediatamente (carga instantánea)
+  let cached = localStorage.getItem("dataCache");
+  if (cached) {
+    data = JSON.parse(cached);
+    elSyncCount.innerText = data.length;
+    render();
+  }
 
+  // Actualizar en segundo plano
+  try {
+    let r = await fetch(API_URL + "?t=" + Date.now());
+    let fresh = await r.json();
+    // Solo re-renderiza si los datos cambiaron
+    if (JSON.stringify(fresh) !== JSON.stringify(data)) {
+      data = fresh;
+      localStorage.setItem("dataCache", JSON.stringify(data));
+      elSyncCount.innerText = data.length;
+      render();
+    }
+  } catch(e) {
+    console.error("Error cargando datos:", e);
+  }
+}
     /* ══════════════════════════════════════
        GUARDAR
     ══════════════════════════════════════ */
