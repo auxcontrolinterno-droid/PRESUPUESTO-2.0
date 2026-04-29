@@ -876,15 +876,104 @@ Faltan ${money(faltan)}
 /* charts */
 function charts(cats,ing,gas){
 
-[c1,c2].forEach(x=>x&&x.destroy());
+[c1,c2,c3,c4,c5].forEach(x=>x&&x.destroy());
 
+/* ================= 1. CATEGORÍAS ================= */
 c1=new Chart(chart1,{
 type:"doughnut",
 data:{
 labels:Object.keys(cats),
-datasets:[{data:Object.values(cats)}]
+datasets:[{
+data:Object.values(cats)
+}]
 }
 });
+
+/* ================= 2. INGRESOS VS GASTOS ================= */
+c2=new Chart(chart2,{
+type:"bar",
+data:{
+labels:["Ingresos","Gastos"],
+datasets:[{
+data:[ing,gas]
+}]
+}
+});
+
+/* ================= 3. TENDENCIA SALDO DIARIO ================= */
+let dias={};
+let saldo=0;
+
+let ordenado=[...data].sort((a,b)=>new Date(a.Fecha)-new Date(b.Fecha));
+
+ordenado.forEach(x=>{
+let m=Number(x.Monto)||0;
+if(x.Tipo==="Ingreso") saldo+=m;
+else saldo-=m;
+
+dias[x.Fecha]=saldo;
+});
+
+c3=new Chart(chart3,{
+type:"line",
+data:{
+labels:Object.keys(dias),
+datasets:[{
+data:Object.values(dias),
+fill:false,
+tension:0.3
+}]
+}
+});
+
+/* ================= 4. GASTOS POR DÍA SEMANA ================= */
+let week=[0,0,0,0,0,0,0];
+
+data.forEach(x=>{
+if(x.Tipo==="Gasto"){
+let d=new Date(x.Fecha);
+week[d.getDay()]+=Number(x.Monto)||0;
+}
+});
+
+c4=new Chart(chart4,{
+type:"bar",
+data:{
+labels:["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"],
+datasets:[{
+data:week
+}]
+}
+});
+
+/* ================= 5. TOP FUGAS REALES ================= */
+let map={};
+
+data.forEach(x=>{
+if(x.Tipo==="Gasto"){
+let key=x.Descripción;
+map[key]=(map[key]||0)+Number(x.Monto||0);
+}
+});
+
+let top=Object.entries(map)
+.sort((a,b)=>b[1]-a[1])
+.slice(0,5);
+
+c5=new Chart(chart5,{
+type:"bar",
+data:{
+labels:top.map(x=>x[0]),
+datasets:[{
+data:top.map(x=>x[1])
+}]
+},
+options:{
+indexAxis:"y"
+}
+});
+
+}
 
 c2=new Chart(chart2,{
 type:"bar",
