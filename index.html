@@ -5,7 +5,7 @@
   <meta name="theme-color" content="#0f172a">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-  <title>Banking PRO AI v15</title>
+  <title>Banking PRO AI v16</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -17,12 +17,12 @@
       --primary:#2563eb; --primary2:#1d4ed8;
       --ok:#22c55e; --bad:#ef4444; --warn:#f59e0b; --transfer:#a78bfa;
       --biz:#f59e0b; --biz2:#d97706;
+      --cross:#22d3ee; --cross2:#0891b2;
     }
     body.light {
       --bg1:#eef2ff; --bg2:#fff; --card:#fff; --line:#e5e7eb;
       --text:#111827; --muted:#64748b; --input:#f1f5f9; --inputText:#111827;
     }
-    /* Modo negocio: acento ámbar */
     body.modo-negocio { --primary:var(--biz); --primary2:var(--biz2); }
     body.modo-negocio .header { border-bottom:2px solid rgba(245,158,11,.3); }
 
@@ -50,9 +50,9 @@
     .primary{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff}
     .secondary{background:rgba(255,255,255,.08);color:var(--text)}
     .danger{background:rgba(239,68,68,.18);color:var(--bad);}
+    .cross-btn{background:linear-gradient(135deg,var(--cross),var(--cross2));color:#fff}
     .small-btn{padding:8px 12px;font-size:12px;width:auto;background:rgba(255,255,255,.08);color:var(--text);margin-top:8px}
 
-    /* Context toggle */
     .ctx-wrap{display:flex;gap:6px;margin-bottom:10px}
     .ctx-btn{
       flex:1;padding:10px 6px;font-size:13px;font-weight:700;border-radius:14px;
@@ -67,14 +67,16 @@
     }
     .ctx-label.personal{background:rgba(37,99,235,.2);color:var(--primary)}
     .ctx-label.negocio{background:rgba(245,158,11,.2);color:var(--biz)}
+    .ctx-label.cross{background:rgba(34,211,238,.2);color:var(--cross)}
 
-    .mode-tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px}
+    .mode-tabs{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:12px}
     .mode-tab{
-      padding:10px;font-size:13px;font-weight:700;
+      padding:10px 6px;font-size:12px;font-weight:700;
       background:rgba(255,255,255,.06);color:var(--muted);
       border-radius:12px;cursor:pointer;border:1px solid transparent;text-align:center;
     }
     .mode-tab.active{background:rgba(37,99,235,.2);color:var(--primary);border-color:var(--primary)}
+    .mode-tab.cross-active{background:rgba(34,211,238,.2);color:var(--cross);border-color:var(--cross)}
 
     .form-section{display:none}
     .form-section.active{display:block}
@@ -102,6 +104,7 @@
     .dist-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 
     .transfer-arrow{text-align:center;font-size:20px;margin:-4px 0 6px;color:var(--transfer)}
+    .cross-arrow{text-align:center;font-size:20px;margin:-4px 0 6px;color:var(--cross)}
 
     .tab{display:none}
     .tab.active{display:block}
@@ -110,12 +113,13 @@
     .ingreso{border-left-color:var(--ok)}
     .gasto{border-left-color:var(--bad)}
     .transferencia{border-left-color:var(--transfer)}
-    .price{font-weight:800;margin-top:6px}
+    .traspaso{border-left-color:var(--cross)}
 
     .alert{padding:10px;border-radius:12px;font-size:13px;margin-top:8px;line-height:1.45}
     .good{background:rgba(34,197,94,.14);color:var(--ok)}
     .bad{background:rgba(239,68,68,.14);color:var(--bad)}
     .mid{background:rgba(245,158,11,.14);color:var(--warn)}
+    .info{background:rgba(34,211,238,.12);color:var(--cross)}
 
     .progress{height:10px;background:rgba(255,255,255,.08);border-radius:20px;overflow:hidden;margin-top:8px}
     .bar{height:100%;background:linear-gradient(90deg,#22c55e,#84cc16);width:0%;transition:.3s}
@@ -149,15 +153,33 @@
       background:rgba(167,139,250,.2);color:var(--transfer);
       margin-left:4px;vertical-align:middle;
     }
+    .badge.cross-badge{
+      background:rgba(34,211,238,.2);color:var(--cross);
+    }
 
-    /* Resumen negocio vs personal */
-    .biz-summary{
-      background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.18);
+    /* Cross transfer card */
+    .cross-card{
+      background:rgba(34,211,238,.07);
+      border:1px solid rgba(34,211,238,.25);
+      border-radius:18px;padding:14px;margin-bottom:10px;
+    }
+    .cross-card .title{color:var(--cross)}
+
+    /* Resumen consolidado */
+    .consolidado-card{
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--line);
       border-radius:16px;padding:14px;margin-bottom:12px;
     }
-    .biz-summary .title{color:var(--biz)}
+    .consolidado-row{
+      display:grid;grid-template-columns:1fr 1fr;gap:10px;
+    }
+    .consolidado-ctx{
+      border-radius:14px;padding:12px;
+    }
+    .consolidado-ctx.personal-ctx{background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.2)}
+    .consolidado-ctx.negocio-ctx{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2)}
 
-    /* Cierre de mes */
     .mes-card{
       background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);
       border-radius:16px;padding:14px;margin-bottom:10px;
@@ -174,7 +196,6 @@
     .mes-kpi span{display:block;font-size:11px;color:var(--muted)}
     .mes-kpi strong{font-size:15px}
 
-    /* Categorías admin */
     .cat-chip{
       display:inline-flex;align-items:center;gap:6px;
       background:rgba(255,255,255,.07);border:1px solid var(--line);
@@ -187,7 +208,6 @@
     }
     .cat-chips-wrap{display:flex;flex-wrap:wrap;margin-bottom:10px}
 
-    /* Modal cierre mes */
     .modal-overlay{
       display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);
       z-index:1000;align-items:center;justify-content:center;padding:20px;
@@ -204,17 +224,15 @@
 </head>
 <body>
 
-  <!-- HEADER -->
   <div class="header">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
       <div>
-        <div class="small">Banking PRO AI v15</div>
+        <div class="small">Banking PRO AI v16</div>
         <div class="small" id="today"></div>
       </div>
       <div id="ctxIndicator" style="font-size:22px">👤</div>
     </div>
 
-    <!-- Context switcher -->
     <div class="ctx-wrap">
       <div id="ctxPersonal" class="ctx-btn ctx-active" onclick="setContexto('personal')">👤 Personal</div>
       <div id="ctxNegocio"  class="ctx-btn ctx-biz"   onclick="setContexto('negocio')">🏪 Mi Negocio</div>
@@ -233,10 +251,11 @@
   <!-- HOME -->
   <section class="tab active" id="tab-home">
 
-    <!-- Resumen cruzado (solo visible en home) -->
-    <div class="card" id="crossCard" style="display:none">
+    <!-- Resumen consolidado CORREGIDO -->
+    <div class="consolidado-card" id="crossCard" style="display:none">
       <div class="title">📊 Resumen consolidado</div>
-      <div class="grid2" id="crossSummary"></div>
+      <div class="consolidado-row" id="crossSummary"></div>
+      <div id="crossTraspasos" style="margin-top:10px"></div>
     </div>
 
     <div class="card">
@@ -253,12 +272,17 @@
 
     <div class="card">
       <div class="title">➕ Nuevo movimiento <span class="ctx-label" id="movCtxLabel">Personal</span></div>
+      <!-- 4 tabs: ingreso, gasto, transferencia interna, traspaso entre contextos -->
       <div class="mode-tabs">
         <div class="mode-tab active" onclick="setMode('ingreso',this)">💰 Ingreso</div>
         <div class="mode-tab"        onclick="setMode('gasto',this)">💸 Gasto</div>
-        <div class="mode-tab"        onclick="setMode('transferencia',this)">🔄 Transferir</div>
+        <div class="mode-tab"        onclick="setMode('transferencia',this)">🔄 Mover</div>
+        <div class="mode-tab"        id="tabTraspaso" onclick="setMode('traspaso',this)">🔀 Traspaso</div>
       </div>
+
       <input type="date" id="fecha">
+
+      <!-- Normal: ingreso / gasto -->
       <div class="form-section active" id="fs-normal">
         <label>Cuenta</label>
         <select id="cuentaSel"></select>
@@ -267,6 +291,8 @@
         <input type="text" id="descripcion" placeholder="Descripción">
         <input type="text" id="montoInput"  placeholder="Monto  ej: 20.000">
       </div>
+
+      <!-- Transferencia interna -->
       <div class="form-section" id="fs-transfer">
         <label>Cuenta origen (sale el dinero)</label>
         <select id="cuentaOrigen"></select>
@@ -276,6 +302,26 @@
         <input type="text" id="montoTransfer" placeholder="Monto a transferir  ej: 50.000">
         <input type="text" id="descTransfer"  placeholder="Descripción (opcional)">
       </div>
+
+      <!-- Traspaso entre contextos Personal ↔ Negocio -->
+      <div class="form-section" id="fs-traspaso">
+        <div class="alert info" style="margin-bottom:12px">
+          💡 Mueve dinero entre tus finanzas <b>personales</b> y tu <b>negocio</b>. Se registra en ambos contextos.
+        </div>
+        <label>Dirección del traspaso</label>
+        <select id="traspasoDireccion">
+          <option value="p2n">👤 Personal → 🏪 Negocio</option>
+          <option value="n2p">🏪 Negocio → 👤 Personal</option>
+        </select>
+        <label>Cuenta origen</label>
+        <select id="traspasoOrigen"></select>
+        <div class="cross-arrow">⬇️</div>
+        <label>Cuenta destino</label>
+        <select id="traspasoDestino"></select>
+        <input type="text" id="montoTrspaso" placeholder="Monto  ej: 100.000">
+        <input type="text" id="descTrspaso"  placeholder="Concepto del traspaso">
+      </div>
+
       <button class="primary" id="saveBtn" onclick="guardar()">💾 Guardar</button>
     </div>
 
@@ -328,7 +374,6 @@
 
   <!-- SETTINGS -->
   <section class="tab" id="tab-settings">
-
     <div class="card">
       <div class="title">⚙️ Tema</div>
       <button class="secondary" onclick="setTheme('dark')">🌙 Oscuro</button>
@@ -336,7 +381,6 @@
       <button class="secondary" onclick="setTheme('light')">☀️ Claro</button>
     </div>
 
-    <!-- CIERRE DE MES -->
     <div class="card">
       <div class="title">📅 Cierre de mes <span class="ctx-label" id="cierreCtxLabel">Personal</span></div>
       <div class="alert mid" style="margin-bottom:12px">
@@ -345,7 +389,6 @@
       <button class="primary" onclick="abrirModalCierre()">🔒 Cerrar mes actual</button>
     </div>
 
-    <!-- CUENTAS -->
     <div class="card">
       <div class="title" id="cuentasAdminTitle">🏦 Gestionar cuentas</div>
       <div id="cuentasAdmin"></div>
@@ -365,7 +408,6 @@
       <button class="primary" onclick="addCuenta()">➕ Agregar cuenta</button>
     </div>
 
-    <!-- CATEGORÍAS -->
     <div class="card">
       <div class="title" id="catsAdminTitle">🏷️ Gestionar categorías</div>
       <div id="catsAdmin"></div>
@@ -382,7 +424,6 @@
       </select>
       <button class="primary" onclick="addCategoria()">➕ Agregar categoría</button>
     </div>
-
   </section>
 
   <nav class="nav">
@@ -395,7 +436,6 @@
 
   <div class="toast" id="toast"></div>
 
-  <!-- MODAL CIERRE MES -->
   <div class="modal-overlay" id="modalCierre">
     <div class="modal">
       <h3>🔒 Cerrar mes</h3>
@@ -438,7 +478,6 @@
       { id:"reinversion",     nombre:"Reinversión",      icon:"🔄", tipo:"ambos"   },
     ];
 
-    /* ── DOM ── */
     const $ = id => document.getElementById(id);
     const elFecha          = $("fecha");
     const elDescripcion    = $("descripcion");
@@ -471,7 +510,6 @@
     const elHistorialLista = $("historialLista");
     const elHistorialCard  = $("historialCard");
 
-    /* ── STATE ── */
     let contexto   = localStorage.getItem("contexto") || "personal";
     let data       = [];
     let pending    = [];
@@ -485,12 +523,19 @@
     let c1,c2,c3,c4,c5,c6;
 
     /* ══════════════════════════════════════
-       CONTEXTO PERSONAL / NEGOCIO
+       HELPERS DE KEYS
     ══════════════════════════════════════ */
     function keyFor(base) {
       return contexto === "negocio" ? base + "Negocio" : base;
     }
+    // Obtener key de un contexto específico (para consolidado y traspasos)
+    function keyForCtx(base, ctx) {
+      return ctx === "negocio" ? base + "Negocio" : base;
+    }
 
+    /* ══════════════════════════════════════
+       CONTEXTO
+    ══════════════════════════════════════ */
     function cargarCuentasDeContexto() {
       let defaultPersonal = [
         { id:"nequi",      nombre:"Nequi",      icon:"📱", saldoInicial:0 },
@@ -531,6 +576,7 @@
       poblarSelectsCuentas();
       poblarSelectCategoria(modoActual === "ingreso" ? "ingreso" : "gasto");
       actualizarLabelsContexto();
+      poblarSelectsTraspaso(); // ← pobla cuentas del contexto opuesto
       render();
       renderCrossCard();
       load();
@@ -563,61 +609,122 @@
       $("catsAdminTitle").innerHTML  = "🏷️ Categorías del " + txt;
       $("listTitle").innerHTML       = "📋 " + txt + " · Movimientos del mes";
       $("ctxSaldoLabel").innerText   = isNeg ? "Capital disponible del negocio" : "Saldo total disponible";
+
+      // Actualizar label del tab traspaso
+      let tabT = $("tabTraspaso");
+      if (tabT) tabT.textContent = isNeg ? "🔀 → Personal" : "🔀 → Negocio";
     }
 
-    /* ── Tarjeta resumen cruzado ── */
-    function renderCrossCard() {
-      // Calcula ingresos y gastos de AMBOS contextos para mostrar en home
-      let calcCtx = (ctx) => {
-        let c = localStorage.getItem(ctx === "negocio" ? "dataCacheNegocio" : "dataCache");
-        if (!c) return { ing:0, gas:0 };
-        let arr = JSON.parse(c);
-        let cuentasCtx = JSON.parse(localStorage.getItem(ctx === "negocio" ? "cuentasNegocio" : "cuentas") || "[]");
-        let saldos = {};
-        cuentasCtx.forEach(x => { saldos[x.id] = Number(x.saldoInicial)||0; });
-        arr.forEach(x => {
-          let m = Number(x.Monto)||0;
-          if (x.Tipo==="Transferencia") {
-            if (saldos[x.CuentaOrigen]!==undefined) saldos[x.CuentaOrigen]-=m;
-            if (saldos[x.CuentaDestino]!==undefined) saldos[x.CuentaDestino]+=m;
-          } else {
-            let cid = x.Cuenta||"";
-            if (saldos[cid]===undefined) saldos[cid]=0;
-            if (x.Tipo==="Ingreso") saldos[cid]+=m; else saldos[cid]-=m;
-          }
-        });
-        let ing = arr.reduce((a,x) => x.Tipo==="Ingreso" ? a+Number(x.Monto||0):a, 0);
-        let gas = arr.reduce((a,x) => x.Tipo==="Gasto"   ? a+Number(x.Monto||0):a, 0);
-        let sal = Object.values(saldos).reduce((a,b)=>a+b,0);
-        return { ing, gas, sal };
-      };
+    /* ══════════════════════════════════════
+       CONSOLIDADO CORREGIDO
+       Lee cada contexto con su key correcta
+    ══════════════════════════════════════ */
+    function calcCtxData(ctx) {
+      // Cuentas de este contexto
+      let cuentasKey = keyForCtx("cuentas", ctx);
+      let defaultC = ctx === "negocio"
+        ? [{ id:"caja_neg", saldoInicial:0 }, { id:"banco_neg", saldoInicial:0 }]
+        : [{ id:"nequi", saldoInicial:0 }, { id:"davivienda", saldoInicial:0 }, { id:"efectivo", saldoInicial:0 }];
+      let cuentasCtx = JSON.parse(localStorage.getItem(cuentasKey) || JSON.stringify(defaultC));
+      cuentasCtx = cuentasCtx.map(c => ({ saldoInicial:0, ...c }));
 
-      let p = calcCtx("personal");
-      let n = calcCtx("negocio");
+      // Movimientos de este contexto
+      let dataKey = keyForCtx("dataCache", ctx);
+      let pendingKey = keyForCtx("pendingQueue", ctx);
+      let arr = JSON.parse(localStorage.getItem(dataKey) || "[]");
+      let pend = JSON.parse(localStorage.getItem(pendingKey) || "[]");
+      let todos = [...arr, ...pend];
+
+      // Calcular saldos
+      let saldos = {};
+      cuentasCtx.forEach(c => { saldos[c.id] = Number(c.saldoInicial) || 0; });
+
+      todos.forEach(x => {
+        let m = Number(x.Monto) || 0;
+        if (x.Tipo === "Transferencia") {
+          if (saldos[x.CuentaOrigen]  !== undefined) saldos[x.CuentaOrigen]  -= m;
+          if (saldos[x.CuentaDestino] !== undefined) saldos[x.CuentaDestino] += m;
+        } else if (x.Tipo === "TraspasoSalida") {
+          let cid = x.Cuenta || "";
+          if (saldos[cid] !== undefined) saldos[cid] -= m;
+        } else if (x.Tipo === "TraspasoEntrada") {
+          let cid = x.Cuenta || "";
+          if (saldos[cid] !== undefined) saldos[cid] += m;
+        } else {
+          let cid = x.Cuenta || "";
+          if (saldos[cid] === undefined) saldos[cid] = 0;
+          if (x.Tipo === "Ingreso") saldos[cid] += m;
+          else saldos[cid] -= m;
+        }
+      });
+
+      let ing = todos.reduce((a,x) => x.Tipo==="Ingreso" ? a+Number(x.Monto||0):a, 0);
+      let gas = todos.reduce((a,x) => x.Tipo==="Gasto"   ? a+Number(x.Monto||0):a, 0);
+      let sal = Object.values(saldos).reduce((a,b) => a+b, 0);
+
+      // Traspasos que afectan este contexto
+      let traspasoEntradas = todos.filter(x => x.Tipo==="TraspasoEntrada").reduce((a,x)=>a+Number(x.Monto||0),0);
+      let traspasoSalidas  = todos.filter(x => x.Tipo==="TraspasoSalida").reduce((a,x)=>a+Number(x.Monto||0),0);
+
+      return { ing, gas, sal, cuentasCtx, saldos, traspasoEntradas, traspasoSalidas };
+    }
+
+    function renderCrossCard() {
+      let p = calcCtxData("personal");
+      let n = calcCtxData("negocio");
       let cross = $("crossCard");
       let summary = $("crossSummary");
+      let traspasos = $("crossTraspasos");
 
-      if (!p.ing && !p.gas && !n.ing && !n.gas) { cross.style.display="none"; return; }
+      if (!p.ing && !p.gas && !n.ing && !n.gas && !p.sal && !n.sal) {
+        cross.style.display = "none"; return;
+      }
       cross.style.display = "block";
 
       summary.innerHTML = `
-        <div class="kpi" style="border-left:3px solid var(--primary)">
-          <span>👤 Personal · Saldo</span>
-          <strong style="color:${p.sal>=0?"var(--ok)":"var(--bad)"}">${money2(p.sal)}</strong>
-          <div style="font-size:11px;color:var(--muted);margin-top:4px">
-            +${money2(p.ing)} · -${money2(p.gas)}
+        <div class="consolidado-ctx personal-ctx">
+          <div style="font-size:12px;font-weight:800;color:var(--primary);margin-bottom:8px">👤 Personal</div>
+          <div style="font-size:22px;font-weight:800;color:${p.sal>=0?"var(--ok)":"var(--bad)"}">${money2(p.sal)}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">disponible</div>
+          <div style="font-size:11px;margin-top:6px">
+            <span style="color:var(--ok)">+${money2(p.ing)}</span>
+            <span style="color:var(--muted);margin:0 4px">·</span>
+            <span style="color:var(--bad)">-${money2(p.gas)}</span>
           </div>
         </div>
-        <div class="kpi" style="border-left:3px solid var(--biz)">
-          <span>🏪 Negocio · Capital</span>
-          <strong style="color:${n.sal>=0?"var(--ok)":"var(--bad)"}">${money2(n.sal)}</strong>
-          <div style="font-size:11px;color:var(--muted);margin-top:4px">
-            +${money2(n.ing)} · -${money2(n.gas)}
+        <div class="consolidado-ctx negocio-ctx">
+          <div style="font-size:12px;font-weight:800;color:var(--biz);margin-bottom:8px">🏪 Negocio</div>
+          <div style="font-size:22px;font-weight:800;color:${n.sal>=0?"var(--ok)":"var(--bad)"}">${money2(n.sal)}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">capital</div>
+          <div style="font-size:11px;margin-top:6px">
+            <span style="color:var(--ok)">+${money2(n.ing)}</span>
+            <span style="color:var(--muted);margin:0 4px">·</span>
+            <span style="color:var(--bad)">-${money2(n.gas)}</span>
           </div>
         </div>`;
+
+      // Total consolidado
+      let totalSal = p.sal + n.sal;
+      summary.innerHTML += `
+        <div class="kpi" style="grid-column:1/-1;margin-top:4px;border:1px solid rgba(34,211,238,.2);background:rgba(34,211,238,.07)">
+          <span style="color:var(--cross)">💼 Total consolidado</span>
+          <strong style="color:${totalSal>=0?"var(--ok)":"var(--bad)"}">${money2(totalSal)}</strong>
+        </div>`;
+
+      // Resumen de traspasos si los hay
+      let tP = p.traspasoEntradas - p.traspasoSalidas;
+      let tN = n.traspasoEntradas - n.traspasoSalidas;
+      if (p.traspasoEntradas || p.traspasoSalidas || n.traspasoEntradas || n.traspasoSalidas) {
+        traspasos.innerHTML = `
+          <div style="font-size:11px;color:var(--cross);font-weight:700;margin-bottom:4px">🔀 Traspasos entre contextos este mes</div>
+          <div style="font-size:11px;color:var(--muted)">
+            Personal: ${tP>=0?"+":""}${money2(tP)} neto &nbsp;·&nbsp; Negocio: ${tN>=0?"+":""}${money2(tN)} neto
+          </div>`;
+      } else {
+        traspasos.innerHTML = "";
+      }
     }
 
-    /* Versión de money sin ocultar, para cross card */
     function money2(n) {
       return "$" + Number(n).toLocaleString("es-CO");
     }
@@ -625,22 +732,12 @@
     /* ══════════════════════════════════════
        CATEGORÍAS
     ══════════════════════════════════════ */
-    function saveCategorias() {
-      localStorage.setItem(keyFor("categorias"), JSON.stringify(categorias));
-    }
-
-    function getCatsDefault() {
-      return contexto === "negocio" ? CATS_DEFAULT_NEGOCIO : CATS_DEFAULT_PERSONAL;
-    }
+    function saveCategorias() { localStorage.setItem(keyFor("categorias"), JSON.stringify(categorias)); }
+    function getCatsDefault() { return contexto === "negocio" ? CATS_DEFAULT_NEGOCIO : CATS_DEFAULT_PERSONAL; }
 
     function poblarSelectCategoria(modo) {
       elCategoria.innerHTML = "";
-      let filtradas = categorias.filter(c =>
-        c.tipo === "ambos" || c.tipo === modo ||
-        (modo === "ingreso" && c.tipo === "ingreso") ||
-        (modo === "gasto"   && c.tipo === "gasto")
-      );
-      filtradas.forEach(c => {
+      categorias.filter(c => c.tipo==="ambos" || c.tipo===modo).forEach(c => {
         let opt = document.createElement("option");
         opt.value = opt.textContent = c.icon + " " + c.nombre;
         elCategoria.appendChild(opt);
@@ -697,6 +794,46 @@
       if (elCuentaDestino.options.length > 1) elCuentaDestino.selectedIndex = 1;
     }
 
+    /* Pobla los selects del traspaso entre contextos */
+    function poblarSelectsTraspaso() {
+      let selOrigen  = $("traspasoOrigen");
+      let selDestino = $("traspasoDestino");
+      let selDir     = $("traspasoDireccion");
+      if (!selOrigen || !selDestino || !selDir) return;
+
+      let dir = selDir.value;
+      let ctxOrig  = dir === "p2n" ? "personal" : "negocio";
+      let ctxDest  = dir === "p2n" ? "negocio"  : "personal";
+
+      let keyO = keyForCtx("cuentas", ctxOrig);
+      let keyD = keyForCtx("cuentas", ctxDest);
+      let defO = ctxOrig === "negocio"
+        ? [{ id:"caja_neg", nombre:"Caja", icon:"🏪" }, { id:"banco_neg", nombre:"Banco Neg.", icon:"🏦" }]
+        : [{ id:"nequi", nombre:"Nequi", icon:"📱" }, { id:"davivienda", nombre:"Davivienda", icon:"🏦" }, { id:"efectivo", nombre:"Efectivo", icon:"💵" }];
+      let defD = ctxDest === "negocio"
+        ? [{ id:"caja_neg", nombre:"Caja", icon:"🏪" }, { id:"banco_neg", nombre:"Banco Neg.", icon:"🏦" }]
+        : [{ id:"nequi", nombre:"Nequi", icon:"📱" }, { id:"davivienda", nombre:"Davivienda", icon:"🏦" }, { id:"efectivo", nombre:"Efectivo", icon:"💵" }];
+
+      let cuentasOrig = JSON.parse(localStorage.getItem(keyO) || JSON.stringify(defO));
+      let cuentasDest = JSON.parse(localStorage.getItem(keyD) || JSON.stringify(defD));
+
+      selOrigen.innerHTML = "";
+      cuentasOrig.forEach(c => {
+        let opt = document.createElement("option");
+        opt.value = c.id;
+        opt.textContent = c.icon + " " + c.nombre;
+        selOrigen.appendChild(opt);
+      });
+
+      selDestino.innerHTML = "";
+      cuentasDest.forEach(c => {
+        let opt = document.createElement("option");
+        opt.value = c.id;
+        opt.textContent = c.icon + " " + c.nombre;
+        selDestino.appendChild(opt);
+      });
+    }
+
     function addCuenta() {
       let nombre = $("newCuentaNombre").value.trim();
       let icon   = $("newCuentaIcon").value;
@@ -719,16 +856,11 @@
       toast("Cuenta eliminada");
     }
 
-    function saveCuentas() {
-      localStorage.setItem(keyFor("cuentas"), JSON.stringify(cuentas));
-    }
+    function saveCuentas() { localStorage.setItem(keyFor("cuentas"), JSON.stringify(cuentas)); }
 
     function renderCuentasAdmin() {
       elCuentasAdmin.innerHTML = "";
-      if (!cuentas.length) {
-        elCuentasAdmin.innerHTML = `<div class="alert mid">No hay cuentas aún.</div>`;
-        return;
-      }
+      if (!cuentas.length) { elCuentasAdmin.innerHTML = `<div class="alert mid">No hay cuentas aún.</div>`; return; }
       cuentas.forEach(c => {
         elCuentasAdmin.innerHTML += `
           <div class="cuenta-card" style="flex-direction:column;align-items:flex-start;gap:8px;">
@@ -744,7 +876,7 @@
     }
 
     /* ══════════════════════════════════════
-       SALDOS
+       SALDOS (considera traspasos)
     ══════════════════════════════════════ */
     function calcSaldosCuentas() {
       let saldos = {};
@@ -754,11 +886,17 @@
         if (x.Tipo === "Transferencia") {
           if (saldos[x.CuentaOrigen]  !== undefined) saldos[x.CuentaOrigen]  -= m;
           if (saldos[x.CuentaDestino] !== undefined) saldos[x.CuentaDestino] += m;
+        } else if (x.Tipo === "TraspasoSalida") {
+          let cid = x.Cuenta || "";
+          if (saldos[cid] !== undefined) saldos[cid] -= m;
+        } else if (x.Tipo === "TraspasoEntrada") {
+          let cid = x.Cuenta || "";
+          if (saldos[cid] !== undefined) saldos[cid] += m;
         } else {
           let cid = x.Cuenta || "";
           if (saldos[cid] === undefined) saldos[cid] = 0;
           if (x.Tipo === "Ingreso") saldos[cid] += m;
-          else                       saldos[cid] -= m;
+          else saldos[cid] -= m;
         }
       });
       return saldos;
@@ -771,7 +909,6 @@
       let saldos = calcSaldosCuentas();
       let ing = data.reduce((a,x) => x.Tipo==="Ingreso" ? a+Number(x.Monto||0):a, 0);
       let gas = data.reduce((a,x) => x.Tipo==="Gasto"   ? a+Number(x.Monto||0):a, 0);
-      let label = new Date().toLocaleDateString("es-CO",{ month:"long", year:"numeric" });
       let resumenHTML = `
         <div class="mes-resumen">
           <div class="mes-kpi"><span>Ingresos</span><strong style="color:var(--ok)">${money(ing)}</strong></div>
@@ -827,7 +964,7 @@
           let lastDay = "";
           sorted.forEach(x => {
             let m = Number(x.Monto)||0;
-            let cls = x.Tipo==="Ingreso" ? "ingreso" : x.Tipo==="Transferencia" ? "transferencia" : "gasto";
+            let cls = x.Tipo==="Ingreso" ? "ingreso" : x.Tipo==="Transferencia" ? "transferencia" : x.Tipo==="TraspasoSalida"||x.Tipo==="TraspasoEntrada" ? "traspaso" : "gasto";
             if (x.Fecha !== lastDay) { movHTML += `<div class="timeline-day">${labelDay(x.Fecha)}</div>`; lastDay=x.Fecha; }
             movHTML += `<div class="item ${cls}"><div>${x.Categoría||""} - ${x.Descripción||""}</div><div class="price">${money(m)}</div></div>`;
           });
@@ -872,15 +1009,26 @@
     ══════════════════════════════════════ */
     function setMode(mode, btn) {
       modoActual = mode;
-      document.querySelectorAll(".mode-tab").forEach(t => t.classList.remove("active"));
-      btn.classList.add("active");
+      document.querySelectorAll(".mode-tab").forEach(t => {
+        t.classList.remove("active","cross-active");
+      });
+      if (mode === "traspaso") btn.classList.add("cross-active");
+      else btn.classList.add("active");
+
       document.querySelectorAll(".form-section").forEach(s => s.classList.remove("active"));
       if (mode === "transferencia") {
         $("fs-transfer").classList.add("active");
+      } else if (mode === "traspaso") {
+        $("fs-traspaso").classList.add("active");
+        poblarSelectsTraspaso();
       } else {
         $("fs-normal").classList.add("active");
-        poblarSelectCategoria(mode);
+        poblarSelectCategoria(mode === "ingreso" ? "ingreso" : "gasto");
       }
+
+      // Color del botón guardar
+      elSaveBtn.className = mode === "traspaso" ? "cross-btn" : "primary";
+      elSaveBtn.innerText = mode === "traspaso" ? "🔀 Registrar traspaso" : "💾 Guardar";
     }
 
     /* ══════════════════════════════════════
@@ -955,9 +1103,14 @@
     }
 
     /* ══════════════════════════════════════
-       GUARDAR
+       GUARDAR (incluye traspaso entre ctxs)
     ══════════════════════════════════════ */
     async function guardar() {
+      /* ── TRASPASO ENTRE CONTEXTOS ── */
+      if (modoActual === "traspaso") {
+        await guardarTraspaso(); return;
+      }
+
       let datos;
       let saldos = calcSaldosCuentas();
 
@@ -1016,7 +1169,6 @@
           headers:{ "Content-Type":"text/plain;charset=utf-8" },
           body: JSON.stringify(datos)
         });
-        // Actualización optimista
         datos.ID = "local_" + Date.now();
         data.push(datos);
         localStorage.setItem(keyFor("dataCache"), JSON.stringify(data));
@@ -1035,10 +1187,126 @@
       doneSave();
     }
 
+    /* ── GUARDAR TRASPASO ENTRE CONTEXTOS ── */
+    async function guardarTraspaso() {
+      let m = parseMonto($("montoTrspaso").value);
+      let desc = $("descTrspaso").value.trim() || "Traspaso entre contextos";
+      let dir  = $("traspasoDireccion").value;
+      let cuentaOrigenId  = $("traspasoOrigen").value;
+      let cuentaDestinoId = $("traspasoDestino").value;
+      let fecha = elFecha.value;
+
+      if (m <= 0) { toast("Ingresa un monto válido"); return; }
+
+      let ctxOrig = dir === "p2n" ? "personal" : "negocio";
+      let ctxDest = dir === "p2n" ? "negocio"  : "personal";
+
+      // Verificar saldo del origen
+      let keyOrigCuentas = keyForCtx("cuentas", ctxOrig);
+      let defOrigCuentas = ctxOrig === "negocio"
+        ? [{ id:"caja_neg", saldoInicial:0 }, { id:"banco_neg", saldoInicial:0 }]
+        : [{ id:"nequi", saldoInicial:0 }, { id:"davivienda", saldoInicial:0 }, { id:"efectivo", saldoInicial:0 }];
+      let cuentasOrig = JSON.parse(localStorage.getItem(keyOrigCuentas) || JSON.stringify(defOrigCuentas));
+
+      let dataOrig    = JSON.parse(localStorage.getItem(keyForCtx("dataCache", ctxOrig)) || "[]");
+      let pendingOrig = JSON.parse(localStorage.getItem(keyForCtx("pendingQueue", ctxOrig)) || "[]");
+      let saldosOrig  = {};
+      cuentasOrig.forEach(c => { saldosOrig[c.id] = Number(c.saldoInicial)||0; });
+      [...dataOrig, ...pendingOrig].forEach(x => {
+        let mx = Number(x.Monto)||0;
+        if (x.Tipo==="Transferencia") {
+          if (saldosOrig[x.CuentaOrigen]!==undefined) saldosOrig[x.CuentaOrigen]-=mx;
+          if (saldosOrig[x.CuentaDestino]!==undefined) saldosOrig[x.CuentaDestino]+=mx;
+        } else if (x.Tipo==="TraspasoSalida") {
+          if (saldosOrig[x.Cuenta]!==undefined) saldosOrig[x.Cuenta]-=mx;
+        } else if (x.Tipo==="TraspasoEntrada") {
+          if (saldosOrig[x.Cuenta]!==undefined) saldosOrig[x.Cuenta]+=mx;
+        } else {
+          let cid=x.Cuenta||"";
+          if (saldosOrig[cid]===undefined) saldosOrig[cid]=0;
+          if (x.Tipo==="Ingreso") saldosOrig[cid]+=mx; else saldosOrig[cid]-=mx;
+        }
+      });
+
+      let saldoDisp = saldosOrig[cuentaOrigenId] || 0;
+      if (m > saldoDisp) {
+        let cO = cuentasOrig.find(c => c.id === cuentaOrigenId);
+        let ctxLabel = ctxOrig === "negocio" ? "🏪 Negocio" : "👤 Personal";
+        toast(`❌ Saldo insuficiente en ${ctxLabel} · ${cO ? cO.icon+" "+cO.nombre : cuentaOrigenId}. Disponible: $${Number(saldoDisp).toLocaleString("es-CO")}`);
+        return;
+      }
+
+      // Registro en contexto ORIGEN (TraspasoSalida)
+      let regOrigen = {
+        ID: "trspaso_out_" + Date.now(),
+        Fecha: fecha,
+        Tipo: "TraspasoSalida",
+        Cuenta: cuentaOrigenId,
+        Categoría: "🔀 Traspaso",
+        Descripción: desc + " → " + (ctxDest === "negocio" ? "🏪 Negocio" : "👤 Personal"),
+        Monto: m,
+        Contexto: ctxOrig,
+        TraspasoRef: Date.now()
+      };
+
+      // Registro en contexto DESTINO (TraspasoEntrada)
+      let regDestino = {
+        ID: "trspaso_in_" + Date.now(),
+        Fecha: fecha,
+        Tipo: "TraspasoEntrada",
+        Cuenta: cuentaDestinoId,
+        Categoría: "🔀 Traspaso",
+        Descripción: desc + " ← " + (ctxOrig === "negocio" ? "🏪 Negocio" : "👤 Personal"),
+        Monto: m,
+        Contexto: ctxDest,
+        TraspasoRef: regOrigen.TraspasoRef
+      };
+
+      // Guardar en localStorage del origen
+      dataOrig.push(regOrigen);
+      localStorage.setItem(keyForCtx("dataCache", ctxOrig), JSON.stringify(dataOrig));
+
+      // Guardar en localStorage del destino
+      let dataDest = JSON.parse(localStorage.getItem(keyForCtx("dataCache", ctxDest)) || "[]");
+      dataDest.push(regDestino);
+      localStorage.setItem(keyForCtx("dataCache", ctxDest), JSON.stringify(dataDest));
+
+      // Si estamos en el contexto origen o destino, actualizar data en memoria
+      if (contexto === ctxOrig) {
+        data = dataOrig;
+        elSyncCount.innerText = data.length;
+      } else if (contexto === ctxDest) {
+        data = dataDest;
+        elSyncCount.innerText = data.length;
+      }
+
+      // Limpiar campos
+      $("montoTrspaso").value = $("descTrspaso").value = "";
+      render();
+      renderCrossCard();
+      updateStreak();
+
+      let dirLabel = dir === "p2n" ? "👤 Personal → 🏪 Negocio" : "🏪 Negocio → 👤 Personal";
+      toast(`✔ Traspaso registrado: ${dirLabel} $${Number(m).toLocaleString("es-CO")}`);
+
+      // Enviar a Google Sheets si hay conexión
+      if (navigator.onLine) {
+        try {
+          await fetch(API_URL, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body: JSON.stringify(regOrigen) });
+          await fetch(API_URL, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body: JSON.stringify(regDestino) });
+        } catch(e) {
+          // Guardar pendientes del contexto opuesto
+          let pendDest = JSON.parse(localStorage.getItem(keyForCtx("pendingQueue", ctxDest)) || "[]");
+          pendDest.push(regDestino);
+          localStorage.setItem(keyForCtx("pendingQueue", ctxDest), JSON.stringify(pendDest));
+        }
+      }
+    }
+
     function doneSave() {
       elDescripcion.value = elMontoInput.value = elMontoTransfer.value = elDescTransfer.value = "";
       elSaveBtn.disabled  = false;
-      elSaveBtn.innerText = "💾 Guardar";
+      elSaveBtn.innerText = modoActual === "traspaso" ? "🔀 Registrar traspaso" : "💾 Guardar";
       updateStreak();
     }
 
@@ -1152,12 +1420,20 @@
           lastDay = x.Fecha;
         }
 
-        let claseItem = x.Tipo==="Ingreso" ? "ingreso" : x.Tipo==="Transferencia" ? "transferencia" : "gasto";
+        let claseItem = x.Tipo==="Ingreso" ? "ingreso"
+          : x.Tipo==="Transferencia" ? "transferencia"
+          : x.Tipo==="TraspasoSalida"||x.Tipo==="TraspasoEntrada" ? "traspaso"
+          : "gasto";
+
         let cuentaLabel = "";
         if (x.Tipo === "Transferencia") {
           let ori  = cuentas.find(c => c.id===x.CuentaOrigen);
           let dest = cuentas.find(c => c.id===x.CuentaDestino);
           cuentaLabel = `<span class="badge">🔄 ${ori?ori.icon+" "+ori.nombre:x.CuentaOrigen} → ${dest?dest.icon+" "+dest.nombre:x.CuentaDestino}</span>`;
+        } else if (x.Tipo==="TraspasoSalida" || x.Tipo==="TraspasoEntrada") {
+          let c = cuentas.find(c => c.id===x.Cuenta);
+          let signo = x.Tipo==="TraspasoEntrada" ? "📥" : "📤";
+          cuentaLabel = `<span class="badge cross-badge">${signo} ${c?c.icon+" "+c.nombre:x.Cuenta||""}</span>`;
         } else if (x.Cuenta) {
           let c = cuentas.find(c => c.id===x.Cuenta);
           if (c) cuentaLabel = `<span class="badge">${c.icon} ${c.nombre}</span>`;
@@ -1166,7 +1442,7 @@
         elLista.innerHTML += `
           <div class="item ${claseItem}">
             <div>${x.Categoría} - ${x.Descripción}${cuentaLabel}</div>
-            <div class="price">${money(m)}</div>
+            <div class="price">${x.Tipo==="TraspasoSalida" ? "-" : x.Tipo==="TraspasoEntrada" ? "+" : ""}${money(m)}</div>
             <button class="small-btn" onclick="borrar('${x.ID}')">🗑️</button>
           </div>`;
       });
@@ -1215,7 +1491,7 @@
     function renderFavorites() {
       let map = {};
       data.forEach(x => {
-        if (x.Tipo==="Transferencia") return;
+        if (x.Tipo==="Transferencia"||x.Tipo==="TraspasoSalida"||x.Tipo==="TraspasoEntrada") return;
         let key = x.Categoría+"|"+x.Descripción+"|"+x.Monto+"|"+(x.Cuenta||"");
         if (!map[key]) map[key] = { cat:x.Categoría, des:x.Descripción, monto:x.Monto, cuenta:x.Cuenta, count:0 };
         map[key].count++;
@@ -1240,13 +1516,22 @@
       let disponible = Math.max((ing-gas)/7,0);
       let isNeg = contexto === "negocio";
 
+      // Traspasos del mes en el contexto actual
+      let traspasoSalidas  = data.filter(x=>x.Tipo==="TraspasoSalida").reduce((a,x)=>a+Number(x.Monto||0),0);
+      let traspasoEntradas = data.filter(x=>x.Tipo==="TraspasoEntrada").reduce((a,x)=>a+Number(x.Monto||0),0);
+      let traspasoNeto     = traspasoEntradas - traspasoSalidas;
+
       elCockpit.innerHTML = `
         <div class="grid2">
           <div class="kpi"><span>Hoy gastado</span><strong>${money(hoyGastado)}</strong></div>
           <div class="kpi"><span>${isNeg?"Flujo diario est.":"Puedes gastar hoy"}</span><strong>${money(disponible)}</strong></div>
           <div class="kpi"><span>${isNeg?"Reinversión":"Ahorro real"}</span><strong>${money(ah)}</strong></div>
           <div class="kpi"><span>${isNeg?"Utilidad neta":"Balance neto"}</span><strong>${money(ing-gas)}</strong></div>
-        </div>`;
+        </div>
+        ${traspasoNeto!==0?`
+        <div class="alert info" style="margin-top:8px">
+          🔀 Traspasos este mes: <b>${traspasoNeto>0?"+":""}${money(traspasoNeto)}</b> neto
+        </div>`:""}`;
     }
 
     /* ══════════════════════════════════════
@@ -1275,7 +1560,6 @@
       }
 
       if (topEntry) txt += `<div class="alert mid">💡 Bajando <b>${topEntry[0]}</b> un 15% ${isNeg?"mejorarías margen en":"ahorrarías"} <b>${money(Math.round(topEntry[1]*.15))}</b></div>`;
-
       txt += `<div class="alert good">🔥 Racha activa: <b>${streak}</b> días registrando movimientos</div>`;
 
       if (isNeg && ing > 0) {
@@ -1331,14 +1615,17 @@
       }
 
       c2 = new Chart($("chart2"),{ type:"bar",
-        data:{ labels:[contexto==="negocio"?"Ingresos":"Ingresos", contexto==="negocio"?"Costos":"Gastos"],
+        data:{ labels:["Ingresos", contexto==="negocio"?"Costos":"Gastos"],
                datasets:[{ data:[ing,gas], backgroundColor:["#22c55e","#ef4444"] }] }
       });
 
       let dias={}, saldo=0;
       [...data].sort((a,b)=>new Date(a.Fecha)-new Date(b.Fecha)).forEach(x=>{
         let m=Number(x.Monto)||0;
-        if (x.Tipo==="Ingreso") saldo+=m; else if (x.Tipo==="Gasto") saldo-=m;
+        if (x.Tipo==="Ingreso") saldo+=m;
+        else if (x.Tipo==="Gasto") saldo-=m;
+        else if (x.Tipo==="TraspasoEntrada") saldo+=m;
+        else if (x.Tipo==="TraspasoSalida") saldo-=m;
         dias[x.Fecha]=saldo;
       });
       c3 = new Chart($("chart3"),{ type:"line",
@@ -1374,10 +1661,14 @@
     poblarSelectCategoria("ingreso");
     aplicarEstiloContexto();
     actualizarLabelsContexto();
+    poblarSelectsTraspaso();
     render();
     renderCrossCard();
     load();
     syncPending();
+
+    // Listener para que al cambiar la dirección del traspaso se actualicen las cuentas
+    document.getElementById("traspasoDireccion").addEventListener("change", poblarSelectsTraspaso);
 
   </script>
 
