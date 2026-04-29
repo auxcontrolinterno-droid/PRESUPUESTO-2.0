@@ -1,8 +1,8 @@
 {
   "name": "PRESUPUESTO-2.0",
   "short_name": "PRESUPUESTO",
-  "start_url": ".",
-  "scope": "/",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
