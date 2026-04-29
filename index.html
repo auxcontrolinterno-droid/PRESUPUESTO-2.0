@@ -614,72 +614,63 @@ render();
   
 /* render */  
 
-renderCockpit(ing,gas,afunction render(){  
-  
-lista.innerHTML="";  
-  
-let ing=0,gas=0,ah=0,cats={};  
+function render(){
+
+lista.innerHTML="";
+
+let ing=0, gas=0, ah=0, cats={};
+
 let cuentas={
   Efectivo:0,
   Tarjeta:0,
   Nequi:0,
   Davivienda:0
 };
-let cuentasHTML = "";
 
-Object.keys(cuentas).forEach(c=>{
-  cuentasHTML += `
-    <div class="kpi">
-      <span>${c}</span>
-      <strong>${money(cuentas[c])}</strong>
-    </div>
-  `;
+/* ordenar */
+let sorted=[...data].sort((a,b)=>new Date(b.Fecha)-new Date(a.Fecha));
+
+let lastDay="";
+
+sorted.forEach((x,i)=>{
+
+let m=Number(x.Monto)||0;
+
+if(x.Tipo==="Ingreso") ing+=m;
+else gas+=m;
+
+if(String(x.Categoría).includes("Ahorro")) ah+=m;
+
+if(x.Tipo==="Gasto"){
+cats[x.Categoría]=(cats[x.Categoría]||0)+m;
+}
+
+if(x.Fecha!==lastDay){
+lista.innerHTML+=`<div class="timeline-day">${labelDay(x.Fecha)}</div>`;
+lastDay=x.Fecha;
+}
+
+lista.innerHTML+=`
+<div class="item ${x.Tipo==="Ingreso"?"ingreso":"gasto"}">
+  <div>${x.Categoría} - ${x.Descripción}</div>
+  <div class="price">${money(m)}</div>
+
+  <button class="small-btn" onclick="borrar(${i})">🗑️</button>
+</div>`;
 });
 
-cockpit.innerHTML = `
-<div class="grid2" style="margin-top:10px">
-  ${cuentasHTML}
-</div>
-`;
-let sorted=[...data].sort((a,b)=>new Date(b.Fecha)-new Date(a.Fecha));  
-  
-let lastDay="";  
-  
-sorted.forEach(x=>{  
-  
-let m=Number(x.Monto)||0;  
-  
-if(x.Tipo==="Ingreso") ing+=m;  
-else gas+=m;  
-  
-if(String(x.Categoría).includes("Ahorro")) ah+=m;  
-  
-if(x.Tipo==="Gasto"){  
-cats[x.Categoría]=(cats[x.Categoría]||0)+m;  
-}  
-  
-if(x.Fecha!==lastDay){  
-lista.innerHTML+=`<div class="timeline-day">${labelDay(x.Fecha)}</div>`;  
-lastDay=x.Fecha;  
-}  
-  
-lista.innerHTML+=`  
-<div class="item ${x.Tipo==="Ingreso"?"ingreso":"gasto"}">  
-<div>${x.Categoría} - ${x.Descripción}</div>  
-<div class="price">${money(m)}</div>  
-<button class="small-btn" 
-onclick="borrar(${i})"
->🗑️</button>  
-</div>`;  
-});  
-  
-saldoTop.innerText=money(ing-gas);  
-  h);  
-renderCoach(ing,gas,cats);  
-renderGoals(ah);  
-charts(cats,ing,gas);  
-renderFavorites();  
-}  
+/* saldo */
+saldoTop.innerText=money(ing-gas);
+
+/* cockpit */
+renderCockpit(ing,gas,ah,cuentas);
+
+/* extras */
+renderCoach(ing,gas,cats);
+renderGoals(ah);
+charts(cats,ing,gas);
+renderFavorites();
+}
 function renderFavorites(){  
   
 let map={};  
