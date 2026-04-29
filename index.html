@@ -740,18 +740,87 @@ function renderCoach(ing,gas,cats){
 
 let txt="";
 
-if(gas>ing){
-txt+=`<div class="alert bad">🔴 Gastas más de lo que ingresas.</div>`;
+let balance=ing-gas;
+
+/* ================= ESTADO GENERAL ================= */
+
+if(balance>0){
+txt+=`<div class="alert good">🟢 Salud financiera positiva. Vas cerrando con superávit.</div>`;
+}else if(balance===0){
+txt+=`<div class="alert mid">🟡 Vas en punto equilibrio. Controla próximos gastos.</div>`;
 }else{
-txt+=`<div class="alert good">🟢 Vas bien este periodo.</div>`;
+txt+=`<div class="alert bad">🔴 Gastas más de lo que ingresas actualmente.</div>`;
 }
+
+/* ================= MAYOR FUGA ================= */
 
 let top=Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
+
 if(top){
-txt+=`<div class="alert mid">⚠️ Mayor fuga: ${top[0]}</div>`;
+let porc=((top[1]/Math.max(gas,1))*100).toFixed(0);
+
+txt+=`
+<div class="alert bad">
+⚠️ Mayor fuga actual: <b>${top[0]}</b> (${porc}% de tus gastos)
+</div>`;
 }
 
-txt+=`<div class="alert good">🔥 Racha actual: ${streak} días</div>`;
+/* ================= PREDICCIÓN ================= */
+
+let hoy=new Date();
+let dia=hoy.getDate();
+
+if(dia>0){
+
+let promedioDia=gas/dia;
+let diasMes=new Date(hoy.getFullYear(),hoy.getMonth()+1,0).getDate();
+
+let gastoProyectado=Math.round(promedioDia*diasMes);
+let saldoProyectado=ing-gastoProyectado;
+
+if(saldoProyectado>0){
+
+txt+=`
+<div class="alert good">
+📈 Si sigues así cerrarás con <b>${money(saldoProyectado)}</b>
+</div>`;
+
+}else{
+
+txt+=`
+<div class="alert bad">
+📉 Al ritmo actual cerrarías en <b>${money(saldoProyectado)}</b>
+</div>`;
+}
+}
+
+/* ================= RECOMENDACIÓN ================= */
+
+if(top){
+
+let ahorro=Math.round(top[1]*0.15);
+
+txt+=`
+<div class="alert mid">
+💡 Bajando <b>${top[0]}</b> un 15% ahorrarías <b>${money(ahorro)}</b>
+</div>`;
+}
+
+/* ================= RACHA ================= */
+
+txt+=`
+<div class="alert good">
+🔥 Racha activa: <b>${streak}</b> días registrando movimientos
+</div>`;
+
+/* ================= MENSAJE EXTRA ================= */
+
+if(gas<ing*0.70 && ing>0){
+txt+=`
+<div class="alert good">
+🚀 Excelente control: tus gastos están por debajo del 70% de tus ingresos.
+</div>`;
+}
 
 coach.innerHTML=txt;
 }
