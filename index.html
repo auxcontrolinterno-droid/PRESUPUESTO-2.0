@@ -251,7 +251,7 @@ margin:10px 0 4px;
 <section class="tab active" id="tab-home">  <div class="card">  
 <div class="title">🎛️ Centro de mando</div>  
 <div>
-</div id="cockpit"><div>
+<div id="cockpit"></div>
   
 </div>  
 </div> 
@@ -733,16 +733,11 @@ return d.toLocaleDateString("es-CO",{day:"numeric",month:"short"});
 }  
   
 /* cockpit */  
-function renderCockpit(ing,gas,ah,cuentas){  
-  
-let hoyGastado=data  
-.filter(x=>x.Fecha===new Date().toISOString().slice(0,10) && x.Tipo==="Gasto")  
-.reduce((a,b)=>a+Number(b.Monto||0),0);  
-  
-let disponibleDia=Math.max((ing-gas)/7,0);  
-  
+function renderCockpit(ing, gas, ah, cuentas){
 
-  let cuentasHTML = "";
+let disponibleDia = Math.max((ing-gas)/7,0);
+
+let cuentasHTML = "";
 
 Object.keys(cuentas).forEach(c=>{
   cuentasHTML += `
@@ -755,25 +750,25 @@ Object.keys(cuentas).forEach(c=>{
 
 cockpit.innerHTML = `
 <div class="grid2" style="margin-top:10px">
-${cuentasHTML}
+  ${cuentasHTML}
+</div>
+
+<div class="kpi">
+  <span>Puedes gastar hoy</span>
+  <strong>${money(disponibleDia)}</strong>
+</div>
+
+<div class="kpi">
+  <span>Ahorro real</span>
+  <strong>${money(ah)}</strong>
+</div>
+
+<div class="kpi">
+  <span>Balance</span>
+  <strong>${money(ing-gas)}</strong>
 </div>
 `;
-<div class="kpi">  
-<span>Puedes gastar hoy</span>  
-<strong>${money(disponibleDia)}</strong>  
-</div>  
-  
-<div class="kpi">  
-<span>Ahorro real</span>  
-<strong>${money(ah)}</strong>  
-</div>  
-  
-<div class="kpi">  
-<span>Balance</span>  
-<strong>${money(ing-gas)}</strong>  
-</div>  
-</div>`;  
-}  
+}
   
 /* coach */  
 function renderCoach(ing,gas,cats){  
