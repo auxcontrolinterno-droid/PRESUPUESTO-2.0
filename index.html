@@ -5,7 +5,7 @@
   <meta name="theme-color" content="#0f172a">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-  <title>Banking PRO AI v14</title>
+  <title>Banking PRO AI v13</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -281,12 +281,6 @@
 
   <!-- SETTINGS -->
   <section class="tab" id="tab-settings">
-    <div class="card" style="border:2px solid var(--warn)">
-      <div class="title">🔍 Diagnóstico de IDs</div>
-      <button class="secondary" onclick="diagnostico()" style="margin-bottom:10px">▶ Ver IDs reales del API</button>
-      <div id="diagOutput" style="font-size:12px;font-family:monospace;white-space:pre-wrap;color:var(--muted)"></div>
-    </div>
-
     <div class="card">
       <div class="title">⚙️ Tema</div>
       <button class="secondary" onclick="setTheme('dark')">🌙 Oscuro</button>
@@ -457,30 +451,30 @@
         saldos[c.id] = Number(c.saldoInicial) || 0;
       });
 
-      // Mapa de búsqueda insensible a mayúsculas: "Nequi" → "nequi"
-      function resolverCuenta(raw) {
-        if (!raw) return null;
-        // Coincidencia exacta primero
-        if (saldos[raw] !== undefined) return raw;
-        // Coincidencia insensible a mayúsculas
-        let lower = raw.toLowerCase();
-        let found = cuentas.find(c => c.id.toLowerCase() === lower || c.nombre.toLowerCase() === lower);
-        return found ? found.id : null;
-      }
-
-      [...data, ...pending].forEach(x => {
+      data.forEach(x => {
         let m = Number(x.Monto) || 0;
         if (x.Tipo === "Transferencia") {
-          let ori  = resolverCuenta(x.CuentaOrigen);
-          let dest = resolverCuenta(x.CuentaDestino);
-          if (ori)  saldos[ori]  -= m;
-          if (dest) saldos[dest] += m;
+          if (saldos[x.CuentaOrigen]  !== undefined) saldos[x.CuentaOrigen]  -= m;
+          if (saldos[x.CuentaDestino] !== undefined) saldos[x.CuentaDestino] += m;
         } else {
-          let cid = resolverCuenta(x.Cuenta);
-          if (cid) {
-            if (x.Tipo === "Ingreso") saldos[cid] += m;
-            else                       saldos[cid] -= m;
-          }
+          let cid = x.Cuenta || "";
+          if (saldos[cid] === undefined) saldos[cid] = 0;
+          if (x.Tipo === "Ingreso") saldos[cid] += m;
+          else                       saldos[cid] -= m;
+        }
+      });
+
+      // También sumar los pending locales (no sincronizados)
+      pending.forEach(x => {
+        let m = Number(x.Monto) || 0;
+        if (x.Tipo === "Transferencia") {
+          if (saldos[x.CuentaOrigen]  !== undefined) saldos[x.CuentaOrigen]  -= m;
+          if (saldos[x.CuentaDestino] !== undefined) saldos[x.CuentaDestino] += m;
+        } else {
+          let cid = x.Cuenta || "";
+          if (saldos[cid] === undefined) saldos[cid] = 0;
+          if (x.Tipo === "Ingreso") saldos[cid] += m;
+          else                       saldos[cid] -= m;
         }
       });
 
@@ -1048,49 +1042,6 @@
         options:{ indexAxis:"y" }
       });
     }
-    /* ══════════════════════════════════════
-       DIAGNÓSTICO
-    ══════════════════════════════════════ */
-    function diagnostico() {
-      let out = $("diagOutput");
-      out.innerHTML = "⏳ Analizando...\n\n";
-
-      // IDs guardados en localStorage
-      out.innerHTML += "📦 CUENTAS EN APP (localStorage):\n";
-      cuentas.forEach(c => {
-        out.innerHTML += `  id="${c.id}"  nombre="${c.nombre}"  saldoInicial=${c.saldoInicial||0}\n`;
-      });
-
-      // Valores de Cuenta en los movimientos
-      out.innerHTML += "\n📡 VALORES DE 'Cuenta' EN MOVIMIENTOS (API):\n";
-      let vals = {};
-      data.forEach(x => {
-        if (x.Tipo === "Transferencia") {
-          vals["[Origen] " + x.CuentaOrigen]  = true;
-          vals["[Destino] " + x.CuentaDestino] = true;
-        } else {
-          vals[x.Cuenta || "(vacío)"] = true;
-        }
-      });
-      if (!Object.keys(vals).length) {
-        out.innerHTML += "  ⚠️ Sin movimientos cargados aún (API no respondió)\n";
-      } else {
-        Object.keys(vals).forEach(v => {
-          let match = cuentas.find(c => c.id === v.replace(/^\[.*?\] /,""));
-          out.innerHTML += `  "${v}"  →  ${match ? "✅ coincide con: "+match.nombre : "❌ NO coincide con ninguna cuenta"}\n`;
-        });
-      }
-
-      // Saldos calculados
-      out.innerHTML += "\n💰 SALDOS CALCULADOS:\n";
-      let saldos = calcSaldosCuentas();
-      Object.entries(saldos).forEach(([id, s]) => {
-        out.innerHTML += `  ${id}: $${Number(s).toLocaleString("es-CO")}\n`;
-      });
-
-      out.innerHTML += "\n✅ Diagnóstico completo.";
-    }
-
   </script>
 
   <script>
