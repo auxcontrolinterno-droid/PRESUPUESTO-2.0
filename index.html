@@ -5,7 +5,7 @@
   <meta name="theme-color" content="#0f172a">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-  <title>Banking PRO AI v13</title>
+  <title>Banking PRO AI v14</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -44,9 +44,9 @@
     button{padding:14px;font-weight:800;cursor:pointer}
     .primary{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff}
     .secondary{background:rgba(255,255,255,.08);color:var(--text)}
+    .danger{background:rgba(239,68,68,.18);color:var(--bad);}
     .small-btn{padding:8px 12px;font-size:12px;width:auto;background:rgba(255,255,255,.08);color:var(--text);margin-top:8px}
 
-    /* MODE TABS */
     .mode-tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px}
     .mode-tab{
       padding:10px;font-size:13px;font-weight:700;
@@ -58,7 +58,6 @@
     .form-section{display:none}
     .form-section.active{display:block}
 
-    /* CUENTAS */
     .cuenta-card{
       background:rgba(255,255,255,.04);border:1px solid var(--line);
       border-radius:16px;padding:14px;
@@ -75,7 +74,6 @@
     .cuenta-saldo.positive{color:var(--ok)}
     .cuenta-saldo.negative{color:var(--bad)}
 
-    /* BARRA DISTRIBUCIÓN */
     .dist-bar{height:8px;border-radius:20px;background:rgba(255,255,255,.06);overflow:hidden;display:flex;margin-top:10px}
     .dist-seg{height:100%;transition:width .4s}
     .dist-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
@@ -130,24 +128,60 @@
       margin-left:4px;vertical-align:middle;
     }
 
-    /* Saldo inicial inline edit */
-    .saldo-inicial-edit {
-      display:flex; align-items:center; gap:6px; margin-top:4px;
+    /* Cierre de mes */
+    .mes-card{
+      background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);
+      border-radius:16px;padding:14px;margin-bottom:10px;
     }
-    .saldo-inicial-edit input {
-      padding:6px 10px; font-size:13px; margin-bottom:0; border-radius:10px; width:140px;
+    .mes-card-title{
+      font-weight:800;font-size:14px;color:var(--transfer);
+      display:flex;justify-content:space-between;align-items:center;
+      cursor:pointer;
     }
-    .saldo-inicial-edit button {
-      padding:6px 12px; font-size:12px; width:auto; border-radius:10px;
-      background:rgba(37,99,235,.3); color:#fff;
+    .mes-card-body{display:none;margin-top:10px}
+    .mes-card-body.open{display:block}
+    .mes-resumen{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px}
+    .mes-kpi{background:rgba(255,255,255,.04);padding:10px;border-radius:12px;text-align:center}
+    .mes-kpi span{display:block;font-size:11px;color:var(--muted)}
+    .mes-kpi strong{font-size:15px}
+
+    /* Categorías admin */
+    .cat-chip{
+      display:inline-flex;align-items:center;gap:6px;
+      background:rgba(255,255,255,.07);border:1px solid var(--line);
+      border-radius:20px;padding:6px 12px;font-size:13px;font-weight:600;
+      margin:4px;
     }
+    .cat-chip button{
+      width:auto;padding:0 4px;background:transparent;
+      color:var(--bad);font-size:14px;line-height:1;
+    }
+    .cat-chips-wrap{display:flex;flex-wrap:wrap;margin-bottom:10px}
+
+    .saldo-inicial-edit{display:flex;align-items:center;gap:6px;margin-top:4px}
+    .saldo-inicial-edit input{padding:6px 10px;font-size:13px;margin-bottom:0;border-radius:10px;width:140px}
+    .saldo-inicial-edit button{padding:6px 12px;font-size:12px;width:auto;border-radius:10px;background:rgba(37,99,235,.3);color:#fff}
+
+    /* Modal cierre mes */
+    .modal-overlay{
+      display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);
+      z-index:1000;align-items:center;justify-content:center;padding:20px;
+    }
+    .modal-overlay.open{display:flex}
+    .modal{
+      background:#0f172a;border:1px solid var(--line);border-radius:22px;
+      padding:22px;max-width:400px;width:100%;
+    }
+    .modal h3{font-size:18px;font-weight:800;margin-bottom:8px}
+    .modal p{font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5}
+    .modal-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   </style>
 </head>
 <body>
 
   <!-- HEADER -->
   <div class="header">
-    <div class="small">Banking PRO AI v13</div>
+    <div class="small">Banking PRO AI v14</div>
     <div class="small" id="today"></div>
     <div class="small" style="margin-top:10px">Saldo total disponible</div>
     <div class="big" id="saldoTop">$0</div>
@@ -161,7 +195,6 @@
 
   <!-- HOME -->
   <section class="tab active" id="tab-home">
-
     <div class="card">
       <div class="title">🏦 Mis cuentas</div>
       <div id="cuentasResumen"></div>
@@ -176,34 +209,20 @@
 
     <div class="card">
       <div class="title">➕ Nuevo movimiento</div>
-
       <div class="mode-tabs">
         <div class="mode-tab active" onclick="setMode('ingreso',this)">💰 Ingreso</div>
         <div class="mode-tab"        onclick="setMode('gasto',this)">💸 Gasto</div>
         <div class="mode-tab"        onclick="setMode('transferencia',this)">🔄 Transferir</div>
       </div>
-
       <input type="date" id="fecha">
-
-      <!-- INGRESO / GASTO -->
       <div class="form-section active" id="fs-normal">
         <label>Cuenta</label>
         <select id="cuentaSel"></select>
         <label>Categoría</label>
-        <select id="categoria">
-          <option>💰 Ingreso</option>
-          <option>🍔 Comida</option>
-          <option>🏠 Vivienda</option>
-          <option>🚗 Transporte</option>
-          <option>💡 Servicios</option>
-          <option>🎮 Entretenimiento</option>
-          <option>🏦 Ahorro</option>
-        </select>
+        <select id="categoria"></select>
         <input type="text" id="descripcion" placeholder="Descripción">
         <input type="text" id="montoInput"  placeholder="Monto  ej: 20.000">
       </div>
-
-      <!-- TRANSFERENCIA -->
       <div class="form-section" id="fs-transfer">
         <label>Cuenta origen (sale el dinero)</label>
         <select id="cuentaOrigen"></select>
@@ -213,7 +232,6 @@
         <input type="text" id="montoTransfer" placeholder="Monto a transferir  ej: 50.000">
         <input type="text" id="descTransfer"  placeholder="Descripción (opcional)">
       </div>
-
       <button class="primary" id="saveBtn" onclick="guardar()">💾 Guardar</button>
     </div>
 
@@ -226,35 +244,16 @@
       <div class="title">🧠 Coach Financiero</div>
       <div id="coach"></div>
     </div>
-
   </section>
 
   <!-- DASHBOARD -->
   <section class="tab" id="tab-dashboard">
-    <div class="card">
-      <div class="title">🏦 Saldo por cuenta</div>
-      <canvas id="chart6"></canvas>
-    </div>
-    <div class="card">
-      <div class="title">📊 Gastos por categoría</div>
-      <canvas id="chart1"></canvas>
-    </div>
-    <div class="card">
-      <div class="title">📈 Ingresos vs Gastos</div>
-      <canvas id="chart2"></canvas>
-    </div>
-    <div class="card">
-      <div class="title">📉 Tendencia de saldo diario</div>
-      <canvas id="chart3"></canvas>
-    </div>
-    <div class="card">
-      <div class="title">📆 Gastos por día de la semana</div>
-      <canvas id="chart4"></canvas>
-    </div>
-    <div class="card">
-      <div class="title">💸 Top fugas (movimientos repetidos)</div>
-      <canvas id="chart5"></canvas>
-    </div>
+    <div class="card"><div class="title">🏦 Saldo por cuenta</div><canvas id="chart6"></canvas></div>
+    <div class="card"><div class="title">📊 Gastos por categoría</div><canvas id="chart1"></canvas></div>
+    <div class="card"><div class="title">📈 Ingresos vs Gastos</div><canvas id="chart2"></canvas></div>
+    <div class="card"><div class="title">📉 Tendencia de saldo diario</div><canvas id="chart3"></canvas></div>
+    <div class="card"><div class="title">📆 Gastos por día de la semana</div><canvas id="chart4"></canvas></div>
+    <div class="card"><div class="title">💸 Top fugas (movimientos repetidos)</div><canvas id="chart5"></canvas></div>
   </section>
 
   <!-- GOALS -->
@@ -274,19 +273,35 @@
   <!-- MOVEMENTS -->
   <section class="tab" id="tab-list">
     <div class="card">
-      <div class="title">📋 Timeline inteligente</div>
+      <div class="title">📋 Movimientos del mes actual</div>
       <div class="list" id="lista"></div>
+    </div>
+    <div class="card" id="historialCard" style="display:none">
+      <div class="title">🗂️ Historial de meses anteriores</div>
+      <div id="historialLista"></div>
     </div>
   </section>
 
   <!-- SETTINGS -->
   <section class="tab" id="tab-settings">
+
     <div class="card">
       <div class="title">⚙️ Tema</div>
       <button class="secondary" onclick="setTheme('dark')">🌙 Oscuro</button>
       <br><br>
       <button class="secondary" onclick="setTheme('light')">☀️ Claro</button>
     </div>
+
+    <!-- CIERRE DE MES -->
+    <div class="card">
+      <div class="title">📅 Cierre de mes</div>
+      <div class="alert mid" style="margin-bottom:12px">
+        Al cerrar el mes, el saldo actual de cada cuenta se guarda como nuevo saldo base y los movimientos quedan archivados en el historial.
+      </div>
+      <button class="primary" onclick="abrirModalCierre()">🔒 Cerrar mes actual</button>
+    </div>
+
+    <!-- CUENTAS -->
     <div class="card">
       <div class="title">🏦 Gestionar cuentas</div>
       <div id="cuentasAdmin"></div>
@@ -302,10 +317,27 @@
         <option value="🐷">🐷 Ahorros</option>
         <option value="💼">💼 Otro</option>
       </select>
-      <label>Saldo inicial (opcional)</label>
-      <input type="text" id="newCuentaSaldoInicial" placeholder="Ej: 500.000">
       <button class="primary" onclick="addCuenta()">➕ Agregar cuenta</button>
     </div>
+
+    <!-- CATEGORÍAS -->
+    <div class="card">
+      <div class="title">🏷️ Gestionar categorías</div>
+      <div id="catsAdmin"></div>
+      <br>
+      <label>Ícono</label>
+      <input type="text" id="newCatIcon" placeholder="Ej: 🛒" style="width:80px;display:inline-block;margin-right:8px">
+      <label style="margin-top:8px">Nombre de la categoría</label>
+      <input type="text" id="newCatNombre" placeholder="Ej: Supermercado">
+      <label>Aplica a</label>
+      <select id="newCatTipo">
+        <option value="ambos">Ingreso y Gasto</option>
+        <option value="ingreso">Solo Ingreso</option>
+        <option value="gasto">Solo Gasto</option>
+      </select>
+      <button class="primary" onclick="addCategoria()">➕ Agregar categoría</button>
+    </div>
+
   </section>
 
   <nav class="nav">
@@ -318,42 +350,58 @@
 
   <div class="toast" id="toast"></div>
 
+  <!-- MODAL CIERRE MES -->
+  <div class="modal-overlay" id="modalCierre">
+    <div class="modal">
+      <h3>🔒 Cerrar mes</h3>
+      <p>Esto archivará todos los movimientos del mes actual y actualizará el saldo base de cada cuenta con el saldo actual. No podrás revertir esta acción.</p>
+      <div id="modalResumen" style="margin-bottom:14px"></div>
+      <div class="modal-btns">
+        <button class="secondary" onclick="cerrarModal()">Cancelar</button>
+        <button class="primary"   onclick="confirmarCierre()">✔ Confirmar cierre</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     /* ══════════════════════════════════════
        CONFIG
     ══════════════════════════════════════ */
-    const API_URL   = "https://script.google.com/macros/s/AKfycbwXGhRN-TJxXf4hvwk_BFV52Javiqn6Lzz5ps6M1yTz9PJy-9kDcsUKJLzUY-mTS1Z2/exec";
+    const API_URL    = "https://script.google.com/macros/s/AKfycbwXGhRN-TJxXf4hvwk_BFV52Javiqn6Lzz5ps6M1yTz9PJy-9kDcsUKJLzUY-mTS1Z2/exec";
     const ACC_COLORS = ["#2563eb","#22c55e","#f59e0b","#ec4899","#a78bfa","#14b8a6"];
 
     /* ── DOM ── */
-    const $  = id => document.getElementById(id);
-    const elFecha          = $("fecha");
-    const elDescripcion    = $("descripcion");
-    const elMontoInput     = $("montoInput");
-    const elCategoria      = $("categoria");
-    const elCuentaSel      = $("cuentaSel");
-    const elCuentaOrigen   = $("cuentaOrigen");
-    const elCuentaDestino  = $("cuentaDestino");
-    const elMontoTransfer  = $("montoTransfer");
-    const elDescTransfer   = $("descTransfer");
-    const elSaveBtn        = $("saveBtn");
-    const elSaldoTop       = $("saldoTop");
-    const elToday          = $("today");
-    const elPendingCount   = $("pendingCount");
-    const elSyncCount      = $("syncCount");
-    const elStreakBox      = $("streakBox");
-    const elCockpit        = $("cockpit");
-    const elCoach          = $("coach");
-    const elGoalList       = $("goalList");
-    const elLista          = $("lista");
-    const elFavList        = $("favList");
-    const elGoalName       = $("goalName");
-    const elGoalValue      = $("goalValue");
-    const elToast          = $("toast");
+    const $ = id => document.getElementById(id);
+    const elFecha         = $("fecha");
+    const elDescripcion   = $("descripcion");
+    const elMontoInput    = $("montoInput");
+    const elCategoria     = $("categoria");
+    const elCuentaSel     = $("cuentaSel");
+    const elCuentaOrigen  = $("cuentaOrigen");
+    const elCuentaDestino = $("cuentaDestino");
+    const elMontoTransfer = $("montoTransfer");
+    const elDescTransfer  = $("descTransfer");
+    const elSaveBtn       = $("saveBtn");
+    const elSaldoTop      = $("saldoTop");
+    const elToday         = $("today");
+    const elPendingCount  = $("pendingCount");
+    const elSyncCount     = $("syncCount");
+    const elStreakBox     = $("streakBox");
+    const elCockpit       = $("cockpit");
+    const elCoach         = $("coach");
+    const elGoalList      = $("goalList");
+    const elLista         = $("lista");
+    const elFavList       = $("favList");
+    const elGoalName      = $("goalName");
+    const elGoalValue     = $("goalValue");
+    const elToast         = $("toast");
     const elCuentasResumen = $("cuentasResumen");
-    const elDistBar        = $("distBar");
-    const elDistLegend     = $("distLegend");
-    const elCuentasAdmin   = $("cuentasAdmin");
+    const elDistBar       = $("distBar");
+    const elDistLegend    = $("distLegend");
+    const elCuentasAdmin  = $("cuentasAdmin");
+    const elCatsAdmin     = $("catsAdmin");
+    const elHistorialLista = $("historialLista");
+    const elHistorialCard  = $("historialCard");
 
     /* ── STATE ── */
     let data    = [];
@@ -363,15 +411,28 @@
     let streak  = Number(localStorage.getItem("streak") || 0);
     let modoActual = "ingreso";
 
-    // ─── CUENTAS: ahora incluyen saldoInicial ───────────────────────
-    // Migración: si ya existían cuentas sin saldoInicial, les ponemos 0
+    // Historial de meses cerrados: [{label, saldos, movimientos, ing, gas}]
+    let historial = JSON.parse(localStorage.getItem("historialMeses") || "[]");
+
+    // Cuentas
     let cuentas = JSON.parse(localStorage.getItem("cuentas") || JSON.stringify([
       { id:"nequi",      nombre:"Nequi",      icon:"📱", saldoInicial:0 },
       { id:"davivienda", nombre:"Davivienda",  icon:"🏦", saldoInicial:0 },
       { id:"efectivo",   nombre:"Efectivo",    icon:"💵", saldoInicial:0 }
     ]));
-    // Migración para cuentas antiguas sin el campo
     cuentas = cuentas.map(c => ({ saldoInicial:0, ...c }));
+
+    // Categorías personalizadas
+    const CATS_DEFAULT = [
+      { id:"ingreso",        nombre:"Ingreso",        icon:"💰", tipo:"ingreso" },
+      { id:"comida",         nombre:"Comida",          icon:"🍔", tipo:"gasto"   },
+      { id:"vivienda",       nombre:"Vivienda",        icon:"🏠", tipo:"gasto"   },
+      { id:"transporte",     nombre:"Transporte",      icon:"🚗", tipo:"gasto"   },
+      { id:"servicios",      nombre:"Servicios",       icon:"💡", tipo:"gasto"   },
+      { id:"entretenimiento",nombre:"Entretenimiento", icon:"🎮", tipo:"gasto"   },
+      { id:"ahorro",         nombre:"Ahorro",          icon:"🏦", tipo:"ambos"   },
+    ];
+    let categorias = JSON.parse(localStorage.getItem("categorias") || JSON.stringify(CATS_DEFAULT));
 
     let c1,c2,c3,c4,c5,c6;
 
@@ -382,8 +443,68 @@
     elStreakBox.innerText    = streak;
 
     poblarSelectsCuentas();
+    poblarSelectCategoria("ingreso");
     load();
     syncPending();
+
+    /* ══════════════════════════════════════
+       CATEGORÍAS
+    ══════════════════════════════════════ */
+    function saveCategorias() {
+      localStorage.setItem("categorias", JSON.stringify(categorias));
+    }
+
+    function poblarSelectCategoria(modo) {
+      elCategoria.innerHTML = "";
+      let filtradas = categorias.filter(c =>
+        c.tipo === "ambos" ||
+        c.tipo === modo ||
+        (modo === "ingreso" && c.tipo === "ingreso") ||
+        (modo === "gasto"   && c.tipo === "gasto")
+      );
+      filtradas.forEach(c => {
+        let opt = document.createElement("option");
+        opt.value       = c.icon + " " + c.nombre;
+        opt.textContent = c.icon + " " + c.nombre;
+        elCategoria.appendChild(opt);
+      });
+    }
+
+    function addCategoria() {
+      let icon   = $("newCatIcon").value.trim() || "📌";
+      let nombre = $("newCatNombre").value.trim();
+      let tipo   = $("newCatTipo").value;
+      if (!nombre) { toast("Escribe el nombre de la categoría"); return; }
+      let id = nombre.toLowerCase().replace(/\s+/g,"_") + "_" + Date.now();
+      categorias.push({ id, nombre, icon, tipo });
+      saveCategorias();
+      $("newCatIcon").value   = "";
+      $("newCatNombre").value = "";
+      renderCatsAdmin();
+      poblarSelectCategoria(modoActual === "ingreso" ? "ingreso" : "gasto");
+      toast("✔ Categoría agregada");
+    }
+
+    function delCategoria(id) {
+      if (CATS_DEFAULT.find(c => c.id === id)) { toast("No puedes eliminar categorías por defecto"); return; }
+      categorias = categorias.filter(c => c.id !== id);
+      saveCategorias();
+      renderCatsAdmin();
+      poblarSelectCategoria(modoActual === "ingreso" ? "ingreso" : "gasto");
+      toast("Categoría eliminada");
+    }
+
+    function renderCatsAdmin() {
+      elCatsAdmin.innerHTML = "";
+      elCatsAdmin.innerHTML += `<div class="cat-chips-wrap">` +
+        categorias.map(c => `
+          <div class="cat-chip">
+            ${c.icon} ${c.nombre}
+            <span style="font-size:10px;color:var(--muted);margin-left:2px">(${c.tipo})</span>
+            <button onclick="delCategoria('${c.id}')">✕</button>
+          </div>`).join("") +
+        `</div>`;
+    }
 
     /* ══════════════════════════════════════
        CUENTAS
@@ -404,13 +525,11 @@
     function addCuenta() {
       let nombre = $("newCuentaNombre").value.trim();
       let icon   = $("newCuentaIcon").value;
-      let si     = parseMonto($("newCuentaSaldoInicial").value || "0");
       if (!nombre) { toast("Escribe el nombre de la cuenta"); return; }
       let id = nombre.toLowerCase().replace(/\s+/g,"_") + "_" + Date.now();
-      cuentas.push({ id, nombre, icon, saldoInicial: si });
+      cuentas.push({ id, nombre, icon, saldoInicial: 0 });
       saveCuentas();
       $("newCuentaNombre").value = "";
-      $("newCuentaSaldoInicial").value = "";
       poblarSelectsCuentas();
       render();
       toast("✔ Cuenta agregada");
@@ -425,33 +544,38 @@
       toast("Cuenta eliminada");
     }
 
-    // Editar saldo inicial directamente desde la card
-    function setSaldoInicial(id, val) {
-      let c = cuentas.find(c => c.id === id);
-      if (!c) return;
-      c.saldoInicial = parseMonto(val);
-      saveCuentas();
-      render();
-      toast("✔ Saldo inicial actualizado");
-    }
-
     function saveCuentas() {
       localStorage.setItem("cuentas", JSON.stringify(cuentas));
     }
 
-    /* ─────────────────────────────────────────
-       FIX PRINCIPAL: calcSaldosCuentas
-       Ahora parte del saldoInicial de cada cuenta
-       y aplica los movimientos encima.
-    ───────────────────────────────────────── */
+    function renderCuentasAdmin() {
+      elCuentasAdmin.innerHTML = "";
+      if (!cuentas.length) {
+        elCuentasAdmin.innerHTML = `<div class="alert mid">No hay cuentas aún.</div>`;
+        return;
+      }
+      cuentas.forEach(c => {
+        elCuentasAdmin.innerHTML += `
+          <div class="cuenta-card" style="flex-direction:column;align-items:flex-start;gap:8px;">
+            <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
+              <div class="cuenta-left">
+                <div class="cuenta-icon">${c.icon}</div>
+                <div class="cuenta-name">${c.nombre}</div>
+              </div>
+              <button class="small-btn" onclick="delCuenta('${c.id}')">🗑️</button>
+            </div>
+          </div>`;
+      });
+    }
+
+    /* ══════════════════════════════════════
+       SALDOS
+    ══════════════════════════════════════ */
     function calcSaldosCuentas() {
       let saldos = {};
-      // Inicializar con saldo inicial de cada cuenta
-      cuentas.forEach(c => {
-        saldos[c.id] = Number(c.saldoInicial) || 0;
-      });
+      cuentas.forEach(c => { saldos[c.id] = Number(c.saldoInicial) || 0; });
 
-      data.forEach(x => {
+      [...data, ...pending].forEach(x => {
         let m = Number(x.Monto) || 0;
         if (x.Tipo === "Transferencia") {
           if (saldos[x.CuentaOrigen]  !== undefined) saldos[x.CuentaOrigen]  -= m;
@@ -463,22 +587,144 @@
           else                       saldos[cid] -= m;
         }
       });
-
-      // También sumar los pending locales (no sincronizados)
-      pending.forEach(x => {
-        let m = Number(x.Monto) || 0;
-        if (x.Tipo === "Transferencia") {
-          if (saldos[x.CuentaOrigen]  !== undefined) saldos[x.CuentaOrigen]  -= m;
-          if (saldos[x.CuentaDestino] !== undefined) saldos[x.CuentaDestino] += m;
-        } else {
-          let cid = x.Cuenta || "";
-          if (saldos[cid] === undefined) saldos[cid] = 0;
-          if (x.Tipo === "Ingreso") saldos[cid] += m;
-          else                       saldos[cid] -= m;
-        }
-      });
-
       return saldos;
+    }
+
+    /* ══════════════════════════════════════
+       CIERRE DE MES
+    ══════════════════════════════════════ */
+    function abrirModalCierre() {
+      let saldos = calcSaldosCuentas();
+      let ing = data.reduce((a,x) => x.Tipo==="Ingreso" ? a+Number(x.Monto||0) : a, 0);
+      let gas = data.reduce((a,x) => x.Tipo==="Gasto"   ? a+Number(x.Monto||0) : a, 0);
+      let now = new Date();
+      let label = now.toLocaleDateString("es-CO",{ month:"long", year:"numeric" });
+
+      let resumenHTML = `
+        <div class="mes-resumen">
+          <div class="mes-kpi"><span>Ingresos</span><strong style="color:var(--ok)">${money(ing)}</strong></div>
+          <div class="mes-kpi"><span>Gastos</span><strong style="color:var(--bad)">${money(gas)}</strong></div>
+          <div class="mes-kpi"><span>Balance</span><strong>${money(ing-gas)}</strong></div>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Saldos que quedarán como base:</div>`;
+
+      cuentas.forEach(c => {
+        resumenHTML += `<div style="font-size:13px;font-weight:700;margin-bottom:4px">${c.icon} ${c.nombre}: ${money(saldos[c.id]||0)}</div>`;
+      });
+
+      $("modalResumen").innerHTML = resumenHTML;
+      $("modalCierre").classList.add("open");
+    }
+
+    function cerrarModal() {
+      $("modalCierre").classList.remove("open");
+    }
+
+    function confirmarCierre() {
+      let saldos = calcSaldosCuentas();
+      let ing = data.reduce((a,x) => x.Tipo==="Ingreso" ? a+Number(x.Monto||0) : a, 0);
+      let gas = data.reduce((a,x) => x.Tipo==="Gasto"   ? a+Number(x.Monto||0) : a, 0);
+      let now = new Date();
+      let label = now.toLocaleDateString("es-CO",{ month:"long", year:"numeric" });
+
+      // Archivar en historial
+      historial.unshift({
+        label,
+        ing,
+        gas,
+        saldosCierre: { ...saldos },
+        movimientos: [...data]
+      });
+      localStorage.setItem("historialMeses", JSON.stringify(historial));
+
+      // Actualizar saldo inicial de cada cuenta con el saldo actual
+      cuentas = cuentas.map(c => ({
+        ...c,
+        saldoInicial: saldos[c.id] || 0
+      }));
+      saveCuentas();
+
+      // Limpiar movimientos del sheet (los archivamos localmente, los borramos del sheet)
+      // Solo marcamos data como vacía localmente; el sheet sigue igual pero
+      // los registros anteriores no afectan el cálculo porque el saldoInicial ya fue actualizado.
+      // Para una limpieza real del sheet habría que borrar uno a uno vía API.
+      data = [];
+      pending = [];
+      localStorage.setItem("pendingQueue", JSON.stringify(pending));
+      elPendingCount.innerText = 0;
+      elSyncCount.innerText    = 0;
+
+      cerrarModal();
+      render();
+      renderHistorial();
+      toast("✔ Mes cerrado correctamente");
+    }
+
+    /* ══════════════════════════════════════
+       HISTORIAL
+    ══════════════════════════════════════ */
+    function renderHistorial() {
+      if (!historial.length) {
+        elHistorialCard.style.display = "none";
+        return;
+      }
+      elHistorialCard.style.display = "block";
+      elHistorialLista.innerHTML = "";
+
+      historial.forEach((mes, idx) => {
+        let movHTML = "";
+        if (mes.movimientos && mes.movimientos.length) {
+          let sorted = [...mes.movimientos].sort((a,b) => new Date(b.Fecha)-new Date(a.Fecha));
+          let lastDay = "";
+          sorted.forEach(x => {
+            let m = Number(x.Monto)||0;
+            let cls = x.Tipo==="Ingreso" ? "ingreso" : x.Tipo==="Transferencia" ? "transferencia" : "gasto";
+            if (x.Fecha !== lastDay) {
+              movHTML += `<div class="timeline-day">${labelDay(x.Fecha)}</div>`;
+              lastDay = x.Fecha;
+            }
+            movHTML += `<div class="item ${cls}">
+              <div>${x.Categoría||""} - ${x.Descripción||""}</div>
+              <div class="price">${money(m)}</div>
+            </div>`;
+          });
+        } else {
+          movHTML = `<div class="small">Sin movimientos registrados.</div>`;
+        }
+
+        let saldosHTML = "";
+        if (mes.saldosCierre) {
+          saldosHTML = Object.entries(mes.saldosCierre).map(([cid, s]) => {
+            let c = cuentas.find(x => x.id === cid);
+            let label = c ? c.icon+" "+c.nombre : cid;
+            return `<span style="font-size:12px;color:var(--muted);margin-right:10px">${label}: <b style="color:var(--text)">${money(s)}</b></span>`;
+          }).join("");
+        }
+
+        elHistorialLista.innerHTML += `
+          <div class="mes-card">
+            <div class="mes-card-title" onclick="toggleMes(${idx})">
+              <span>📅 ${mes.label}</span>
+              <span style="font-size:18px" id="mesArrow${idx}">▶</span>
+            </div>
+            <div class="mes-card-body" id="mesBody${idx}">
+              <div class="mes-resumen">
+                <div class="mes-kpi"><span>Ingresos</span><strong style="color:var(--ok)">${money(mes.ing)}</strong></div>
+                <div class="mes-kpi"><span>Gastos</span><strong style="color:var(--bad)">${money(mes.gas)}</strong></div>
+                <div class="mes-kpi"><span>Balance</span><strong>${money(mes.ing-mes.gas)}</strong></div>
+              </div>
+              <div style="margin-bottom:8px">${saldosHTML}</div>
+              <div class="list">${movHTML}</div>
+            </div>
+          </div>`;
+      });
+    }
+
+    function toggleMes(idx) {
+      let body  = $("mesBody"  + idx);
+      let arrow = $("mesArrow" + idx);
+      let open  = body.classList.toggle("open");
+      arrow.textContent = open ? "▼" : "▶";
     }
 
     /* ══════════════════════════════════════
@@ -493,15 +739,15 @@
         $("fs-transfer").classList.add("active");
       } else {
         $("fs-normal").classList.add("active");
-        elCategoria.selectedIndex = mode === "ingreso" ? 0 : 1;
+        poblarSelectCategoria(mode);
       }
     }
 
     /* ══════════════════════════════════════
-       TOAST / TABS / HELPERS
+       HELPERS
     ══════════════════════════════════════ */
     function toast(msg) {
-      elToast.innerText     = msg;
+      elToast.innerText = msg;
       elToast.style.display = "block";
       setTimeout(() => elToast.style.display = "none", 2200);
     }
@@ -511,6 +757,8 @@
       $("tab-" + tab).classList.add("active");
       document.querySelectorAll(".nav button").forEach(x => x.classList.remove("active"));
       btn.classList.add("active");
+      if (tab === "list") renderHistorial();
+      if (tab === "settings") { renderCuentasAdmin(); renderCatsAdmin(); }
     }
 
     function money(n) {
@@ -531,6 +779,17 @@
 
     function parseMonto(str) {
       return Number(String(str).replace(/\./g,"").replace(",",".")) || 0;
+    }
+
+    function labelDay(f) {
+      let d    = new Date(f+"T00:00:00");
+      let now  = new Date();
+      let ayer = new Date();
+      ayer.setDate(now.getDate()-1);
+      function isoStr(date){ return date.toISOString().slice(0,10); }
+      if (f === isoStr(now))  return "HOY";
+      if (f === isoStr(ayer)) return "AYER";
+      return d.toLocaleDateString("es-CO",{ day:"numeric", month:"short" });
     }
 
     /* ══════════════════════════════════════
@@ -589,9 +848,7 @@
         pending.push(datos);
         localStorage.setItem("pendingQueue", JSON.stringify(pending));
         elPendingCount.innerText = pending.length;
-        doneSave();
-        toast("☁ Guardado offline");
-        return;
+        doneSave(); toast("☁ Guardado offline"); return;
       }
 
       try {
@@ -623,7 +880,7 @@
     }
 
     /* ══════════════════════════════════════
-       FAVORITOS (carga rápida)
+       FAVORITOS
     ══════════════════════════════════════ */
     function usarFavorito(cat, des, montoVal, cuentaId) {
       setMode("gasto", document.querySelectorAll(".mode-tab")[1]);
@@ -649,7 +906,7 @@
     }
 
     /* ══════════════════════════════════════
-       SYNC PENDIENTES
+       SYNC
     ══════════════════════════════════════ */
     window.addEventListener("online", syncPending);
 
@@ -663,8 +920,7 @@
             headers:{ "Content-Type":"text/plain;charset=utf-8" },
             body: JSON.stringify(pending[0])
           });
-          pending.shift();
-          sent++;
+          pending.shift(); sent++;
         } catch(e) { break; }
       }
       localStorage.setItem("pendingQueue", JSON.stringify(pending));
@@ -722,10 +978,8 @@
 
       sorted.forEach(x => {
         let m = Number(x.Monto) || 0;
-
-        if (x.Tipo === "Ingreso")        ing += m;
-        else if (x.Tipo === "Gasto")     gas += m;
-
+        if (x.Tipo === "Ingreso")    ing += m;
+        else if (x.Tipo === "Gasto") gas += m;
         if (String(x.Categoría).includes("Ahorro")) ah += m;
         if (x.Tipo === "Gasto") cats[x.Categoría] = (cats[x.Categoría]||0) + m;
 
@@ -735,8 +989,7 @@
         }
 
         let claseItem = x.Tipo==="Ingreso" ? "ingreso"
-                      : x.Tipo==="Transferencia" ? "transferencia"
-                      : "gasto";
+                      : x.Tipo==="Transferencia" ? "transferencia" : "gasto";
 
         let cuentaLabel = "";
         if (x.Tipo === "Transferencia") {
@@ -756,6 +1009,10 @@
           </div>`;
       });
 
+      if (!sorted.length) {
+        elLista.innerHTML = `<div class="alert mid">No hay movimientos este mes.</div>`;
+      }
+
       let saldos     = calcSaldosCuentas();
       let saldoTotal = Object.values(saldos).reduce((a,b) => a+b, 0);
       elSaldoTop.innerText = money(saldoTotal);
@@ -766,11 +1023,10 @@
       renderGoals(ah);
       charts(cats, ing, gas, saldos);
       renderFavorites();
-      renderCuentasAdmin();
     }
 
     /* ══════════════════════════════════════
-       RENDER CUENTAS (home)
+       RENDER CUENTAS
     ══════════════════════════════════════ */
     function renderCuentas(saldos) {
       elCuentasResumen.innerHTML = "";
@@ -788,10 +1044,7 @@
           <div class="cuenta-card">
             <div class="cuenta-left">
               <div class="cuenta-icon">${c.icon}</div>
-              <div>
-                <div class="cuenta-name">${c.nombre}</div>
-                <div class="small" style="margin-top:2px">Inicial: ${money(c.saldoInicial||0)}</div>
-              </div>
+              <div class="cuenta-name">${c.nombre}</div>
             </div>
             <div class="cuenta-saldo ${cls}">${money(s)}</div>
           </div>`;
@@ -807,41 +1060,6 @@
     }
 
     /* ══════════════════════════════════════
-       RENDER CUENTAS ADMIN (settings)
-       — con edición de saldo inicial inline
-    ══════════════════════════════════════ */
-    function renderCuentasAdmin() {
-      elCuentasAdmin.innerHTML = "";
-      if (!cuentas.length) {
-        elCuentasAdmin.innerHTML = `<div class="alert mid">No hay cuentas aún.</div>`;
-        return;
-      }
-      cuentas.forEach(c => {
-        elCuentasAdmin.innerHTML += `
-          <div class="cuenta-card" style="flex-direction:column;align-items:flex-start;gap:8px;">
-            <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
-              <div class="cuenta-left">
-                <div class="cuenta-icon">${c.icon}</div>
-                <div class="cuenta-name">${c.nombre}</div>
-              </div>
-              <button class="small-btn" onclick="delCuenta('${c.id}')">🗑️</button>
-            </div>
-            <div style="width:100%;">
-              <div class="small" style="margin-bottom:4px">💰 Saldo inicial (lo que ya tenías antes de registrar movimientos)</div>
-              <div class="saldo-inicial-edit">
-                <input type="text" id="si_${c.id}"
-                  value="${Number(c.saldoInicial||0).toLocaleString('es-CO')}"
-                  placeholder="0">
-                <button onclick="setSaldoInicial('${c.id}', document.getElementById('si_${c.id}').value)">
-                  ✔ Guardar
-                </button>
-              </div>
-            </div>
-          </div>`;
-      });
-    }
-
-    /* ══════════════════════════════════════
        RENDER FAVORITOS
     ══════════════════════════════════════ */
     function renderFavorites() {
@@ -852,38 +1070,16 @@
         if (!map[key]) map[key] = { cat:x.Categoría, des:x.Descripción, monto:x.Monto, cuenta:x.Cuenta, count:0 };
         map[key].count++;
       });
-
       let top = Object.values(map).sort((a,b) => b.count-a.count).slice(0,4);
       elFavList.innerHTML = "";
-
-      if (!top.length) {
-        elFavList.innerHTML = `<div class="small">Aún sin favoritos</div>`;
-        return;
-      }
-
+      if (!top.length) { elFavList.innerHTML = `<div class="small">Aún sin favoritos</div>`; return; }
       top.forEach(f => {
         elFavList.innerHTML += `
           <button class="secondary"
             onclick="usarFavorito('${f.cat}','${f.des}',${f.monto},'${f.cuenta||""}')">
-            ${f.cat}<br>
-            <small>${f.des}</small><br>
-            <small>${money(f.monto)}</small>
+            ${f.cat}<br><small>${f.des}</small><br><small>${money(f.monto)}</small>
           </button>`;
       });
-    }
-
-    /* ══════════════════════════════════════
-       TIMELINE LABEL
-    ══════════════════════════════════════ */
-    function labelDay(f) {
-      let d    = new Date(f+"T00:00:00");
-      let now  = new Date();
-      let ayer = new Date();
-      ayer.setDate(now.getDate()-1);
-      function isoStr(date){ return date.toISOString().slice(0,10); }
-      if (f === isoStr(now))  return "HOY";
-      if (f === isoStr(ayer)) return "AYER";
-      return d.toLocaleDateString("es-CO",{ day:"numeric", month:"short" });
     }
 
     /* ══════════════════════════════════════
@@ -910,11 +1106,11 @@
     ══════════════════════════════════════ */
     function renderCoach(ing, gas, cats) {
       let txt     = "";
-      let balance = ing-gas;
+      let balance = ing - gas;
 
-      if (balance>0)        txt += `<div class="alert good">🟢 Salud financiera positiva. Vas cerrando con superávit.</div>`;
-      else if (balance===0) txt += `<div class="alert mid">🟡 Vas en punto equilibrio. Controla próximos gastos.</div>`;
-      else                  txt += `<div class="alert bad">🔴 Gastas más de lo que ingresas actualmente.</div>`;
+      if (balance > 0)       txt += `<div class="alert good">🟢 Salud financiera positiva. Vas cerrando con superávit.</div>`;
+      else if (balance === 0) txt += `<div class="alert mid">🟡 Vas en punto equilibrio. Controla próximos gastos.</div>`;
+      else                    txt += `<div class="alert bad">🔴 Gastas más de lo que ingresas actualmente.</div>`;
 
       let topEntry = Object.entries(cats).sort((a,b) => b[1]-a[1])[0];
       if (topEntry) {
@@ -923,22 +1119,21 @@
       }
 
       let hoy=new Date(), dia=hoy.getDate();
-      if (dia>0) {
-        let prom = gas/dia;
-        let dias = new Date(hoy.getFullYear(), hoy.getMonth()+1, 0).getDate();
-        let proy = Math.round(prom*dias);
-        let sproj = ing-proy;
-        if (sproj>0) txt += `<div class="alert good">📈 Si sigues así cerrarás con <b>${money(sproj)}</b></div>`;
-        else          txt += `<div class="alert bad">📉 Al ritmo actual cerrarías en <b>${money(sproj)}</b></div>`;
+      if (dia > 0) {
+        let prom  = gas / dia;
+        let dias  = new Date(hoy.getFullYear(), hoy.getMonth()+1, 0).getDate();
+        let proy  = Math.round(prom * dias);
+        let sproj = ing - proy;
+        if (sproj > 0) txt += `<div class="alert good">📈 Si sigues así cerrarás con <b>${money(sproj)}</b></div>`;
+        else            txt += `<div class="alert bad">📉 Al ritmo actual cerrarías en <b>${money(sproj)}</b></div>`;
       }
 
-      if (topEntry) {
+      if (topEntry)
         txt += `<div class="alert mid">💡 Bajando <b>${topEntry[0]}</b> un 15% ahorrarías <b>${money(Math.round(topEntry[1]*.15))}</b></div>`;
-      }
 
       txt += `<div class="alert good">🔥 Racha activa: <b>${streak}</b> días registrando movimientos</div>`;
 
-      if (gas<ing*.70 && ing>0)
+      if (gas < ing*.70 && ing > 0)
         txt += `<div class="alert good">🚀 Excelente control: gastos bajo el 70% de tus ingresos.</div>`;
 
       elCoach.innerHTML = txt;
@@ -949,10 +1144,7 @@
     ══════════════════════════════════════ */
     function renderGoals(ah) {
       elGoalList.innerHTML = "";
-      if (!goals.length) {
-        elGoalList.innerHTML = `<div class="alert mid">No tienes metas aún.</div>`;
-        return;
-      }
+      if (!goals.length) { elGoalList.innerHTML = `<div class="alert mid">No tienes metas aún.</div>`; return; }
       goals.forEach((g,i) => {
         let p      = Math.min((ah/g.valor)*100, 100);
         let faltan = Math.max(g.valor-ah, 0);
@@ -973,7 +1165,6 @@
     function charts(cats, ing, gas, saldos) {
       [c1,c2,c3,c4,c5,c6].forEach(c => { if(c) c.destroy(); });
 
-      /* 6. Saldo por cuenta */
       let accLabels = cuentas.map(c => c.icon+" "+c.nombre);
       let accValues = cuentas.map(c => saldos[c.id]||0);
       let accColors = cuentas.map((_,i) => ACC_COLORS[i%ACC_COLORS.length]);
@@ -981,13 +1172,9 @@
       c6 = new Chart($("chart6"),{
         type:"bar",
         data:{ labels:accLabels, datasets:[{ data:accValues, backgroundColor:accColors }] },
-        options:{
-          plugins:{ legend:{ display:false } },
-          scales:{ y:{ beginAtZero:false } }
-        }
+        options:{ plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:false } } }
       });
 
-      /* 1. Categorías */
       if (Object.keys(cats).length) {
         c1 = new Chart($("chart1"),{
           type:"doughnut",
@@ -995,13 +1182,11 @@
         });
       }
 
-      /* 2. Ingresos vs Gastos */
       c2 = new Chart($("chart2"),{
         type:"bar",
         data:{ labels:["Ingresos","Gastos"], datasets:[{ data:[ing,gas] }] }
       });
 
-      /* 3. Tendencia saldo diario */
       let dias={}, saldo=0;
       [...data].sort((a,b)=>new Date(a.Fecha)-new Date(b.Fecha)).forEach(x=>{
         let m=Number(x.Monto)||0;
@@ -1009,33 +1194,23 @@
         else if (x.Tipo==="Gasto") saldo-=m;
         dias[x.Fecha]=saldo;
       });
-
       c3 = new Chart($("chart3"),{
         type:"line",
         data:{ labels:Object.keys(dias), datasets:[{ data:Object.values(dias), fill:false, tension:0.3 }] }
       });
 
-      /* 4. Gastos por día de semana */
       let week=[0,0,0,0,0,0,0];
       data.forEach(x=>{
-        if (x.Tipo==="Gasto"){
-          let d=new Date(x.Fecha+"T00:00:00");
-          week[d.getDay()]+=Number(x.Monto)||0;
-        }
+        if (x.Tipo==="Gasto"){ let d=new Date(x.Fecha+"T00:00:00"); week[d.getDay()]+=Number(x.Monto)||0; }
       });
-
       c4 = new Chart($("chart4"),{
         type:"bar",
         data:{ labels:["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"], datasets:[{ data:week }] }
       });
 
-      /* 5. Top fugas */
       let fm={};
-      data.forEach(x=>{
-        if (x.Tipo==="Gasto") fm[x.Descripción]=(fm[x.Descripción]||0)+(Number(x.Monto)||0);
-      });
+      data.forEach(x=>{ if (x.Tipo==="Gasto") fm[x.Descripción]=(fm[x.Descripción]||0)+(Number(x.Monto)||0); });
       let tf=Object.entries(fm).sort((a,b)=>b[1]-a[1]).slice(0,5);
-
       c5 = new Chart($("chart5"),{
         type:"bar",
         data:{ labels:tf.map(x=>x[0]), datasets:[{ data:tf.map(x=>x[1]) }] },
