@@ -1,12 +1,14 @@
 {
-  "name": "PRESUPUESTO-2.0",
-  "short_name": "PRESUPUESTO",
+  "name": "PRESUPUESTO PRO AI",
+  "short_name": "Presupuesto",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
   "orientation": "portrait",
+  "description": "Control financiero inteligente tipo app bancaria",
+
   "icons": [
     {
       "src": "icon-192.png",
