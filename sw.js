@@ -1,4 +1,4 @@
-const CACHE_NAME = "PRESUPUESTO-PRO-v14.0.1";
+const CACHE_NAME = "PRESUPUESTO-PRO-v15.0";
 
 const FILES = [
   "./",
