@@ -244,10 +244,40 @@ margin:10px 0 4px;
 </div>  <div class="kpi">  
 <span>Racha</span>  
 <strong id="streakBox">0</strong>  
-</div>  </div>  </div>  <!-- HOME -->  <section class="tab active" id="tab-home">  <div class="card">  
+</div>  </div>  </div> 
+  <!-- HOME -->  
+cockpit.innerHTML += `
+<div class="grid2" style="margin-top:10px">
+
+<div class="kpi">
+<span>Efectivo</span>
+<strong>${money(cuentas["Efectivo"])}</strong>
+</div>
+
+<div class="kpi">
+<span>Tarjeta</span>
+<strong>${money(cuentas["Tarjeta"])}</strong>
+</div>
+
+<div class="kpi">
+<span>Nequi</span>
+<strong>${money(cuentas["Nequi"])}</strong>
+</div>
+
+<div class="kpi">
+<span>Davivienda</span>
+<strong>${money(cuentas["Davivienda"])}</strong>
+</div>
+
+</div>
+`;
+<section class="tab active" id="tab-home">  <div class="card">  
 <div class="title">🎛️ Centro de mando</div>  
-<div id="cockpit"></div>  
-</div>  <div class="card">  
+<div id="cockpit">
+  
+</div>  
+</div> 
+<div class="card">  
 <div class="title">➕ Nuevo movimiento</div>  <input type="date" id="fecha">  
 <input type="text" id="descripcion" placeholder="Descripción">  
 <input type="text" id="monto" placeholder="Monto 4.000">  <select id="categoria">  
@@ -258,7 +288,14 @@ margin:10px 0 4px;
 <option>💡 Servicios</option>  
 <option>🎮 Entretenimiento</option>  
 <option>🏦 Ahorro</option>  
-</select>  <button class="primary" id="saveBtn" onclick="guardar()">💾 Guardar</button>
+</select> 
+<select id="cuenta">
+<option>💵 Efectivo</option>
+<option>💳 Tarjeta</option>
+<option>📱 Nequi</option>
+<option>🏦 Davivienda</option>
+</select>
+<button class="primary" id="saveBtn" onclick="guardar()">💾 Guardar</button>
 
 </div>  <div class="card">  
 <div class="title">⭐ Favoritos automáticos</div>  
@@ -266,7 +303,9 @@ margin:10px 0 4px;
 </div>  <div class="card">  
 <div class="title">🧠 Coach Financiero</div>  
 <div id="coach"></div>  
-</div>  </section>  <!-- DASH -->  <section class="tab" id="tab-dashboard">  <div class="card">  
+</div>  </section>  
+  <!-- DASH -->  
+  <section class="tab" id="tab-dashboard">  <div class="card">  
 <div class="title">📊 Gastos por categoría</div>  
 <canvas id="chart1"></canvas>  
 </div>  <div class="card">  
@@ -382,7 +421,8 @@ async function guardar(){
   
 let datos={  
 Fecha:fecha.value,  
-Categoría:categoria.value,  
+Categoría:categoria.value,
+Cuenta:cuenta.value,
 Descripción:descripcion.value.trim(),  
 Monto:Number(monto.value.replace(/\./g,"")),  
 Tipo:categoria.value.includes("Ingreso")?"Ingreso":"Gasto"  
@@ -592,7 +632,20 @@ function render(){
 lista.innerHTML="";  
   
 let ing=0,gas=0,ah=0,cats={};  
-  
+let cuentas={
+"Efectivo":0,
+"Tarjeta":0,
+"Nequi":0,
+"Davivienda":0
+};
+Object.keys(cuentas).forEach(c=>{
+  cuentas[c]=0;
+});
+data.forEach(x=>{
+  if(x.Cuenta && cuentas[x.Cuenta] !== undefined){
+    cuentas[x.Cuenta] += Number(x.Monto) || 0;
+  }
+});
 let sorted=[...data].sort((a,b)=>new Date(b.Fecha)-new Date(a.Fecha));  
   
 let lastDay="";  
@@ -702,12 +755,23 @@ let hoyGastado=data
   
 let disponibleDia=Math.max((ing-gas)/7,0);  
   
-cockpit.innerHTML=`  
-<div class="grid2">  
-<div class="kpi">  
-<span>Hoy gastado</span>  
-<strong>${money(hoyGastado)}</strong>  
-</div>  
+
+  let cuentasHTML = "";
+
+Object.keys(cuentas).forEach(c=>{
+  cuentasHTML += `
+    <div class="kpi">
+      <span>${c}</span>
+      <strong>${money(cuentas[c])}</strong>
+    </div>
+  `;
+});
+
+cockpit.innerHTML += `
+<div class="grid2" style="margin-top:10px">
+  ${cuentasHTML}
+</div>
+`;
   
 <div class="kpi">  
 <span>Puedes gastar hoy</span>  
