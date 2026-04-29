@@ -129,6 +129,18 @@
       background:rgba(167,139,250,.2);color:var(--transfer);
       margin-left:4px;vertical-align:middle;
     }
+
+    /* Saldo inicial inline edit */
+    .saldo-inicial-edit {
+      display:flex; align-items:center; gap:6px; margin-top:4px;
+    }
+    .saldo-inicial-edit input {
+      padding:6px 10px; font-size:13px; margin-bottom:0; border-radius:10px; width:140px;
+    }
+    .saldo-inicial-edit button {
+      padding:6px 12px; font-size:12px; width:auto; border-radius:10px;
+      background:rgba(37,99,235,.3); color:#fff;
+    }
   </style>
 </head>
 <body>
@@ -290,6 +302,8 @@
         <option value="🐷">🐷 Ahorros</option>
         <option value="💼">💼 Otro</option>
       </select>
+      <label>Saldo inicial (opcional)</label>
+      <input type="text" id="newCuentaSaldoInicial" placeholder="Ej: 500.000">
       <button class="primary" onclick="addCuenta()">➕ Agregar cuenta</button>
     </div>
   </section>
@@ -349,11 +363,15 @@
     let streak  = Number(localStorage.getItem("streak") || 0);
     let modoActual = "ingreso";
 
+    // ─── CUENTAS: ahora incluyen saldoInicial ───────────────────────
+    // Migración: si ya existían cuentas sin saldoInicial, les ponemos 0
     let cuentas = JSON.parse(localStorage.getItem("cuentas") || JSON.stringify([
-      { id:"nequi",      nombre:"Nequi",      icon:"📱" },
-      { id:"davivienda", nombre:"Davivienda",  icon:"🏦" },
-      { id:"efectivo",   nombre:"Efectivo",    icon:"💵" }
+      { id:"nequi",      nombre:"Nequi",      icon:"📱", saldoInicial:0 },
+      { id:"davivienda", nombre:"Davivienda",  icon:"🏦", saldoInicial:0 },
+      { id:"efectivo",   nombre:"Efectivo",    icon:"💵", saldoInicial:0 }
     ]));
+    // Migración para cuentas antiguas sin el campo
+    cuentas = cuentas.map(c => ({ saldoInicial:0, ...c }));
 
     let c1,c2,c3,c4,c5,c6;
 
@@ -386,11 +404,13 @@
     function addCuenta() {
       let nombre = $("newCuentaNombre").value.trim();
       let icon   = $("newCuentaIcon").value;
+      let si     = parseMonto($("newCuentaSaldoInicial").value || "0");
       if (!nombre) { toast("Escribe el nombre de la cuenta"); return; }
       let id = nombre.toLowerCase().replace(/\s+/g,"_") + "_" + Date.now();
-      cuentas.push({ id, nombre, icon });
+      cuentas.push({ id, nombre, icon, saldoInicial: si });
       saveCuentas();
       $("newCuentaNombre").value = "";
+      $("newCuentaSaldoInicial").value = "";
       poblarSelectsCuentas();
       render();
       toast("✔ Cuenta agregada");
@@ -405,16 +425,47 @@
       toast("Cuenta eliminada");
     }
 
+    // Editar saldo inicial directamente desde la card
+    function setSaldoInicial(id, val) {
+      let c = cuentas.find(c => c.id === id);
+      if (!c) return;
+      c.saldoInicial = parseMonto(val);
+      saveCuentas();
+      render();
+      toast("✔ Saldo inicial actualizado");
+    }
+
     function saveCuentas() {
       localStorage.setItem("cuentas", JSON.stringify(cuentas));
     }
 
-    /* Calcula saldo de cada cuenta desde los movimientos */
+    /* ─────────────────────────────────────────
+       FIX PRINCIPAL: calcSaldosCuentas
+       Ahora parte del saldoInicial de cada cuenta
+       y aplica los movimientos encima.
+    ───────────────────────────────────────── */
     function calcSaldosCuentas() {
       let saldos = {};
-      cuentas.forEach(c => saldos[c.id] = 0);
+      // Inicializar con saldo inicial de cada cuenta
+      cuentas.forEach(c => {
+        saldos[c.id] = Number(c.saldoInicial) || 0;
+      });
 
       data.forEach(x => {
+        let m = Number(x.Monto) || 0;
+        if (x.Tipo === "Transferencia") {
+          if (saldos[x.CuentaOrigen]  !== undefined) saldos[x.CuentaOrigen]  -= m;
+          if (saldos[x.CuentaDestino] !== undefined) saldos[x.CuentaDestino] += m;
+        } else {
+          let cid = x.Cuenta || "";
+          if (saldos[cid] === undefined) saldos[cid] = 0;
+          if (x.Tipo === "Ingreso") saldos[cid] += m;
+          else                       saldos[cid] -= m;
+        }
+      });
+
+      // También sumar los pending locales (no sincronizados)
+      pending.forEach(x => {
         let m = Number(x.Monto) || 0;
         if (x.Tipo === "Transferencia") {
           if (saldos[x.CuentaOrigen]  !== undefined) saldos[x.CuentaOrigen]  -= m;
@@ -674,7 +725,6 @@
 
         if (x.Tipo === "Ingreso")        ing += m;
         else if (x.Tipo === "Gasto")     gas += m;
-        /* Transferencias no afectan ing/gas globales */
 
         if (String(x.Categoría).includes("Ahorro")) ah += m;
         if (x.Tipo === "Gasto") cats[x.Categoría] = (cats[x.Categoría]||0) + m;
@@ -740,7 +790,7 @@
               <div class="cuenta-icon">${c.icon}</div>
               <div>
                 <div class="cuenta-name">${c.nombre}</div>
-                <div class="small" style="margin-top:2px">ID: ${c.id}</div>
+                <div class="small" style="margin-top:2px">Inicial: ${money(c.saldoInicial||0)}</div>
               </div>
             </div>
             <div class="cuenta-saldo ${cls}">${money(s)}</div>
@@ -758,6 +808,7 @@
 
     /* ══════════════════════════════════════
        RENDER CUENTAS ADMIN (settings)
+       — con edición de saldo inicial inline
     ══════════════════════════════════════ */
     function renderCuentasAdmin() {
       elCuentasAdmin.innerHTML = "";
@@ -767,12 +818,25 @@
       }
       cuentas.forEach(c => {
         elCuentasAdmin.innerHTML += `
-          <div class="cuenta-card" style="margin-bottom:8px">
-            <div class="cuenta-left">
-              <div class="cuenta-icon">${c.icon}</div>
-              <div class="cuenta-name">${c.nombre}</div>
+          <div class="cuenta-card" style="flex-direction:column;align-items:flex-start;gap:8px;">
+            <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
+              <div class="cuenta-left">
+                <div class="cuenta-icon">${c.icon}</div>
+                <div class="cuenta-name">${c.nombre}</div>
+              </div>
+              <button class="small-btn" onclick="delCuenta('${c.id}')">🗑️</button>
             </div>
-            <button class="small-btn" onclick="delCuenta('${c.id}')">🗑️</button>
+            <div style="width:100%;">
+              <div class="small" style="margin-bottom:4px">💰 Saldo inicial (lo que ya tenías antes de registrar movimientos)</div>
+              <div class="saldo-inicial-edit">
+                <input type="text" id="si_${c.id}"
+                  value="${Number(c.saldoInicial||0).toLocaleString('es-CO')}"
+                  placeholder="0">
+                <button onclick="setSaldoInicial('${c.id}', document.getElementById('si_${c.id}').value)">
+                  ✔ Guardar
+                </button>
+              </div>
+            </div>
           </div>`;
       });
     }
@@ -848,9 +912,9 @@
       let txt     = "";
       let balance = ing-gas;
 
-      if (balance>0)       txt += `<div class="alert good">🟢 Salud financiera positiva. Vas cerrando con superávit.</div>`;
+      if (balance>0)        txt += `<div class="alert good">🟢 Salud financiera positiva. Vas cerrando con superávit.</div>`;
       else if (balance===0) txt += `<div class="alert mid">🟡 Vas en punto equilibrio. Controla próximos gastos.</div>`;
-      else                   txt += `<div class="alert bad">🔴 Gastas más de lo que ingresas actualmente.</div>`;
+      else                  txt += `<div class="alert bad">🔴 Gastas más de lo que ingresas actualmente.</div>`;
 
       let topEntry = Object.entries(cats).sort((a,b) => b[1]-a[1])[0];
       if (topEntry) {
