@@ -5,7 +5,7 @@
   <meta name="theme-color" content="#0f172a">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-  <title>Banking PRO AI v14</title>
+  <title>Banking PRO AI v15</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -16,11 +16,16 @@
       --input:#1e293b; --inputText:#fff;
       --primary:#2563eb; --primary2:#1d4ed8;
       --ok:#22c55e; --bad:#ef4444; --warn:#f59e0b; --transfer:#a78bfa;
+      --biz:#f59e0b; --biz2:#d97706;
     }
     body.light {
       --bg1:#eef2ff; --bg2:#fff; --card:#fff; --line:#e5e7eb;
       --text:#111827; --muted:#64748b; --input:#f1f5f9; --inputText:#111827;
     }
+    /* Modo negocio: acento ámbar */
+    body.modo-negocio { --primary:var(--biz); --primary2:var(--biz2); }
+    body.modo-negocio .header { border-bottom:2px solid rgba(245,158,11,.3); }
+
     *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
     body{
       font-family:Inter,sans-serif;
@@ -46,6 +51,22 @@
     .secondary{background:rgba(255,255,255,.08);color:var(--text)}
     .danger{background:rgba(239,68,68,.18);color:var(--bad);}
     .small-btn{padding:8px 12px;font-size:12px;width:auto;background:rgba(255,255,255,.08);color:var(--text);margin-top:8px}
+
+    /* Context toggle */
+    .ctx-wrap{display:flex;gap:6px;margin-bottom:10px}
+    .ctx-btn{
+      flex:1;padding:10px 6px;font-size:13px;font-weight:700;border-radius:14px;
+      cursor:pointer;text-align:center;border:1px solid transparent;
+      background:rgba(255,255,255,.06);color:var(--muted);transition:.2s;
+    }
+    .ctx-btn.ctx-active{background:rgba(37,99,235,.2);color:var(--primary);border-color:var(--primary)}
+    .ctx-btn.ctx-biz.ctx-active{background:rgba(245,158,11,.2);color:var(--biz);border-color:var(--biz)}
+    .ctx-label{
+      display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:800;
+      margin-left:6px;vertical-align:middle;
+    }
+    .ctx-label.personal{background:rgba(37,99,235,.2);color:var(--primary)}
+    .ctx-label.negocio{background:rgba(245,158,11,.2);color:var(--biz)}
 
     .mode-tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px}
     .mode-tab{
@@ -114,7 +135,8 @@
     .toast{
       position:fixed;left:50%;bottom:96px;transform:translateX(-50%);
       background:#111827;color:#fff;padding:12px 16px;border-radius:14px;
-      font-size:13px;font-weight:700;display:none;z-index:999;white-space:nowrap;
+      font-size:13px;font-weight:700;display:none;z-index:999;
+      white-space:nowrap;max-width:90vw;text-align:center;
     }
     .eye{font-size:12px;margin-top:10px;cursor:pointer;color:var(--muted)}
     .fav-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -127,6 +149,13 @@
       background:rgba(167,139,250,.2);color:var(--transfer);
       margin-left:4px;vertical-align:middle;
     }
+
+    /* Resumen negocio vs personal */
+    .biz-summary{
+      background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.18);
+      border-radius:16px;padding:14px;margin-bottom:12px;
+    }
+    .biz-summary .title{color:var(--biz)}
 
     /* Cierre de mes */
     .mes-card{
@@ -158,10 +187,6 @@
     }
     .cat-chips-wrap{display:flex;flex-wrap:wrap;margin-bottom:10px}
 
-    .saldo-inicial-edit{display:flex;align-items:center;gap:6px;margin-top:4px}
-    .saldo-inicial-edit input{padding:6px 10px;font-size:13px;margin-bottom:0;border-radius:10px;width:140px}
-    .saldo-inicial-edit button{padding:6px 12px;font-size:12px;width:auto;border-radius:10px;background:rgba(37,99,235,.3);color:#fff}
-
     /* Modal cierre mes */
     .modal-overlay{
       display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);
@@ -181,9 +206,21 @@
 
   <!-- HEADER -->
   <div class="header">
-    <div class="small">Banking PRO AI v14</div>
-    <div class="small" id="today"></div>
-    <div class="small" style="margin-top:10px">Saldo total disponible</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div>
+        <div class="small">Banking PRO AI v15</div>
+        <div class="small" id="today"></div>
+      </div>
+      <div id="ctxIndicator" style="font-size:22px">👤</div>
+    </div>
+
+    <!-- Context switcher -->
+    <div class="ctx-wrap">
+      <div id="ctxPersonal" class="ctx-btn ctx-active" onclick="setContexto('personal')">👤 Personal</div>
+      <div id="ctxNegocio"  class="ctx-btn ctx-biz"   onclick="setContexto('negocio')">🏪 Mi Negocio</div>
+    </div>
+
+    <div class="small" style="margin-top:4px" id="ctxSaldoLabel">Saldo total disponible</div>
     <div class="big" id="saldoTop">$0</div>
     <div class="eye" onclick="toggleHide()">👁 Mostrar / ocultar montos</div>
     <div class="grid3" style="margin-top:12px">
@@ -195,8 +232,15 @@
 
   <!-- HOME -->
   <section class="tab active" id="tab-home">
+
+    <!-- Resumen cruzado (solo visible en home) -->
+    <div class="card" id="crossCard" style="display:none">
+      <div class="title">📊 Resumen consolidado</div>
+      <div class="grid2" id="crossSummary"></div>
+    </div>
+
     <div class="card">
-      <div class="title">🏦 Mis cuentas</div>
+      <div class="title" id="cuentasTitle">🏦 Mis cuentas</div>
       <div id="cuentasResumen"></div>
       <div class="dist-bar" id="distBar"></div>
       <div class="dist-legend" id="distLegend"></div>
@@ -208,7 +252,7 @@
     </div>
 
     <div class="card">
-      <div class="title">➕ Nuevo movimiento</div>
+      <div class="title">➕ Nuevo movimiento <span class="ctx-label" id="movCtxLabel">Personal</span></div>
       <div class="mode-tabs">
         <div class="mode-tab active" onclick="setMode('ingreso',this)">💰 Ingreso</div>
         <div class="mode-tab"        onclick="setMode('gasto',this)">💸 Gasto</div>
@@ -259,7 +303,7 @@
   <!-- GOALS -->
   <section class="tab" id="tab-goals">
     <div class="card">
-      <div class="title">🎯 Nueva meta</div>
+      <div class="title">🎯 Nueva meta <span class="ctx-label" id="goalCtxLabel">Personal</span></div>
       <input type="text"   id="goalName"  placeholder="Ej: Viaje">
       <input type="number" id="goalValue" placeholder="Monto objetivo">
       <button class="primary" onclick="addGoal()">Guardar meta</button>
@@ -273,7 +317,7 @@
   <!-- MOVEMENTS -->
   <section class="tab" id="tab-list">
     <div class="card">
-      <div class="title">📋 Movimientos del mes actual</div>
+      <div class="title" id="listTitle">📋 Movimientos del mes actual</div>
       <div class="list" id="lista"></div>
     </div>
     <div class="card" id="historialCard" style="display:none">
@@ -294,7 +338,7 @@
 
     <!-- CIERRE DE MES -->
     <div class="card">
-      <div class="title">📅 Cierre de mes</div>
+      <div class="title">📅 Cierre de mes <span class="ctx-label" id="cierreCtxLabel">Personal</span></div>
       <div class="alert mid" style="margin-bottom:12px">
         Al cerrar el mes, el saldo actual de cada cuenta se guarda como nuevo saldo base y los movimientos quedan archivados en el historial.
       </div>
@@ -303,7 +347,7 @@
 
     <!-- CUENTAS -->
     <div class="card">
-      <div class="title">🏦 Gestionar cuentas</div>
+      <div class="title" id="cuentasAdminTitle">🏦 Gestionar cuentas</div>
       <div id="cuentasAdmin"></div>
       <br>
       <label>Nombre de la nueva cuenta</label>
@@ -315,6 +359,7 @@
         <option value="💵">💵 Efectivo</option>
         <option value="💳">💳 Tarjeta</option>
         <option value="🐷">🐷 Ahorros</option>
+        <option value="🏪">🏪 Caja negocio</option>
         <option value="💼">💼 Otro</option>
       </select>
       <button class="primary" onclick="addCuenta()">➕ Agregar cuenta</button>
@@ -322,7 +367,7 @@
 
     <!-- CATEGORÍAS -->
     <div class="card">
-      <div class="title">🏷️ Gestionar categorías</div>
+      <div class="title" id="catsAdminTitle">🏷️ Gestionar categorías</div>
       <div id="catsAdmin"></div>
       <br>
       <label>Ícono</label>
@@ -370,102 +415,234 @@
     const API_URL    = "https://script.google.com/macros/s/AKfycbwXGhRN-TJxXf4hvwk_BFV52Javiqn6Lzz5ps6M1yTz9PJy-9kDcsUKJLzUY-mTS1Z2/exec";
     const ACC_COLORS = ["#2563eb","#22c55e","#f59e0b","#ec4899","#a78bfa","#14b8a6"];
 
+    const CATS_DEFAULT_PERSONAL = [
+      { id:"ingreso",         nombre:"Ingreso",         icon:"💰", tipo:"ingreso" },
+      { id:"comida",          nombre:"Comida",           icon:"🍔", tipo:"gasto"   },
+      { id:"vivienda",        nombre:"Vivienda",         icon:"🏠", tipo:"gasto"   },
+      { id:"transporte",      nombre:"Transporte",       icon:"🚗", tipo:"gasto"   },
+      { id:"servicios",       nombre:"Servicios",        icon:"💡", tipo:"gasto"   },
+      { id:"entretenimiento", nombre:"Entretenimiento",  icon:"🎮", tipo:"gasto"   },
+      { id:"ahorro",          nombre:"Ahorro",           icon:"🏦", tipo:"ambos"   },
+    ];
+
+    const CATS_DEFAULT_NEGOCIO = [
+      { id:"ventas",          nombre:"Ventas",           icon:"💰", tipo:"ingreso" },
+      { id:"servicios_neg",   nombre:"Servicios",        icon:"🛠️", tipo:"ingreso" },
+      { id:"inventario",      nombre:"Inventario",       icon:"📦", tipo:"gasto"   },
+      { id:"nomina",          nombre:"Nómina",           icon:"👷", tipo:"gasto"   },
+      { id:"arriendo_neg",    nombre:"Arriendo",         icon:"🏪", tipo:"gasto"   },
+      { id:"publicidad",      nombre:"Publicidad",       icon:"📣", tipo:"gasto"   },
+      { id:"servicios_pub",   nombre:"Servicios públicos",icon:"💡",tipo:"gasto"   },
+      { id:"proveedores",     nombre:"Proveedores",      icon:"🚚", tipo:"gasto"   },
+      { id:"impuestos",       nombre:"Impuestos",        icon:"🧾", tipo:"gasto"   },
+      { id:"reinversion",     nombre:"Reinversión",      icon:"🔄", tipo:"ambos"   },
+    ];
+
     /* ── DOM ── */
     const $ = id => document.getElementById(id);
-    const elFecha         = $("fecha");
-    const elDescripcion   = $("descripcion");
-    const elMontoInput    = $("montoInput");
-    const elCategoria     = $("categoria");
-    const elCuentaSel     = $("cuentaSel");
-    const elCuentaOrigen  = $("cuentaOrigen");
-    const elCuentaDestino = $("cuentaDestino");
-    const elMontoTransfer = $("montoTransfer");
-    const elDescTransfer  = $("descTransfer");
-    const elSaveBtn       = $("saveBtn");
-    const elSaldoTop      = $("saldoTop");
-    const elToday         = $("today");
-    const elPendingCount  = $("pendingCount");
-    const elSyncCount     = $("syncCount");
-    const elStreakBox     = $("streakBox");
-    const elCockpit       = $("cockpit");
-    const elCoach         = $("coach");
-    const elGoalList      = $("goalList");
-    const elLista         = $("lista");
-    const elFavList       = $("favList");
-    const elGoalName      = $("goalName");
-    const elGoalValue     = $("goalValue");
-    const elToast         = $("toast");
+    const elFecha          = $("fecha");
+    const elDescripcion    = $("descripcion");
+    const elMontoInput     = $("montoInput");
+    const elCategoria      = $("categoria");
+    const elCuentaSel      = $("cuentaSel");
+    const elCuentaOrigen   = $("cuentaOrigen");
+    const elCuentaDestino  = $("cuentaDestino");
+    const elMontoTransfer  = $("montoTransfer");
+    const elDescTransfer   = $("descTransfer");
+    const elSaveBtn        = $("saveBtn");
+    const elSaldoTop       = $("saldoTop");
+    const elToday          = $("today");
+    const elPendingCount   = $("pendingCount");
+    const elSyncCount      = $("syncCount");
+    const elStreakBox      = $("streakBox");
+    const elCockpit        = $("cockpit");
+    const elCoach          = $("coach");
+    const elGoalList       = $("goalList");
+    const elLista          = $("lista");
+    const elFavList        = $("favList");
+    const elGoalName       = $("goalName");
+    const elGoalValue      = $("goalValue");
+    const elToast          = $("toast");
     const elCuentasResumen = $("cuentasResumen");
-    const elDistBar       = $("distBar");
-    const elDistLegend    = $("distLegend");
-    const elCuentasAdmin  = $("cuentasAdmin");
-    const elCatsAdmin     = $("catsAdmin");
+    const elDistBar        = $("distBar");
+    const elDistLegend     = $("distLegend");
+    const elCuentasAdmin   = $("cuentasAdmin");
+    const elCatsAdmin      = $("catsAdmin");
     const elHistorialLista = $("historialLista");
     const elHistorialCard  = $("historialCard");
 
     /* ── STATE ── */
-    let data    = [];
-    let pending = JSON.parse(localStorage.getItem("pendingQueue") || "[]");
-    let hidden  = localStorage.getItem("hideMoney") === "1";
-    let goals   = JSON.parse(localStorage.getItem("goals") || "[]");
-    let streak  = Number(localStorage.getItem("streak") || 0);
+    let contexto   = localStorage.getItem("contexto") || "personal";
+    let data       = [];
+    let pending    = [];
+    let hidden     = localStorage.getItem("hideMoney") === "1";
+    let goals      = [];
+    let streak     = Number(localStorage.getItem("streak") || 0);
     let modoActual = "ingreso";
-
-    // Historial de meses cerrados: [{label, saldos, movimientos, ing, gas}]
-    let historial = JSON.parse(localStorage.getItem("historialMeses") || "[]");
-
-    // Cuentas
-    let cuentas = JSON.parse(localStorage.getItem("cuentas") || JSON.stringify([
-      { id:"nequi",      nombre:"Nequi",      icon:"📱", saldoInicial:0 },
-      { id:"davivienda", nombre:"Davivienda",  icon:"🏦", saldoInicial:0 },
-      { id:"efectivo",   nombre:"Efectivo",    icon:"💵", saldoInicial:0 }
-    ]));
-    cuentas = cuentas.map(c => ({ saldoInicial:0, ...c }));
-
-    // Categorías personalizadas
-    const CATS_DEFAULT = [
-      { id:"ingreso",        nombre:"Ingreso",        icon:"💰", tipo:"ingreso" },
-      { id:"comida",         nombre:"Comida",          icon:"🍔", tipo:"gasto"   },
-      { id:"vivienda",       nombre:"Vivienda",        icon:"🏠", tipo:"gasto"   },
-      { id:"transporte",     nombre:"Transporte",      icon:"🚗", tipo:"gasto"   },
-      { id:"servicios",      nombre:"Servicios",       icon:"💡", tipo:"gasto"   },
-      { id:"entretenimiento",nombre:"Entretenimiento", icon:"🎮", tipo:"gasto"   },
-      { id:"ahorro",         nombre:"Ahorro",          icon:"🏦", tipo:"ambos"   },
-    ];
-    let categorias = JSON.parse(localStorage.getItem("categorias") || JSON.stringify(CATS_DEFAULT));
-
+    let historial  = [];
+    let cuentas    = [];
+    let categorias = [];
     let c1,c2,c3,c4,c5,c6;
 
-    /* ── INIT ── */
-    elFecha.valueAsDate = new Date();
-    elToday.innerText   = new Date().toLocaleDateString("es-CO",{ weekday:"long", day:"numeric", month:"long" });
-    elPendingCount.innerText = pending.length;
-    elStreakBox.innerText    = streak;
+    /* ══════════════════════════════════════
+       CONTEXTO PERSONAL / NEGOCIO
+    ══════════════════════════════════════ */
+    function keyFor(base) {
+      return contexto === "negocio" ? base + "Negocio" : base;
+    }
 
-    poblarSelectsCuentas();
-    poblarSelectCategoria("ingreso");
-    load();
-    syncPending();
+    function cargarCuentasDeContexto() {
+      let defaultPersonal = [
+        { id:"nequi",      nombre:"Nequi",      icon:"📱", saldoInicial:0 },
+        { id:"davivienda", nombre:"Davivienda",  icon:"🏦", saldoInicial:0 },
+        { id:"efectivo",   nombre:"Efectivo",    icon:"💵", saldoInicial:0 }
+      ];
+      let defaultNegocio = [
+        { id:"caja_neg",   nombre:"Caja",        icon:"🏪", saldoInicial:0 },
+        { id:"banco_neg",  nombre:"Banco Neg.",  icon:"🏦", saldoInicial:0 },
+      ];
+      let def = contexto === "negocio" ? defaultNegocio : defaultPersonal;
+      cuentas = JSON.parse(localStorage.getItem(keyFor("cuentas")) || JSON.stringify(def));
+      cuentas = cuentas.map(c => ({ saldoInicial:0, ...c }));
+    }
+
+    function cargarCategoriasDeContexto() {
+      let def = contexto === "negocio" ? CATS_DEFAULT_NEGOCIO : CATS_DEFAULT_PERSONAL;
+      categorias = JSON.parse(localStorage.getItem(keyFor("categorias")) || JSON.stringify(def));
+    }
+
+    function cargarDatosDeContexto() {
+      let cached = localStorage.getItem(keyFor("dataCache"));
+      data    = cached ? JSON.parse(cached) : [];
+      pending = JSON.parse(localStorage.getItem(keyFor("pendingQueue")) || "[]");
+      historial = JSON.parse(localStorage.getItem(keyFor("historialMeses")) || "[]");
+      goals   = JSON.parse(localStorage.getItem(keyFor("goals")) || "[]");
+      elSyncCount.innerText    = data.length;
+      elPendingCount.innerText = pending.length;
+    }
+
+    function setContexto(ctx) {
+      contexto = ctx;
+      localStorage.setItem("contexto", ctx);
+      aplicarEstiloContexto();
+      cargarCuentasDeContexto();
+      cargarCategoriasDeContexto();
+      cargarDatosDeContexto();
+      poblarSelectsCuentas();
+      poblarSelectCategoria(modoActual === "ingreso" ? "ingreso" : "gasto");
+      actualizarLabelsContexto();
+      render();
+      renderCrossCard();
+      load();
+      toast(ctx === "negocio" ? "🏪 Modo Negocio activado" : "👤 Modo Personal activado");
+    }
+
+    function aplicarEstiloContexto() {
+      let isNeg = contexto === "negocio";
+      document.body.classList.toggle("modo-negocio", isNeg);
+      $("ctxPersonal").classList.toggle("ctx-active", !isNeg);
+      $("ctxNegocio").classList.toggle("ctx-active", isNeg);
+      $("ctxIndicator").innerText = isNeg ? "🏪" : "👤";
+    }
+
+    function actualizarLabelsContexto() {
+      let isNeg = contexto === "negocio";
+      let lbl   = isNeg ? "negocio" : "personal";
+      let txt   = isNeg ? "Negocio" : "Personal";
+      let icon  = isNeg ? "🏪" : "👤";
+
+      ["movCtxLabel","goalCtxLabel","cierreCtxLabel"].forEach(id => {
+        let el = $(id);
+        if (!el) return;
+        el.className = "ctx-label " + lbl;
+        el.innerText = txt;
+      });
+
+      $("cuentasTitle").innerHTML    = (isNeg ? "🏪" : "🏦") + " Mis cuentas " + icon;
+      $("cuentasAdminTitle").innerHTML = (isNeg ? "🏪" : "🏦") + " Cuentas del " + txt;
+      $("catsAdminTitle").innerHTML  = "🏷️ Categorías del " + txt;
+      $("listTitle").innerHTML       = "📋 " + txt + " · Movimientos del mes";
+      $("ctxSaldoLabel").innerText   = isNeg ? "Capital disponible del negocio" : "Saldo total disponible";
+    }
+
+    /* ── Tarjeta resumen cruzado ── */
+    function renderCrossCard() {
+      // Calcula ingresos y gastos de AMBOS contextos para mostrar en home
+      let calcCtx = (ctx) => {
+        let c = localStorage.getItem(ctx === "negocio" ? "dataCacheNegocio" : "dataCache");
+        if (!c) return { ing:0, gas:0 };
+        let arr = JSON.parse(c);
+        let cuentasCtx = JSON.parse(localStorage.getItem(ctx === "negocio" ? "cuentasNegocio" : "cuentas") || "[]");
+        let saldos = {};
+        cuentasCtx.forEach(x => { saldos[x.id] = Number(x.saldoInicial)||0; });
+        arr.forEach(x => {
+          let m = Number(x.Monto)||0;
+          if (x.Tipo==="Transferencia") {
+            if (saldos[x.CuentaOrigen]!==undefined) saldos[x.CuentaOrigen]-=m;
+            if (saldos[x.CuentaDestino]!==undefined) saldos[x.CuentaDestino]+=m;
+          } else {
+            let cid = x.Cuenta||"";
+            if (saldos[cid]===undefined) saldos[cid]=0;
+            if (x.Tipo==="Ingreso") saldos[cid]+=m; else saldos[cid]-=m;
+          }
+        });
+        let ing = arr.reduce((a,x) => x.Tipo==="Ingreso" ? a+Number(x.Monto||0):a, 0);
+        let gas = arr.reduce((a,x) => x.Tipo==="Gasto"   ? a+Number(x.Monto||0):a, 0);
+        let sal = Object.values(saldos).reduce((a,b)=>a+b,0);
+        return { ing, gas, sal };
+      };
+
+      let p = calcCtx("personal");
+      let n = calcCtx("negocio");
+      let cross = $("crossCard");
+      let summary = $("crossSummary");
+
+      if (!p.ing && !p.gas && !n.ing && !n.gas) { cross.style.display="none"; return; }
+      cross.style.display = "block";
+
+      summary.innerHTML = `
+        <div class="kpi" style="border-left:3px solid var(--primary)">
+          <span>👤 Personal · Saldo</span>
+          <strong style="color:${p.sal>=0?"var(--ok)":"var(--bad)"}">${money2(p.sal)}</strong>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">
+            +${money2(p.ing)} · -${money2(p.gas)}
+          </div>
+        </div>
+        <div class="kpi" style="border-left:3px solid var(--biz)">
+          <span>🏪 Negocio · Capital</span>
+          <strong style="color:${n.sal>=0?"var(--ok)":"var(--bad)"}">${money2(n.sal)}</strong>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">
+            +${money2(n.ing)} · -${money2(n.gas)}
+          </div>
+        </div>`;
+    }
+
+    /* Versión de money sin ocultar, para cross card */
+    function money2(n) {
+      return "$" + Number(n).toLocaleString("es-CO");
+    }
 
     /* ══════════════════════════════════════
        CATEGORÍAS
     ══════════════════════════════════════ */
     function saveCategorias() {
-      localStorage.setItem("categorias", JSON.stringify(categorias));
+      localStorage.setItem(keyFor("categorias"), JSON.stringify(categorias));
+    }
+
+    function getCatsDefault() {
+      return contexto === "negocio" ? CATS_DEFAULT_NEGOCIO : CATS_DEFAULT_PERSONAL;
     }
 
     function poblarSelectCategoria(modo) {
       elCategoria.innerHTML = "";
       let filtradas = categorias.filter(c =>
-        c.tipo === "ambos" ||
-        c.tipo === modo ||
+        c.tipo === "ambos" || c.tipo === modo ||
         (modo === "ingreso" && c.tipo === "ingreso") ||
         (modo === "gasto"   && c.tipo === "gasto")
       );
       filtradas.forEach(c => {
         let opt = document.createElement("option");
-        opt.value       = c.icon + " " + c.nombre;
-        opt.textContent = c.icon + " " + c.nombre;
+        opt.value = opt.textContent = c.icon + " " + c.nombre;
         elCategoria.appendChild(opt);
       });
     }
@@ -478,15 +655,14 @@
       let id = nombre.toLowerCase().replace(/\s+/g,"_") + "_" + Date.now();
       categorias.push({ id, nombre, icon, tipo });
       saveCategorias();
-      $("newCatIcon").value   = "";
-      $("newCatNombre").value = "";
+      $("newCatIcon").value = $("newCatNombre").value = "";
       renderCatsAdmin();
       poblarSelectCategoria(modoActual === "ingreso" ? "ingreso" : "gasto");
       toast("✔ Categoría agregada");
     }
 
     function delCategoria(id) {
-      if (CATS_DEFAULT.find(c => c.id === id)) { toast("No puedes eliminar categorías por defecto"); return; }
+      if (getCatsDefault().find(c => c.id === id)) { toast("No puedes eliminar categorías por defecto"); return; }
       categorias = categorias.filter(c => c.id !== id);
       saveCategorias();
       renderCatsAdmin();
@@ -495,8 +671,7 @@
     }
 
     function renderCatsAdmin() {
-      elCatsAdmin.innerHTML = "";
-      elCatsAdmin.innerHTML += `<div class="cat-chips-wrap">` +
+      elCatsAdmin.innerHTML = `<div class="cat-chips-wrap">` +
         categorias.map(c => `
           <div class="cat-chip">
             ${c.icon} ${c.nombre}
@@ -514,7 +689,7 @@
         sel.innerHTML = "";
         cuentas.forEach(c => {
           let opt = document.createElement("option");
-          opt.value       = c.id;
+          opt.value = c.id;
           opt.textContent = c.icon + " " + c.nombre;
           sel.appendChild(opt);
         });
@@ -545,7 +720,7 @@
     }
 
     function saveCuentas() {
-      localStorage.setItem("cuentas", JSON.stringify(cuentas));
+      localStorage.setItem(keyFor("cuentas"), JSON.stringify(cuentas));
     }
 
     function renderCuentasAdmin() {
@@ -574,7 +749,6 @@
     function calcSaldosCuentas() {
       let saldos = {};
       cuentas.forEach(c => { saldos[c.id] = Number(c.saldoInicial) || 0; });
-
       [...data, ...pending].forEach(x => {
         let m = Number(x.Monto) || 0;
         if (x.Tipo === "Transferencia") {
@@ -595,11 +769,9 @@
     ══════════════════════════════════════ */
     function abrirModalCierre() {
       let saldos = calcSaldosCuentas();
-      let ing = data.reduce((a,x) => x.Tipo==="Ingreso" ? a+Number(x.Monto||0) : a, 0);
-      let gas = data.reduce((a,x) => x.Tipo==="Gasto"   ? a+Number(x.Monto||0) : a, 0);
-      let now = new Date();
-      let label = now.toLocaleDateString("es-CO",{ month:"long", year:"numeric" });
-
+      let ing = data.reduce((a,x) => x.Tipo==="Ingreso" ? a+Number(x.Monto||0):a, 0);
+      let gas = data.reduce((a,x) => x.Tipo==="Gasto"   ? a+Number(x.Monto||0):a, 0);
+      let label = new Date().toLocaleDateString("es-CO",{ month:"long", year:"numeric" });
       let resumenHTML = `
         <div class="mes-resumen">
           <div class="mes-kpi"><span>Ingresos</span><strong style="color:var(--ok)">${money(ing)}</strong></div>
@@ -607,56 +779,37 @@
           <div class="mes-kpi"><span>Balance</span><strong>${money(ing-gas)}</strong></div>
         </div>
         <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Saldos que quedarán como base:</div>`;
-
       cuentas.forEach(c => {
         resumenHTML += `<div style="font-size:13px;font-weight:700;margin-bottom:4px">${c.icon} ${c.nombre}: ${money(saldos[c.id]||0)}</div>`;
       });
-
       $("modalResumen").innerHTML = resumenHTML;
       $("modalCierre").classList.add("open");
     }
 
-    function cerrarModal() {
-      $("modalCierre").classList.remove("open");
-    }
+    function cerrarModal() { $("modalCierre").classList.remove("open"); }
 
     function confirmarCierre() {
       let saldos = calcSaldosCuentas();
-      let ing = data.reduce((a,x) => x.Tipo==="Ingreso" ? a+Number(x.Monto||0) : a, 0);
-      let gas = data.reduce((a,x) => x.Tipo==="Gasto"   ? a+Number(x.Monto||0) : a, 0);
-      let now = new Date();
-      let label = now.toLocaleDateString("es-CO",{ month:"long", year:"numeric" });
+      let ing = data.reduce((a,x) => x.Tipo==="Ingreso" ? a+Number(x.Monto||0):a, 0);
+      let gas = data.reduce((a,x) => x.Tipo==="Gasto"   ? a+Number(x.Monto||0):a, 0);
+      let label = new Date().toLocaleDateString("es-CO",{ month:"long", year:"numeric" });
 
-      // Archivar en historial
-      historial.unshift({
-        label,
-        ing,
-        gas,
-        saldosCierre: { ...saldos },
-        movimientos: [...data]
-      });
-      localStorage.setItem("historialMeses", JSON.stringify(historial));
+      historial.unshift({ label, ing, gas, saldosCierre:{...saldos}, movimientos:[...data] });
+      localStorage.setItem(keyFor("historialMeses"), JSON.stringify(historial));
 
-      // Actualizar saldo inicial de cada cuenta con el saldo actual
-      cuentas = cuentas.map(c => ({
-        ...c,
-        saldoInicial: saldos[c.id] || 0
-      }));
+      cuentas = cuentas.map(c => ({ ...c, saldoInicial: saldos[c.id] || 0 }));
       saveCuentas();
 
-      // Limpiar movimientos del sheet (los archivamos localmente, los borramos del sheet)
-      // Solo marcamos data como vacía localmente; el sheet sigue igual pero
-      // los registros anteriores no afectan el cálculo porque el saldoInicial ya fue actualizado.
-      // Para una limpieza real del sheet habría que borrar uno a uno vía API.
-      data = [];
-      pending = [];
-      localStorage.setItem("pendingQueue", JSON.stringify(pending));
+      data = []; pending = [];
+      localStorage.setItem(keyFor("pendingQueue"), JSON.stringify([]));
+      localStorage.setItem(keyFor("dataCache"),    JSON.stringify([]));
       elPendingCount.innerText = 0;
       elSyncCount.innerText    = 0;
 
       cerrarModal();
       render();
       renderHistorial();
+      renderCrossCard();
       toast("✔ Mes cerrado correctamente");
     }
 
@@ -664,13 +817,9 @@
        HISTORIAL
     ══════════════════════════════════════ */
     function renderHistorial() {
-      if (!historial.length) {
-        elHistorialCard.style.display = "none";
-        return;
-      }
+      if (!historial.length) { elHistorialCard.style.display="none"; return; }
       elHistorialCard.style.display = "block";
       elHistorialLista.innerHTML = "";
-
       historial.forEach((mes, idx) => {
         let movHTML = "";
         if (mes.movimientos && mes.movimientos.length) {
@@ -679,25 +828,17 @@
           sorted.forEach(x => {
             let m = Number(x.Monto)||0;
             let cls = x.Tipo==="Ingreso" ? "ingreso" : x.Tipo==="Transferencia" ? "transferencia" : "gasto";
-            if (x.Fecha !== lastDay) {
-              movHTML += `<div class="timeline-day">${labelDay(x.Fecha)}</div>`;
-              lastDay = x.Fecha;
-            }
-            movHTML += `<div class="item ${cls}">
-              <div>${x.Categoría||""} - ${x.Descripción||""}</div>
-              <div class="price">${money(m)}</div>
-            </div>`;
+            if (x.Fecha !== lastDay) { movHTML += `<div class="timeline-day">${labelDay(x.Fecha)}</div>`; lastDay=x.Fecha; }
+            movHTML += `<div class="item ${cls}"><div>${x.Categoría||""} - ${x.Descripción||""}</div><div class="price">${money(m)}</div></div>`;
           });
-        } else {
-          movHTML = `<div class="small">Sin movimientos registrados.</div>`;
-        }
+        } else { movHTML = `<div class="small">Sin movimientos registrados.</div>`; }
 
         let saldosHTML = "";
         if (mes.saldosCierre) {
-          saldosHTML = Object.entries(mes.saldosCierre).map(([cid, s]) => {
-            let c = cuentas.find(x => x.id === cid);
-            let label = c ? c.icon+" "+c.nombre : cid;
-            return `<span style="font-size:12px;color:var(--muted);margin-right:10px">${label}: <b style="color:var(--text)">${money(s)}</b></span>`;
+          saldosHTML = Object.entries(mes.saldosCierre).map(([cid,s]) => {
+            let c = cuentas.find(x => x.id===cid);
+            let lbl = c ? c.icon+" "+c.nombre : cid;
+            return `<span style="font-size:12px;color:var(--muted);margin-right:10px">${lbl}: <b style="color:var(--text)">${money(s)}</b></span>`;
           }).join("");
         }
 
@@ -721,9 +862,8 @@
     }
 
     function toggleMes(idx) {
-      let body  = $("mesBody"  + idx);
-      let arrow = $("mesArrow" + idx);
-      let open  = body.classList.toggle("open");
+      let body = $("mesBody"+idx), arrow = $("mesArrow"+idx);
+      let open = body.classList.toggle("open");
       arrow.textContent = open ? "▼" : "▶";
     }
 
@@ -749,16 +889,17 @@
     function toast(msg) {
       elToast.innerText = msg;
       elToast.style.display = "block";
-      setTimeout(() => elToast.style.display = "none", 2200);
+      setTimeout(() => elToast.style.display="none", 2400);
     }
 
     function goTab(tab, btn) {
       document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
-      $("tab-" + tab).classList.add("active");
+      $("tab-"+tab).classList.add("active");
       document.querySelectorAll(".nav button").forEach(x => x.classList.remove("active"));
       btn.classList.add("active");
-      if (tab === "list") renderHistorial();
-      if (tab === "settings") { renderCuentasAdmin(); renderCatsAdmin(); }
+      if (tab === "list")      renderHistorial();
+      if (tab === "settings")  { renderCuentasAdmin(); renderCatsAdmin(); }
+      if (tab === "dashboard") render();
     }
 
     function money(n) {
@@ -769,7 +910,7 @@
     function toggleHide() {
       hidden = !hidden;
       localStorage.setItem("hideMoney", hidden ? "1" : "0");
-      render();
+      render(); renderCrossCard();
     }
 
     function setTheme(mode) {
@@ -782,135 +923,122 @@
     }
 
     function labelDay(f) {
-      let d    = new Date(f+"T00:00:00");
-      let now  = new Date();
-      let ayer = new Date();
+      let d = new Date(f+"T00:00:00"), now = new Date(), ayer = new Date();
       ayer.setDate(now.getDate()-1);
-      function isoStr(date){ return date.toISOString().slice(0,10); }
-      if (f === isoStr(now))  return "HOY";
-      if (f === isoStr(ayer)) return "AYER";
+      const iso = d => d.toISOString().slice(0,10);
+      if (f === iso(now))  return "HOY";
+      if (f === iso(ayer)) return "AYER";
       return d.toLocaleDateString("es-CO",{ day:"numeric", month:"short" });
     }
 
     /* ══════════════════════════════════════
        LOAD
     ══════════════════════════════════════ */
-   async function load() {
-  // Mostrar datos en caché inmediatamente (carga instantánea)
-  let cached = localStorage.getItem("dataCache");
-  if (cached) {
-    data = JSON.parse(cached);
-    elSyncCount.innerText = data.length;
-    render();
-  }
-
-  // Actualizar en segundo plano
-  try {
-    let r = await fetch(API_URL + "?t=" + Date.now());
-    let fresh = await r.json();
-    // Solo re-renderiza si los datos cambiaron
-    if (JSON.stringify(fresh) !== JSON.stringify(data)) {
-      data = fresh;
-      localStorage.setItem("dataCache", JSON.stringify(data));
-      elSyncCount.innerText = data.length;
-      render();
+    async function load() {
+      let cached = localStorage.getItem(keyFor("dataCache"));
+      if (cached) {
+        data = JSON.parse(cached);
+        elSyncCount.innerText = data.length;
+        render();
+      }
+      try {
+        let r = await fetch(API_URL + "?t=" + Date.now() + "&ctx=" + contexto);
+        let fresh = await r.json();
+        if (JSON.stringify(fresh) !== JSON.stringify(data)) {
+          data = fresh;
+          localStorage.setItem(keyFor("dataCache"), JSON.stringify(data));
+          elSyncCount.innerText = data.length;
+          render();
+          renderCrossCard();
+        }
+      } catch(e) { console.error("Error cargando datos:", e); }
     }
-  } catch(e) {
-    console.error("Error cargando datos:", e);
-  }
-}
+
     /* ══════════════════════════════════════
        GUARDAR
     ══════════════════════════════════════ */
-   async function guardar() {
-  let datos;
-  let saldos = calcSaldosCuentas();
+    async function guardar() {
+      let datos;
+      let saldos = calcSaldosCuentas();
 
-  if (modoActual === "transferencia") {
-    let m = parseMonto(elMontoTransfer.value);
-    if (m <= 0) { toast("Ingresa un monto válido"); return; }
-    if (elCuentaOrigen.value === elCuentaDestino.value) {
-      toast("Origen y destino deben ser distintos"); return;
-    }
+      if (modoActual === "transferencia") {
+        let m = parseMonto(elMontoTransfer.value);
+        if (m <= 0) { toast("Ingresa un monto válido"); return; }
+        if (elCuentaOrigen.value === elCuentaDestino.value) { toast("Origen y destino deben ser distintos"); return; }
 
-    // ── VALIDACIÓN SALDO TRANSFERENCIA ──
-    let saldoOrigen = saldos[elCuentaOrigen.value] || 0;
-    if (m > saldoOrigen) {
-      let cOrigen = cuentas.find(c => c.id === elCuentaOrigen.value);
-      let nombreOrigen = cOrigen ? cOrigen.icon + " " + cOrigen.nombre : elCuentaOrigen.value;
-      toast(`❌ Saldo insuficiente en ${nombreOrigen}. Disponible: ${money(saldoOrigen)}`);
-      return;
-    }
+        let saldoOrigen = saldos[elCuentaOrigen.value] || 0;
+        if (m > saldoOrigen) {
+          let cO = cuentas.find(c => c.id === elCuentaOrigen.value);
+          toast(`❌ Saldo insuficiente en ${cO ? cO.icon+" "+cO.nombre : elCuentaOrigen.value}. Disponible: ${money(saldoOrigen)}`);
+          return;
+        }
 
-    datos = {
-      Fecha:         elFecha.value,
-      Tipo:          "Transferencia",
-      CuentaOrigen:  elCuentaOrigen.value,
-      CuentaDestino: elCuentaDestino.value,
-      Descripción:   elDescTransfer.value.trim() || "Transferencia entre cuentas",
-      Monto:         m,
-      Categoría:     "🔄 Transferencia"
-    };
-  } else {
-    let m = parseMonto(elMontoInput.value);
-    if (!elDescripcion.value.trim() || m <= 0) { toast("Completa los datos"); return; }
+        datos = {
+          Fecha: elFecha.value, Tipo:"Transferencia",
+          CuentaOrigen: elCuentaOrigen.value, CuentaDestino: elCuentaDestino.value,
+          Descripción: elDescTransfer.value.trim() || "Transferencia entre cuentas",
+          Monto: m, Categoría:"🔄 Transferencia", Contexto: contexto
+        };
+      } else {
+        let m = parseMonto(elMontoInput.value);
+        if (!elDescripcion.value.trim() || m <= 0) { toast("Completa los datos"); return; }
 
-    // ── VALIDACIÓN SALDO GASTO ──
-    if (modoActual === "gasto") {
-      let saldoCuenta = saldos[elCuentaSel.value] || 0;
-      if (m > saldoCuenta) {
-        let c = cuentas.find(c => c.id === elCuentaSel.value);
-        let nombreCuenta = c ? c.icon + " " + c.nombre : elCuentaSel.value;
-        toast(`❌ Fondos insuficientes en ${nombreCuenta}. Disponible: ${money(saldoCuenta)}`);
-        return;
+        if (modoActual === "gasto") {
+          let saldoCuenta = saldos[elCuentaSel.value] || 0;
+          if (m > saldoCuenta) {
+            let c = cuentas.find(c => c.id === elCuentaSel.value);
+            toast(`❌ Fondos insuficientes en ${c ? c.icon+" "+c.nombre : elCuentaSel.value}. Disponible: ${money(saldoCuenta)}`);
+            return;
+          }
+        }
+
+        datos = {
+          Fecha: elFecha.value,
+          Tipo: modoActual === "ingreso" ? "Ingreso" : "Gasto",
+          Cuenta: elCuentaSel.value, Categoría: elCategoria.value,
+          Descripción: elDescripcion.value.trim(), Monto: m, Contexto: contexto
+        };
       }
+
+      elSaveBtn.disabled  = true;
+      elSaveBtn.innerText = "Guardando...";
+
+      if (!navigator.onLine) {
+        pending.push(datos);
+        localStorage.setItem(keyFor("pendingQueue"), JSON.stringify(pending));
+        elPendingCount.innerText = pending.length;
+        doneSave(); toast("☁ Guardado offline"); return;
+      }
+
+      try {
+        await fetch(API_URL, {
+          method:"POST",
+          headers:{ "Content-Type":"text/plain;charset=utf-8" },
+          body: JSON.stringify(datos)
+        });
+        // Actualización optimista
+        datos.ID = "local_" + Date.now();
+        data.push(datos);
+        localStorage.setItem(keyFor("dataCache"), JSON.stringify(data));
+        elSyncCount.innerText = data.length;
+        render();
+        renderCrossCard();
+        toast("✔ Guardado");
+        setTimeout(load, 3000);
+      } catch(e) {
+        pending.push(datos);
+        localStorage.setItem(keyFor("pendingQueue"), JSON.stringify(pending));
+        elPendingCount.innerText = pending.length;
+        toast("☁ Guardado offline");
+      }
+
+      doneSave();
     }
-
-    datos = {
-      Fecha:       elFecha.value,
-      Tipo:        modoActual === "ingreso" ? "Ingreso" : "Gasto",
-      Cuenta:      elCuentaSel.value,
-      Categoría:   elCategoria.value,
-      Descripción: elDescripcion.value.trim(),
-      Monto:       m
-    };
-  }
-
-  elSaveBtn.disabled  = true;
-  elSaveBtn.innerText = "Guardando...";
-
-  if (!navigator.onLine) {
-    pending.push(datos);
-    localStorage.setItem("pendingQueue", JSON.stringify(pending));
-    elPendingCount.innerText = pending.length;
-    doneSave(); toast("☁ Guardado offline"); return;
-  }
-
-  try {
-    await fetch(API_URL, {
-      method:"POST",
-      headers:{ "Content-Type":"text/plain;charset=utf-8" },
-      body: JSON.stringify(datos)
-    });
-    await load();
-    toast("✔ Guardado");
-  } catch(e) {
-    pending.push(datos);
-    localStorage.setItem("pendingQueue", JSON.stringify(pending));
-    elPendingCount.innerText = pending.length;
-    toast("☁ Guardado offline");
-  }
-
-  doneSave();
-}
 
     function doneSave() {
-      elDescripcion.value   = "";
-      elMontoInput.value    = "";
-      elMontoTransfer.value = "";
-      elDescTransfer.value  = "";
-      elSaveBtn.disabled    = false;
-      elSaveBtn.innerText   = "💾 Guardar";
+      elDescripcion.value = elMontoInput.value = elMontoTransfer.value = elDescTransfer.value = "";
+      elSaveBtn.disabled  = false;
+      elSaveBtn.innerText = "💾 Guardar";
       updateStreak();
     }
 
@@ -931,10 +1059,10 @@
     ══════════════════════════════════════ */
     function updateStreak() {
       let todayStr = new Date().toISOString().slice(0,10);
-      let last     = localStorage.getItem("lastSave");
+      let last = localStorage.getItem("lastSave");
       if (last !== todayStr) {
         streak++;
-        localStorage.setItem("streak",   streak);
+        localStorage.setItem("streak", streak);
         localStorage.setItem("lastSave", todayStr);
         elStreakBox.innerText = streak;
       }
@@ -958,7 +1086,7 @@
           pending.shift(); sent++;
         } catch(e) { break; }
       }
-      localStorage.setItem("pendingQueue", JSON.stringify(pending));
+      localStorage.setItem(keyFor("pendingQueue"), JSON.stringify(pending));
       elPendingCount.innerText = pending.length;
       if (sent) { toast("✔ " + sent + " sincronizados"); load(); }
     }
@@ -969,7 +1097,9 @@
     async function borrar(id) {
       if (!confirm("Eliminar movimiento")) return;
       data = data.filter(x => String(x.ID) !== String(id));
+      localStorage.setItem(keyFor("dataCache"), JSON.stringify(data));
       render();
+      renderCrossCard();
       try {
         await fetch(API_URL, {
           method:"POST",
@@ -988,16 +1118,15 @@
       let v = Number(elGoalValue.value);
       if (!n || v <= 0) { toast("Completa la meta"); return; }
       goals.push({ nombre:n, valor:v });
-      localStorage.setItem("goals", JSON.stringify(goals));
-      elGoalName.value  = "";
-      elGoalValue.value = "";
+      localStorage.setItem(keyFor("goals"), JSON.stringify(goals));
+      elGoalName.value = elGoalValue.value = "";
       render();
       toast("🎯 Meta guardada");
     }
 
     function delGoal(i) {
       goals.splice(i,1);
-      localStorage.setItem("goals", JSON.stringify(goals));
+      localStorage.setItem(keyFor("goals"), JSON.stringify(goals));
       render();
     }
 
@@ -1006,33 +1135,31 @@
     ══════════════════════════════════════ */
     function render() {
       elLista.innerHTML = "";
-
       let ing=0, gas=0, ah=0, cats={};
       let sorted  = [...data].sort((a,b) => new Date(b.Fecha)-new Date(a.Fecha));
       let lastDay = "";
 
       sorted.forEach(x => {
         let m = Number(x.Monto) || 0;
-        if (x.Tipo === "Ingreso")    ing += m;
-        else if (x.Tipo === "Gasto") gas += m;
-        if (String(x.Categoría).includes("Ahorro")) ah += m;
-        if (x.Tipo === "Gasto") cats[x.Categoría] = (cats[x.Categoría]||0) + m;
+        if (x.Tipo==="Ingreso")    ing += m;
+        else if (x.Tipo==="Gasto") gas += m;
+        let catStr = String(x.Categoría||"");
+        if (catStr.includes("Ahorro") || catStr.includes("Reinversión")) ah += m;
+        if (x.Tipo==="Gasto") cats[x.Categoría] = (cats[x.Categoría]||0) + m;
 
         if (x.Fecha !== lastDay) {
           elLista.innerHTML += `<div class="timeline-day">${labelDay(x.Fecha)}</div>`;
           lastDay = x.Fecha;
         }
 
-        let claseItem = x.Tipo==="Ingreso" ? "ingreso"
-                      : x.Tipo==="Transferencia" ? "transferencia" : "gasto";
-
+        let claseItem = x.Tipo==="Ingreso" ? "ingreso" : x.Tipo==="Transferencia" ? "transferencia" : "gasto";
         let cuentaLabel = "";
         if (x.Tipo === "Transferencia") {
-          let ori  = cuentas.find(c => c.id === x.CuentaOrigen);
-          let dest = cuentas.find(c => c.id === x.CuentaDestino);
-          cuentaLabel = `<span class="badge">🔄 ${ori ? ori.icon+" "+ori.nombre : x.CuentaOrigen} → ${dest ? dest.icon+" "+dest.nombre : x.CuentaDestino}</span>`;
+          let ori  = cuentas.find(c => c.id===x.CuentaOrigen);
+          let dest = cuentas.find(c => c.id===x.CuentaDestino);
+          cuentaLabel = `<span class="badge">🔄 ${ori?ori.icon+" "+ori.nombre:x.CuentaOrigen} → ${dest?dest.icon+" "+dest.nombre:x.CuentaDestino}</span>`;
         } else if (x.Cuenta) {
-          let c = cuentas.find(c => c.id === x.Cuenta);
+          let c = cuentas.find(c => c.id===x.Cuenta);
           if (c) cuentaLabel = `<span class="badge">${c.icon} ${c.nombre}</span>`;
         }
 
@@ -1044,19 +1171,17 @@
           </div>`;
       });
 
-      if (!sorted.length) {
-        elLista.innerHTML = `<div class="alert mid">No hay movimientos este mes.</div>`;
-      }
+      if (!sorted.length) elLista.innerHTML = `<div class="alert mid">No hay movimientos este mes.</div>`;
 
       let saldos     = calcSaldosCuentas();
-      let saldoTotal = Object.values(saldos).reduce((a,b) => a+b, 0);
+      let saldoTotal = Object.values(saldos).reduce((a,b)=>a+b,0);
       elSaldoTop.innerText = money(saldoTotal);
 
       renderCuentas(saldos);
       renderCockpit(ing, gas, ah);
       renderCoach(ing, gas, cats);
       renderGoals(ah);
-      charts(cats, ing, gas, saldos);
+      if ($("tab-dashboard").classList.contains("active")) charts(cats, ing, gas, saldos);
       renderFavorites();
     }
 
@@ -1064,17 +1189,12 @@
        RENDER CUENTAS
     ══════════════════════════════════════ */
     function renderCuentas(saldos) {
-      elCuentasResumen.innerHTML = "";
-      elDistBar.innerHTML        = "";
-      elDistLegend.innerHTML     = "";
+      elCuentasResumen.innerHTML = elDistBar.innerHTML = elDistLegend.innerHTML = "";
+      let totalPos = cuentas.reduce((a,c) => a+Math.max(saldos[c.id]||0,0),0) || 1;
 
-      let totalPos = cuentas.reduce((a,c) => a + Math.max(saldos[c.id]||0, 0), 0) || 1;
-
-      cuentas.forEach((c, i) => {
-        let s     = saldos[c.id] || 0;
-        let cls   = s >= 0 ? "positive" : "negative";
-        let color = ACC_COLORS[i % ACC_COLORS.length];
-
+      cuentas.forEach((c,i) => {
+        let s = saldos[c.id]||0, cls = s>=0?"positive":"negative";
+        let color = ACC_COLORS[i%ACC_COLORS.length];
         elCuentasResumen.innerHTML += `
           <div class="cuenta-card">
             <div class="cuenta-left">
@@ -1083,14 +1203,9 @@
             </div>
             <div class="cuenta-saldo ${cls}">${money(s)}</div>
           </div>`;
-
-        let pct = Math.max(s, 0) / totalPos * 100;
+        let pct = Math.max(s,0)/totalPos*100;
         elDistBar.innerHTML    += `<div class="dist-seg" style="width:${pct}%;background:${color}"></div>`;
-        elDistLegend.innerHTML += `
-          <div class="dist-item">
-            <div class="dist-dot" style="background:${color}"></div>
-            ${c.icon} ${c.nombre}
-          </div>`;
+        elDistLegend.innerHTML += `<div class="dist-item"><div class="dist-dot" style="background:${color}"></div>${c.icon} ${c.nombre}</div>`;
       });
     }
 
@@ -1100,18 +1215,17 @@
     function renderFavorites() {
       let map = {};
       data.forEach(x => {
-        if (x.Tipo === "Transferencia") return;
+        if (x.Tipo==="Transferencia") return;
         let key = x.Categoría+"|"+x.Descripción+"|"+x.Monto+"|"+(x.Cuenta||"");
         if (!map[key]) map[key] = { cat:x.Categoría, des:x.Descripción, monto:x.Monto, cuenta:x.Cuenta, count:0 };
         map[key].count++;
       });
-      let top = Object.values(map).sort((a,b) => b.count-a.count).slice(0,4);
+      let top = Object.values(map).sort((a,b)=>b.count-a.count).slice(0,4);
       elFavList.innerHTML = "";
-      if (!top.length) { elFavList.innerHTML = `<div class="small">Aún sin favoritos</div>`; return; }
+      if (!top.length) { elFavList.innerHTML=`<div class="small">Aún sin favoritos</div>`; return; }
       top.forEach(f => {
         elFavList.innerHTML += `
-          <button class="secondary"
-            onclick="usarFavorito('${f.cat}','${f.des}',${f.monto},'${f.cuenta||""}')">
+          <button class="secondary" onclick="usarFavorito('${f.cat}','${f.des}',${f.monto},'${f.cuenta||""}')">
             ${f.cat}<br><small>${f.des}</small><br><small>${money(f.monto)}</small>
           </button>`;
       });
@@ -1121,18 +1235,17 @@
        COCKPIT
     ══════════════════════════════════════ */
     function renderCockpit(ing, gas, ah) {
-      let todayStr   = new Date().toISOString().slice(0,10);
-      let hoyGastado = data
-        .filter(x => x.Fecha===todayStr && x.Tipo==="Gasto")
-        .reduce((a,b) => a+Number(b.Monto||0), 0);
-      let disponibleDia = Math.max((ing-gas)/7, 0);
+      let todayStr  = new Date().toISOString().slice(0,10);
+      let hoyGastado = data.filter(x=>x.Fecha===todayStr&&x.Tipo==="Gasto").reduce((a,b)=>a+Number(b.Monto||0),0);
+      let disponible = Math.max((ing-gas)/7,0);
+      let isNeg = contexto === "negocio";
 
       elCockpit.innerHTML = `
         <div class="grid2">
           <div class="kpi"><span>Hoy gastado</span><strong>${money(hoyGastado)}</strong></div>
-          <div class="kpi"><span>Puedes gastar hoy</span><strong>${money(disponibleDia)}</strong></div>
-          <div class="kpi"><span>Ahorro real</span><strong>${money(ah)}</strong></div>
-          <div class="kpi"><span>Balance neto</span><strong>${money(ing-gas)}</strong></div>
+          <div class="kpi"><span>${isNeg?"Flujo diario est.":"Puedes gastar hoy"}</span><strong>${money(disponible)}</strong></div>
+          <div class="kpi"><span>${isNeg?"Reinversión":"Ahorro real"}</span><strong>${money(ah)}</strong></div>
+          <div class="kpi"><span>${isNeg?"Utilidad neta":"Balance neto"}</span><strong>${money(ing-gas)}</strong></div>
         </div>`;
     }
 
@@ -1140,35 +1253,38 @@
        COACH
     ══════════════════════════════════════ */
     function renderCoach(ing, gas, cats) {
-      let txt     = "";
-      let balance = ing - gas;
+      let txt = "", balance = ing - gas;
+      let isNeg = contexto === "negocio";
 
-      if (balance > 0)       txt += `<div class="alert good">🟢 Salud financiera positiva. Vas cerrando con superávit.</div>`;
-      else if (balance === 0) txt += `<div class="alert mid">🟡 Vas en punto equilibrio. Controla próximos gastos.</div>`;
-      else                    txt += `<div class="alert bad">🔴 Gastas más de lo que ingresas actualmente.</div>`;
+      if (balance > 0)        txt += `<div class="alert good">🟢 ${isNeg?"Negocio rentable. Utilidad positiva este mes.":"Salud financiera positiva. Vas cerrando con superávit."}</div>`;
+      else if (balance === 0) txt += `<div class="alert mid">🟡 Vas en punto de equilibrio. ${isNeg?"Revisa costos para mejorar margen.":"Controla próximos gastos."}</div>`;
+      else                    txt += `<div class="alert bad">🔴 ${isNeg?"Gastos superan ingresos. Revisa costos urgente.":"Gastas más de lo que ingresas actualmente."}</div>`;
 
-      let topEntry = Object.entries(cats).sort((a,b) => b[1]-a[1])[0];
+      let topEntry = Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
       if (topEntry) {
         let porc = ((topEntry[1]/Math.max(gas,1))*100).toFixed(0);
-        txt += `<div class="alert bad">⚠️ Mayor fuga: <b>${topEntry[0]}</b> (${porc}% de tus gastos)</div>`;
+        txt += `<div class="alert bad">⚠️ Mayor ${isNeg?"costo":"fuga"}: <b>${topEntry[0]}</b> (${porc}% de ${isNeg?"costos":"gastos"})</div>`;
       }
 
       let hoy=new Date(), dia=hoy.getDate();
       if (dia > 0) {
-        let prom  = gas / dia;
-        let dias  = new Date(hoy.getFullYear(), hoy.getMonth()+1, 0).getDate();
-        let proy  = Math.round(prom * dias);
-        let sproj = ing - proy;
-        if (sproj > 0) txt += `<div class="alert good">📈 Si sigues así cerrarás con <b>${money(sproj)}</b></div>`;
-        else            txt += `<div class="alert bad">📉 Al ritmo actual cerrarías en <b>${money(sproj)}</b></div>`;
+        let prom=gas/dia, dias=new Date(hoy.getFullYear(),hoy.getMonth()+1,0).getDate();
+        let proy=Math.round(prom*dias), sproj=ing-proy;
+        if (sproj > 0) txt += `<div class="alert good">📈 ${isNeg?"Utilidad proyectada:":"Si sigues así cerrarás con"} <b>${money(sproj)}</b></div>`;
+        else            txt += `<div class="alert bad">📉 ${isNeg?"Cierre proyectado en pérdida:":"Al ritmo actual cerrarías en"} <b>${money(sproj)}</b></div>`;
       }
 
-      if (topEntry)
-        txt += `<div class="alert mid">💡 Bajando <b>${topEntry[0]}</b> un 15% ahorrarías <b>${money(Math.round(topEntry[1]*.15))}</b></div>`;
+      if (topEntry) txt += `<div class="alert mid">💡 Bajando <b>${topEntry[0]}</b> un 15% ${isNeg?"mejorarías margen en":"ahorrarías"} <b>${money(Math.round(topEntry[1]*.15))}</b></div>`;
 
       txt += `<div class="alert good">🔥 Racha activa: <b>${streak}</b> días registrando movimientos</div>`;
 
-      if (gas < ing*.70 && ing > 0)
+      if (isNeg && ing > 0) {
+        let margen = ((balance/ing)*100).toFixed(1);
+        let margenColor = balance>0?"var(--ok)":"var(--bad)";
+        txt += `<div class="alert mid">📊 Margen neto: <b style="color:${margenColor}">${margen}%</b></div>`;
+      }
+
+      if (!isNeg && gas < ing*.70 && ing > 0)
         txt += `<div class="alert good">🚀 Excelente control: gastos bajo el 70% de tus ingresos.</div>`;
 
       elCoach.innerHTML = txt;
@@ -1179,10 +1295,9 @@
     ══════════════════════════════════════ */
     function renderGoals(ah) {
       elGoalList.innerHTML = "";
-      if (!goals.length) { elGoalList.innerHTML = `<div class="alert mid">No tienes metas aún.</div>`; return; }
+      if (!goals.length) { elGoalList.innerHTML=`<div class="alert mid">No tienes metas aún.</div>`; return; }
       goals.forEach((g,i) => {
-        let p      = Math.min((ah/g.valor)*100, 100);
-        let faltan = Math.max(g.valor-ah, 0);
+        let p = Math.min((ah/g.valor)*100,100), faltan = Math.max(g.valor-ah,0);
         elGoalList.innerHTML += `
           <div class="item">
             <div style="font-weight:800">${g.nombre}</div>
@@ -1204,54 +1319,66 @@
       let accValues = cuentas.map(c => saldos[c.id]||0);
       let accColors = cuentas.map((_,i) => ACC_COLORS[i%ACC_COLORS.length]);
 
-      c6 = new Chart($("chart6"),{
-        type:"bar",
+      c6 = new Chart($("chart6"),{ type:"bar",
         data:{ labels:accLabels, datasets:[{ data:accValues, backgroundColor:accColors }] },
         options:{ plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:false } } }
       });
 
       if (Object.keys(cats).length) {
-        c1 = new Chart($("chart1"),{
-          type:"doughnut",
+        c1 = new Chart($("chart1"),{ type:"doughnut",
           data:{ labels:Object.keys(cats), datasets:[{ data:Object.values(cats) }] }
         });
       }
 
-      c2 = new Chart($("chart2"),{
-        type:"bar",
-        data:{ labels:["Ingresos","Gastos"], datasets:[{ data:[ing,gas] }] }
+      c2 = new Chart($("chart2"),{ type:"bar",
+        data:{ labels:[contexto==="negocio"?"Ingresos":"Ingresos", contexto==="negocio"?"Costos":"Gastos"],
+               datasets:[{ data:[ing,gas], backgroundColor:["#22c55e","#ef4444"] }] }
       });
 
       let dias={}, saldo=0;
       [...data].sort((a,b)=>new Date(a.Fecha)-new Date(b.Fecha)).forEach(x=>{
         let m=Number(x.Monto)||0;
-        if (x.Tipo==="Ingreso") saldo+=m;
-        else if (x.Tipo==="Gasto") saldo-=m;
+        if (x.Tipo==="Ingreso") saldo+=m; else if (x.Tipo==="Gasto") saldo-=m;
         dias[x.Fecha]=saldo;
       });
-      c3 = new Chart($("chart3"),{
-        type:"line",
-        data:{ labels:Object.keys(dias), datasets:[{ data:Object.values(dias), fill:false, tension:0.3 }] }
+      c3 = new Chart($("chart3"),{ type:"line",
+        data:{ labels:Object.keys(dias), datasets:[{ data:Object.values(dias), fill:false, tension:0.3, borderColor:"#2563eb" }] }
       });
 
       let week=[0,0,0,0,0,0,0];
-      data.forEach(x=>{
-        if (x.Tipo==="Gasto"){ let d=new Date(x.Fecha+"T00:00:00"); week[d.getDay()]+=Number(x.Monto)||0; }
-      });
-      c4 = new Chart($("chart4"),{
-        type:"bar",
+      data.forEach(x=>{ if(x.Tipo==="Gasto"){ let d=new Date(x.Fecha+"T00:00:00"); week[d.getDay()]+=Number(x.Monto)||0; } });
+      c4 = new Chart($("chart4"),{ type:"bar",
         data:{ labels:["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"], datasets:[{ data:week }] }
       });
 
       let fm={};
-      data.forEach(x=>{ if (x.Tipo==="Gasto") fm[x.Descripción]=(fm[x.Descripción]||0)+(Number(x.Monto)||0); });
+      data.forEach(x=>{ if(x.Tipo==="Gasto") fm[x.Descripción]=(fm[x.Descripción]||0)+(Number(x.Monto)||0); });
       let tf=Object.entries(fm).sort((a,b)=>b[1]-a[1]).slice(0,5);
-      c5 = new Chart($("chart5"),{
-        type:"bar",
+      c5 = new Chart($("chart5"),{ type:"bar",
         data:{ labels:tf.map(x=>x[0]), datasets:[{ data:tf.map(x=>x[1]) }] },
         options:{ indexAxis:"y" }
       });
     }
+
+    /* ══════════════════════════════════════
+       INIT
+    ══════════════════════════════════════ */
+    elFecha.valueAsDate = new Date();
+    elToday.innerText   = new Date().toLocaleDateString("es-CO",{ weekday:"long", day:"numeric", month:"long" });
+    elStreakBox.innerText = streak;
+
+    cargarCuentasDeContexto();
+    cargarCategoriasDeContexto();
+    cargarDatosDeContexto();
+    poblarSelectsCuentas();
+    poblarSelectCategoria("ingreso");
+    aplicarEstiloContexto();
+    actualizarLabelsContexto();
+    render();
+    renderCrossCard();
+    load();
+    syncPending();
+
   </script>
 
   <script>
