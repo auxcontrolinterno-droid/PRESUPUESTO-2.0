@@ -466,7 +466,7 @@ let datos={
 Fecha:fecha.value,
 Categoría:categoria.value,
 Descripción:descripcion.value.trim(),
-Number(monto.value.replace(/\./g,""))
+Number(monto.value.replace(/\./g,"")),
 Tipo:categoria.value.includes("Ingreso")?"Ingreso":"Gasto"
 };
 
