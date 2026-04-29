@@ -364,7 +364,14 @@ toast("Tema actualizado");
 async function load(){  
 try{  
 let r=await fetch(URL+"?t="+Date.now());  
-data=await r.json();  
+data = await r.json();
+
+data = data.map(x => ({
+  ...x,
+  Monto: Number(x.Monto) || 0,
+  Categoría: x.Categoría || "Sin categoría",
+  Tipo: x.Tipo || "Gasto"
+}));;  
 syncCount.innerText=data.length;  
 render();  
 }catch(e){}  
