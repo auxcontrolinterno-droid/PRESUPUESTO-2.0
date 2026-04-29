@@ -871,7 +871,7 @@ type:"bar",
 data:{  
 labels:["Ingresos","Gastos"],  
 datasets:[{  
-data:[ing,gas]  
+data:[ing || 0, gas || 0]  
 }]  
 }  
 });  
@@ -893,12 +893,12 @@ dias[x.Fecha]=saldo;
 c3=new Chart(chart3,{  
 type:"line",  
 data:{  
-labels:Object.keys(dias),  
-datasets:[{  
-data:Object.values(dias),  
-fill:false,  
-tension:0.3  
-}]  
+labels: Object.keys(dias).length ? Object.keys(dias) : ["Sin datos"],
+datasets:[{
+data: Object.values(dias).length ? Object.values(dias) : [0],
+fill:false,
+tension:0.3
+}]
 }  
 });  
   
@@ -939,10 +939,10 @@ let top=Object.entries(map)
 c5=new Chart(chart5,{  
 type:"bar",  
 data:{  
-labels:top.map(x=>x[0]),  
-datasets:[{  
-data:top.map(x=>x[1])  
-}]  
+labels: top.length ? top.map(x=>x[0]) : ["Sin datos"],
+datasets:[{
+data: top.length ? top.map(x=>x[1]) : [0]
+}]
 },  
 options:{  
 indexAxis:"y"  
