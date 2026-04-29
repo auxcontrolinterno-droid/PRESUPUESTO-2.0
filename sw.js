@@ -6,8 +6,8 @@ const FILES_TO_CACHE = [
   "./sw.js"
 ];
 
-// INSTALAR
 self.addEventListener("install", (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(FILES_TO_CACHE);
@@ -15,7 +15,6 @@ self.addEventListener("install", (event) => {
   );
 });
 
-// ACTIVAR
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -26,11 +25,10 @@ self.addEventListener("activate", (event) => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
 });
 
-// FETCH (modo offline)
 self.addEventListener("fetch", (event) => {
   event.respondWith(
     fetch(event.request)
@@ -40,8 +38,6 @@ self.addEventListener("fetch", (event) => {
           return response;
         });
       })
-      .catch(() => {
-        return caches.match(event.request);
-      })
+      .catch(() => caches.match(event.request))
   );
 });
