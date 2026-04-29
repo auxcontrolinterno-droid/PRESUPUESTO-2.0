@@ -2,6 +2,8 @@
 
 <html lang="es">  
 <head>  
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f172a">
 <meta charset="UTF-8">  
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">  
 <title>Banking PRO AI v12</title>  
@@ -883,6 +885,14 @@ indexAxis:"y"
 }  
   
 
-</script>  </body>  
+</script> 
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./sw.js")
+    .then(() => console.log("SW registrado"))
+    .catch(console.error);
+}
+</script>
+</body>  
 </html>
   
