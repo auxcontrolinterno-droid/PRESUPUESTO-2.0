@@ -810,64 +810,87 @@
     /* ══════════════════════════════════════
        GUARDAR
     ══════════════════════════════════════ */
-    async function guardar() {
-      let datos;
+   async function guardar() {
+  let datos;
+  let saldos = calcSaldosCuentas();
 
-      if (modoActual === "transferencia") {
-        let m = parseMonto(elMontoTransfer.value);
-        if (m <= 0) { toast("Ingresa un monto válido"); return; }
-        if (elCuentaOrigen.value === elCuentaDestino.value) {
-          toast("Origen y destino deben ser distintos"); return;
-        }
-        datos = {
-          Fecha:         elFecha.value,
-          Tipo:          "Transferencia",
-          CuentaOrigen:  elCuentaOrigen.value,
-          CuentaDestino: elCuentaDestino.value,
-          Descripción:   elDescTransfer.value.trim() || "Transferencia entre cuentas",
-          Monto:         m,
-          Categoría:     "🔄 Transferencia"
-        };
-      } else {
-        let m = parseMonto(elMontoInput.value);
-        if (!elDescripcion.value.trim() || m <= 0) { toast("Completa los datos"); return; }
-        datos = {
-          Fecha:       elFecha.value,
-          Tipo:        modoActual === "ingreso" ? "Ingreso" : "Gasto",
-          Cuenta:      elCuentaSel.value,
-          Categoría:   elCategoria.value,
-          Descripción: elDescripcion.value.trim(),
-          Monto:       m
-        };
-      }
-
-      elSaveBtn.disabled  = true;
-      elSaveBtn.innerText = "Guardando...";
-
-      if (!navigator.onLine) {
-        pending.push(datos);
-        localStorage.setItem("pendingQueue", JSON.stringify(pending));
-        elPendingCount.innerText = pending.length;
-        doneSave(); toast("☁ Guardado offline"); return;
-      }
-
-      try {
-        await fetch(API_URL, {
-          method:"POST",
-          headers:{ "Content-Type":"text/plain;charset=utf-8" },
-          body: JSON.stringify(datos)
-        });
-        await load();
-        toast("✔ Guardado");
-      } catch(e) {
-        pending.push(datos);
-        localStorage.setItem("pendingQueue", JSON.stringify(pending));
-        elPendingCount.innerText = pending.length;
-        toast("☁ Guardado offline");
-      }
-
-      doneSave();
+  if (modoActual === "transferencia") {
+    let m = parseMonto(elMontoTransfer.value);
+    if (m <= 0) { toast("Ingresa un monto válido"); return; }
+    if (elCuentaOrigen.value === elCuentaDestino.value) {
+      toast("Origen y destino deben ser distintos"); return;
     }
+
+    // ── VALIDACIÓN SALDO TRANSFERENCIA ──
+    let saldoOrigen = saldos[elCuentaOrigen.value] || 0;
+    if (m > saldoOrigen) {
+      let cOrigen = cuentas.find(c => c.id === elCuentaOrigen.value);
+      let nombreOrigen = cOrigen ? cOrigen.icon + " " + cOrigen.nombre : elCuentaOrigen.value;
+      toast(`❌ Saldo insuficiente en ${nombreOrigen}. Disponible: ${money(saldoOrigen)}`);
+      return;
+    }
+
+    datos = {
+      Fecha:         elFecha.value,
+      Tipo:          "Transferencia",
+      CuentaOrigen:  elCuentaOrigen.value,
+      CuentaDestino: elCuentaDestino.value,
+      Descripción:   elDescTransfer.value.trim() || "Transferencia entre cuentas",
+      Monto:         m,
+      Categoría:     "🔄 Transferencia"
+    };
+  } else {
+    let m = parseMonto(elMontoInput.value);
+    if (!elDescripcion.value.trim() || m <= 0) { toast("Completa los datos"); return; }
+
+    // ── VALIDACIÓN SALDO GASTO ──
+    if (modoActual === "gasto") {
+      let saldoCuenta = saldos[elCuentaSel.value] || 0;
+      if (m > saldoCuenta) {
+        let c = cuentas.find(c => c.id === elCuentaSel.value);
+        let nombreCuenta = c ? c.icon + " " + c.nombre : elCuentaSel.value;
+        toast(`❌ Fondos insuficientes en ${nombreCuenta}. Disponible: ${money(saldoCuenta)}`);
+        return;
+      }
+    }
+
+    datos = {
+      Fecha:       elFecha.value,
+      Tipo:        modoActual === "ingreso" ? "Ingreso" : "Gasto",
+      Cuenta:      elCuentaSel.value,
+      Categoría:   elCategoria.value,
+      Descripción: elDescripcion.value.trim(),
+      Monto:       m
+    };
+  }
+
+  elSaveBtn.disabled  = true;
+  elSaveBtn.innerText = "Guardando...";
+
+  if (!navigator.onLine) {
+    pending.push(datos);
+    localStorage.setItem("pendingQueue", JSON.stringify(pending));
+    elPendingCount.innerText = pending.length;
+    doneSave(); toast("☁ Guardado offline"); return;
+  }
+
+  try {
+    await fetch(API_URL, {
+      method:"POST",
+      headers:{ "Content-Type":"text/plain;charset=utf-8" },
+      body: JSON.stringify(datos)
+    });
+    await load();
+    toast("✔ Guardado");
+  } catch(e) {
+    pending.push(datos);
+    localStorage.setItem("pendingQueue", JSON.stringify(pending));
+    elPendingCount.innerText = pending.length;
+    toast("☁ Guardado offline");
+  }
+
+  doneSave();
+}
 
     function doneSave() {
       elDescripcion.value   = "";
