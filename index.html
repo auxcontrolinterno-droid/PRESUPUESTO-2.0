@@ -25,14 +25,15 @@
       updateProfile
     } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
+    // ✅ CONFIG ACTUALIZADA CON TU NUEVO appId Y measurementId
     const firebaseConfig = {
       apiKey:            "AIzaSyABzhwIZkis5OykXxDHXVKCaP0k1qKTZcY",
       authDomain:        "banking-pro-8c1a3.firebaseapp.com",
       projectId:         "banking-pro-8c1a3",
       storageBucket:     "banking-pro-8c1a3.firebasestorage.app",
       messagingSenderId: "480815819152",
-      appId:             "1:480815819152:web:e2cfd8ed9ff4c4661dab15",
-      measurementId:     "G-J1LSM3519B"
+      appId:             "1:480815819152:web:80a270dc86504fee1dab15",
+      measurementId:     "G-W68XVXTQW1"
     };
 
     const app  = initializeApp(firebaseConfig);
@@ -689,7 +690,6 @@
   ════════════════════════════════════ */
   const ACC_COLORS = ["#2563eb","#22c55e","#f59e0b","#ec4899","#a78bfa","#14b8a6"];
 
-  // ── Colección por usuario: users/{uid}/movimientos_{ctx} ──
   function colName(ctx) {
     if (!window.currentUser) throw new Error("Sin usuario autenticado");
     return window.fbCollection(
@@ -723,7 +723,6 @@
 
   const $ = id => document.getElementById(id);
 
-  // Selectores del formulario principal
   const elFecha         = $("fecha");
   const elDescripcion   = $("descripcion");
   const elMontoInput    = $("montoInput");
@@ -772,7 +771,7 @@
   let appIniciada = false;
 
   /* ════════════════════════════════════
-     AUTH – LOGIN / REGISTER / LOGOUT
+     AUTH
   ════════════════════════════════════ */
   function showLoginForm(mode) {
     $("formLogin").style.display    = mode==="login"    ? "block" : "none";
@@ -804,7 +803,6 @@
     setLoginLoading("loginBtn", true);
     try {
       await window.fbLogin(email, pass);
-      // onAuthStateChanged se encarga del resto
     } catch(e) {
       showLoginError(translateFirebaseError(e.code));
       setLoginLoading("loginBtn", false);
@@ -823,7 +821,6 @@
       let cred = await window.fbRegister(email, pass);
       await window.fbUpdateProfile(cred.user, { displayName: name });
       window.currentUser = cred.user;
-      // onAuthStateChanged dispara y entra a la app
     } catch(e) {
       showLoginError(translateFirebaseError(e.code));
       setLoginLoading("registerBtn", false);
@@ -841,7 +838,6 @@
 
   async function doLogout() {
     if (!confirm("¿Cerrar sesión?")) return;
-    // Limpiar cache local del usuario
     limpiarCacheLocal();
     await window.fbLogout();
     toast("👋 Sesión cerrada");
@@ -876,7 +872,6 @@
   window.addEventListener("authChanged", (e) => {
     let user = e.detail;
     if (user) {
-      // Usuario autenticado → mostrar app
       $("loginScreen").classList.remove("visible");
       $("appContent").classList.add("visible");
       updateUserUI(user);
@@ -884,11 +879,9 @@
         appIniciada = true;
         initApp();
       } else {
-        // Re-login: recargar datos
         if (fbListo) load();
       }
     } else {
-      // Sin sesión → mostrar login
       $("loginScreen").classList.add("visible");
       $("appContent").classList.remove("visible");
       appIniciada = false;
@@ -901,7 +894,6 @@
     let initials = name.split(" ").map(w=>w[0]).join("").toUpperCase().slice(0,2);
     $("userAvatar").textContent = initials;
     $("userName").textContent   = name.split(" ")[0];
-    // Bloque en settings
     $("userInfoBlock").innerHTML = `
       <div style="display:flex;align-items:center;gap:12px">
         <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;flex-shrink:0">${initials}</div>
@@ -920,7 +912,6 @@
     fbListo = true;
     setFbStatus("conectado","🔥 Firebase OK");
     $("fbInfo").textContent = "✅ Conectado a Firebase Firestore.";
-    // load() se llamará cuando authChanged reciba el usuario
   });
 
   setTimeout(() => {
@@ -936,14 +927,14 @@
   }
 
   /* ════════════════════════════════════
-     KEYS localStorage (por usuario+ctx)
+     KEYS localStorage
   ════════════════════════════════════ */
   function uid() { return window.currentUser ? window.currentUser.uid : "guest"; }
   function keyFor(base) { return `${uid()}_${contexto==="negocio" ? base+"Negocio" : base}`; }
   function keyForCtx(base, ctx) { return `${uid()}_${ctx==="negocio" ? base+"Negocio" : base}`; }
 
   /* ════════════════════════════════════
-     INIT APP (tras login)
+     INIT APP
   ════════════════════════════════════ */
   function initApp() {
     aplicarTemaGuardado();
@@ -1094,18 +1085,6 @@
     return docRef.id;
   }
 
-  async function fbEliminar(id, ctx) {
-    if (!fbListo||!window.db||!window.currentUser) return;
-    let col = window.fbCollection(window.db, "users", window.currentUser.uid, "movimientos_"+(ctx||contexto));
-    await window.fbDeleteDoc(window.fbDoc(window.db, ...col._path.segments, id));
-  }
-
-  async function fbActualizar(id, cambios, ctx) {
-    if (!fbListo||!window.db||!window.currentUser) return;
-    let col = window.fbCollection(window.db, "users", window.currentUser.uid, "movimientos_"+(ctx||contexto));
-    await window.fbUpdateDoc(window.fbDoc(window.db, ...col._path.segments, id), cambios);
-  }
-
   async function fetchCtxData(ctx) {
     if (!fbListo||!window.db||!window.currentUser) {
       let c=localStorage.getItem(keyForCtx("dataCache",ctx)); return c?JSON.parse(c):[];
@@ -1120,14 +1099,10 @@
     }
   }
 
-  /* ════════════════════════════════════
-     HELPERS FIRESTORE (path manual para delete/update)
-  ════════════════════════════════════ */
   function docRef(ctx, id) {
     return window.fbDoc(window.db, "users", window.currentUser.uid, "movimientos_"+(ctx||contexto), id);
   }
 
-  /* Sobreescribir fbEliminar y fbActualizar con versión limpia */
   async function fbDel(id, ctx) {
     if (!fbListo||!window.db||!window.currentUser) return;
     await window.fbDeleteDoc(docRef(ctx||contexto, id));
@@ -1955,14 +1930,13 @@
   }
 
   /* ════════════════════════════════════
-     INIT (solo UI base; app inicia tras auth)
+     INIT BASE
   ════════════════════════════════════ */
   aplicarTemaGuardado();
   elFecha.valueAsDate = new Date();
   elToday.innerText = new Date().toLocaleDateString("es-CO",{weekday:"long",day:"numeric",month:"long"});
   elStreakBox.innerText = streak;
 
-  // Enter en inputs del login
   document.addEventListener("keydown", (e) => {
     if (e.key==="Enter") {
       if ($("formLogin").style.display!=="none") doLogin();
