@@ -8,6 +8,52 @@
   <title>Banking PRO AI v17</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- ══════════════════════════════════════
+       FIREBASE SDK (módulos ES)
+  ══════════════════════════════════════ -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      getDocs,
+      deleteDoc,
+      doc,
+      updateDoc,
+      query,
+      where
+    } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyABzhwIZkis5OykXxDHXVKCaP0k1qKTZcY",
+      authDomain: "banking-pro-8c1a3.firebaseapp.com",
+      projectId: "banking-pro-8c1a3",
+      storageBucket: "banking-pro-8c1a3.firebasestorage.app",
+      messagingSenderId: "480815819152",
+      appId: "1:480815819152:web:e2cfd8ed9ff4c4661dab15",
+      measurementId: "G-J1LSM3519B"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+
+    // Exponemos al scope global para que el JS clásico lo use
+    window.db         = db;
+    window.fbCollection = collection;
+    window.fbAddDoc   = addDoc;
+    window.fbGetDocs  = getDocs;
+    window.fbDeleteDoc= deleteDoc;
+    window.fbDoc      = doc;
+    window.fbUpdateDoc= updateDoc;
+    window.fbQuery    = query;
+    window.fbWhere    = where;
+
+    // Avisamos que Firebase ya está listo
+    window.dispatchEvent(new Event("firebaseReady"));
+  </script>
+
   <style>
     :root {
       --bg1:#07111f; --bg2:#0f172a;
@@ -217,7 +263,6 @@
 
     .consolidado-loading{text-align:center;padding:16px;font-size:12px;color:var(--muted)}
 
-    /* ── BÚSQUEDA ── */
     .search-wrap{position:relative;margin-bottom:10px}
     .search-wrap input{padding-left:38px;margin-bottom:0}
     .search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none}
@@ -229,7 +274,6 @@
     }
     .filter-chip.active{background:rgba(37,99,235,.2);color:var(--primary);border-color:var(--primary)}
 
-    /* ── PRESUPUESTO ── */
     .budget-item{
       background:rgba(255,255,255,.04);border:1px solid var(--line);
       border-radius:14px;padding:12px;margin-bottom:8px;
@@ -238,23 +282,19 @@
     .budget-label{font-weight:700;font-size:13px}
     .budget-amounts{font-size:12px;color:var(--muted)}
 
-    /* ── EDITAR MODAL ── */
     .edit-modal input, .edit-modal select{margin-bottom:8px}
 
-    /* ── RECURRENTES ── */
     .rec-card{
       background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);
       border-radius:14px;padding:12px;margin-bottom:8px;
     }
     .rec-row{display:flex;justify-content:space-between;align-items:center}
 
-    /* ── COMPARATIVA ── */
     .compare-bar-wrap{margin-bottom:10px}
     .compare-label{font-size:12px;color:var(--muted);margin-bottom:3px}
     .compare-bar-bg{height:8px;background:rgba(255,255,255,.06);border-radius:20px;overflow:hidden}
     .compare-bar-fill{height:100%;border-radius:20px;transition:width .4s}
 
-    /* ── EXPORT ── */
     .export-btn{
       display:inline-flex;align-items:center;gap:8px;
       padding:10px 16px;border-radius:14px;font-size:13px;font-weight:700;
@@ -262,11 +302,20 @@
       cursor:pointer;width:auto;margin-top:8px;
     }
 
-    /* ── TEMA ACTIVO ── */
     .theme-btn-active{
       outline:2px solid var(--primary);
       outline-offset:2px;
     }
+
+    /* Indicador Firebase */
+    #fbStatus{
+      display:inline-flex;align-items:center;gap:5px;
+      font-size:11px;font-weight:700;padding:3px 8px;
+      border-radius:20px;margin-left:8px;
+    }
+    #fbStatus.conectado{background:rgba(34,197,94,.15);color:var(--ok)}
+    #fbStatus.desconectado{background:rgba(239,68,68,.15);color:var(--bad)}
+    #fbStatus.cargando{background:rgba(245,158,11,.15);color:var(--warn)}
   </style>
 </head>
 <body>
@@ -274,7 +323,7 @@
   <div class="header">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
       <div>
-        <div class="small">Banking PRO AI v17</div>
+        <div class="small">Banking PRO AI v17 <span id="fbStatus" class="cargando">⏳ Conectando...</span></div>
         <div class="small" id="today"></div>
       </div>
       <div id="ctxIndicator" style="font-size:22px">👤</div>
@@ -410,10 +459,9 @@
       <div id="goalList"></div>
     </div>
 
-    <!-- PRESUPUESTO -->
     <div class="card">
       <div class="title">💰 Presupuesto por categoría <span class="ctx-label" id="budgetCtxLabel">Personal</span></div>
-      <div class="alert mid" style="margin-bottom:12px">Define cuánto quieres gastar por categoría este mes. Te avisaré cuando te acerques al límite.</div>
+      <div class="alert mid" style="margin-bottom:12px">Define cuánto quieres gastar por categoría este mes.</div>
       <label>Categoría</label>
       <select id="budgetCatSel"></select>
       <input type="text" id="budgetMonto" placeholder="Límite mensual  ej: 200.000">
@@ -421,10 +469,9 @@
       <div id="budgetList" style="margin-top:12px"></div>
     </div>
 
-    <!-- RECURRENTES -->
     <div class="card">
       <div class="title">🔁 Gastos recurrentes <span class="ctx-label" id="recCtxLabel">Personal</span></div>
-      <div class="alert mid" style="margin-bottom:12px">Gastos fijos mensuales. Al iniciar el mes puedes aplicarlos todos con un clic.</div>
+      <div class="alert mid" style="margin-bottom:12px">Gastos fijos mensuales.</div>
       <label>Cuenta</label>
       <select id="recCuentaSel"></select>
       <label>Categoría</label>
@@ -441,8 +488,6 @@
   <section class="tab" id="tab-list">
     <div class="card">
       <div class="title" id="listTitle">📋 Movimientos del mes actual</div>
-
-      <!-- BÚSQUEDA Y FILTROS -->
       <div class="search-wrap">
         <span class="search-icon">🔍</span>
         <input type="text" id="searchInput" placeholder="Buscar por descripción, categoría..." oninput="renderListFiltrado()">
@@ -469,12 +514,10 @@
           </select>
         </label>
       </div>
-
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <div class="small" id="searchResultCount"></div>
         <button class="export-btn" onclick="exportarCSV()">📥 Exportar CSV</button>
       </div>
-
       <div class="list" id="lista"></div>
     </div>
     <div class="card" id="historialCard" style="display:none">
@@ -487,7 +530,6 @@
   <section class="tab" id="tab-settings">
     <div class="card">
       <div class="title">⚙️ Tema</div>
-      <!-- ▼▼▼ BOTONES CON ID PARA MARCAR ACTIVO ▼▼▼ -->
       <button id="btnThemeDark"  class="secondary" onclick="setTheme('dark')" style="margin-bottom:10px">🌙 Oscuro</button>
       <button id="btnThemeLight" class="secondary" onclick="setTheme('light')">☀️ Claro</button>
     </div>
@@ -538,11 +580,16 @@
 
     <div class="card">
       <div class="title">🧹 Limpiar datos</div>
-      <div class="alert mid" style="margin-bottom:12px">
-        Usa esto solo si el consolidado muestra datos incorrectos. Limpia el caché local de un contexto específico.
-      </div>
+      <div class="alert mid" style="margin-bottom:12px">Limpia el caché local de un contexto específico.</div>
       <button class="secondary" onclick="limpiarCache('personal')" style="margin-bottom:8px">🗑️ Limpiar caché Personal</button>
       <button class="secondary" onclick="limpiarCache('negocio')">🗑️ Limpiar caché Negocio</button>
+    </div>
+
+    <!-- INFO FIREBASE -->
+    <div class="card">
+      <div class="title">🔥 Estado Firebase</div>
+      <div id="fbInfo" class="alert info">Verificando conexión...</div>
+      <button class="secondary" style="margin-top:10px" onclick="load()">🔄 Forzar recarga desde Firestore</button>
     </div>
   </section>
 
@@ -560,7 +607,7 @@
   <div class="modal-overlay" id="modalCierre">
     <div class="modal">
       <h3>🔒 Cerrar mes</h3>
-      <p>Esto archivará todos los movimientos del mes actual y actualizará el saldo base de cada cuenta con el saldo actual. No podrás revertir esta acción.</p>
+      <p>Esto archivará todos los movimientos del mes actual y actualizará el saldo base de cada cuenta.</p>
       <div id="modalResumen" style="margin-bottom:14px"></div>
       <div class="modal-btns">
         <button class="secondary" onclick="cerrarModal('modalCierre')">Cancelar</button>
@@ -592,12 +639,18 @@
     </div>
   </div>
 
+  <!-- ══════════════════════════════════════
+       LÓGICA PRINCIPAL
+  ══════════════════════════════════════ -->
   <script>
-    /* ══════════════════════════════════════
+    /* ────────────────────────────────────
        CONFIG
-    ══════════════════════════════════════ */
-    const API_URL    = "https://script.google.com/macros/s/AKfycbyUpcWZz6q9l3woOpnB90db5LxS8ZjU5EpH_OwZL9DbQo54_NtDoe0zEF7CnCgBbDtT/exec";
+    ──────────────────────────────────── */
     const ACC_COLORS = ["#2563eb","#22c55e","#f59e0b","#ec4899","#a78bfa","#14b8a6"];
+
+    // Nombre de la colección Firestore que almacena movimientos
+    // Se separa por contexto: "movimientos_personal" / "movimientos_negocio"
+    function colName(ctx) { return "movimientos_" + (ctx || contexto); }
 
     const CATS_DEFAULT_PERSONAL = [
       { id:"ingreso",         nombre:"Ingreso",         icon:"💰", tipo:"ingreso" },
@@ -623,6 +676,7 @@
     ];
 
     const $ = id => document.getElementById(id);
+
     const elFecha          = $("fecha");
     const elDescripcion    = $("descripcion");
     const elMontoInput     = $("montoInput");
@@ -655,8 +709,8 @@
     const elHistorialCard  = $("historialCard");
 
     let contexto   = localStorage.getItem("contexto") || "personal";
-    let data       = [];
-    let pending    = [];
+    let data       = [];   // movimientos del contexto actual (cache local)
+    let pending    = [];   // cola offline
     let hidden     = localStorage.getItem("hideMoney") === "1";
     let goals      = [];
     let streak     = Number(localStorage.getItem("streak") || 0);
@@ -665,76 +719,75 @@
     let cuentas    = [];
     let categorias = [];
     let c1,c2,c3,c4,c5,c6;
+    let filtroTipo = "todos";
+    let editandoId = null;
+    let fbListo    = false;  // ← Firebase ya disponible
 
-    // Estado búsqueda/filtro
-    let filtroTipo   = "todos";
-    let editandoId   = null;
+    /* ────────────────────────────────────
+       ESPERAR FIREBASE
+    ──────────────────────────────────── */
+    window.addEventListener("firebaseReady", () => {
+      fbListo = true;
+      setFbStatus("conectado", "🔥 Firebase OK");
+      $("fbInfo").textContent = "✅ Conectado a Firebase Firestore. Los datos se sincronizan en tiempo real.";
+      load();
+      syncPending();
+    });
 
-    /* ══════════════════════════════════════
-       TEMA PERSISTENTE  ← CORRECCIÓN
-    ══════════════════════════════════════ */
+    // Timeout fallback: si Firebase no carga en 8s avisa
+    setTimeout(() => {
+      if (!fbListo) {
+        setFbStatus("desconectado", "❌ Sin Firebase");
+        $("fbInfo").textContent = "⚠️ Firebase no pudo conectarse. Revisa tu conexión o las reglas de Firestore.";
+      }
+    }, 8000);
+
+    function setFbStatus(cls, txt) {
+      let el = $("fbStatus");
+      el.className = ""; el.classList.add(cls);
+      el.textContent = txt;
+    }
+
+    /* ────────────────────────────────────
+       HELPERS DE KEYS (localStorage)
+    ──────────────────────────────────── */
+    function keyFor(base)       { return contexto === "negocio" ? base + "Negocio" : base; }
+    function keyForCtx(base,ctx){ return ctx === "negocio" ? base + "Negocio" : base; }
+
+    /* ────────────────────────────────────
+       TEMA
+    ──────────────────────────────────── */
     function setTheme(mode) {
-      localStorage.setItem("theme", mode);           // ← guardar en localStorage
+      localStorage.setItem("theme", mode);
       document.body.classList.toggle("light", mode === "light");
       actualizarBotonesTheme(mode);
       toast(mode === "light" ? "☀️ Tema claro activado" : "🌙 Tema oscuro activado");
     }
-
     function actualizarBotonesTheme(mode) {
-      let btnDark  = $("btnThemeDark");
-      let btnLight = $("btnThemeLight");
-      if (!btnDark || !btnLight) return;
-      btnDark.classList.toggle("theme-btn-active",  mode === "dark");
-      btnLight.classList.toggle("theme-btn-active", mode === "light");
+      let btnDark=$("btnThemeDark"), btnLight=$("btnThemeLight");
+      if (!btnDark||!btnLight) return;
+      btnDark.classList.toggle("theme-btn-active",  mode==="dark");
+      btnLight.classList.toggle("theme-btn-active", mode==="light");
     }
-
     function aplicarTemaGuardado() {
-      let savedTheme = localStorage.getItem("theme") || "dark"; // dark por defecto
-      document.body.classList.toggle("light", savedTheme === "light");
-      // Los botones aún no están en el DOM al cargar, se marcarán cuando se abra Settings
+      let t = localStorage.getItem("theme") || "dark";
+      document.body.classList.toggle("light", t === "light");
     }
 
-    /* ══════════════════════════════════════
-       HELPERS DE KEYS
-    ══════════════════════════════════════ */
-    function keyFor(base) { return contexto === "negocio" ? base + "Negocio" : base; }
-    function keyForCtx(base, ctx) { return ctx === "negocio" ? base + "Negocio" : base; }
-
-    /* ══════════════════════════════════════
-       LIMPIAR CACHÉ
-    ══════════════════════════════════════ */
-    function limpiarCache(ctx) {
-      if (!confirm(`¿Limpiar caché local de ${ctx}?`)) return;
-      localStorage.removeItem(keyForCtx("dataCache", ctx));
-      localStorage.removeItem(keyForCtx("pendingQueue", ctx));
-      if (ctx === contexto) { data = []; pending = []; elSyncCount.innerText=0; elPendingCount.innerText=0; render(); load(); }
-      renderCrossCard();
-      toast(`✔ Caché de ${ctx} limpiado`);
-    }
-
-    /* ══════════════════════════════════════
+    /* ────────────────────────────────────
        CONTEXTO
-    ══════════════════════════════════════ */
+    ──────────────────────────────────── */
     function cargarCuentasDeContexto() {
-      let defaultPersonal = [
-        { id:"nequi",      nombre:"Nequi",      icon:"📱", saldoInicial:0 },
-        { id:"davivienda", nombre:"Davivienda",  icon:"🏦", saldoInicial:0 },
-        { id:"efectivo",   nombre:"Efectivo",    icon:"💵", saldoInicial:0 }
-      ];
-      let defaultNegocio = [
-        { id:"caja_neg",   nombre:"Caja",        icon:"🏪", saldoInicial:0 },
-        { id:"banco_neg",  nombre:"Banco Neg.",  icon:"🏦", saldoInicial:0 },
-      ];
-      let def = contexto === "negocio" ? defaultNegocio : defaultPersonal;
+      let defP=[{id:"nequi",nombre:"Nequi",icon:"📱",saldoInicial:0},{id:"davivienda",nombre:"Davivienda",icon:"🏦",saldoInicial:0},{id:"efectivo",nombre:"Efectivo",icon:"💵",saldoInicial:0}];
+      let defN=[{id:"caja_neg",nombre:"Caja",icon:"🏪",saldoInicial:0},{id:"banco_neg",nombre:"Banco Neg.",icon:"🏦",saldoInicial:0}];
+      let def = contexto === "negocio" ? defN : defP;
       cuentas = JSON.parse(localStorage.getItem(keyFor("cuentas")) || JSON.stringify(def));
-      cuentas = cuentas.map(c => ({ saldoInicial:0, ...c }));
+      cuentas = cuentas.map(c=>({saldoInicial:0,...c}));
     }
-
     function cargarCategoriasDeContexto() {
       let def = contexto === "negocio" ? CATS_DEFAULT_NEGOCIO : CATS_DEFAULT_PERSONAL;
       categorias = JSON.parse(localStorage.getItem(keyFor("categorias")) || JSON.stringify(def));
     }
-
     function cargarDatosDeContexto() {
       let cached = localStorage.getItem(keyFor("dataCache"));
       data     = cached ? JSON.parse(cached) : [];
@@ -753,15 +806,15 @@
       cargarCategoriasDeContexto();
       cargarDatosDeContexto();
       poblarSelectsCuentas();
-      poblarSelectCategoria(modoActual === "ingreso" ? "ingreso" : "gasto");
+      poblarSelectCategoria(modoActual==="ingreso"?"ingreso":"gasto");
       actualizarLabelsContexto();
       poblarSelectsTraspaso();
       poblarPresupuestoCatSel();
       poblarRecSelects();
       render();
       renderCrossCard();
-      load();
-      toast(ctx === "negocio" ? "🏪 Modo Negocio activado" : "👤 Modo Personal activado");
+      if (fbListo) load();
+      toast(ctx==="negocio"?"🏪 Modo Negocio activado":"👤 Modo Personal activado");
     }
 
     function aplicarEstiloContexto() {
@@ -773,73 +826,404 @@
     }
 
     function actualizarLabelsContexto() {
-      let isNeg = contexto === "negocio";
-      let lbl   = isNeg ? "negocio" : "personal";
-      let txt   = isNeg ? "Negocio" : "Personal";
-      let icon  = isNeg ? "🏪" : "👤";
-
-      ["movCtxLabel","goalCtxLabel","cierreCtxLabel","budgetCtxLabel","recCtxLabel"].forEach(id => {
-        let el = $(id); if (!el) return;
-        el.className = "ctx-label " + lbl;
-        el.innerText = txt;
+      let isNeg=contexto==="negocio", lbl=isNeg?"negocio":"personal", txt=isNeg?"Negocio":"Personal";
+      ["movCtxLabel","goalCtxLabel","cierreCtxLabel","budgetCtxLabel","recCtxLabel"].forEach(id=>{
+        let el=$(id); if (!el) return;
+        el.className="ctx-label "+lbl; el.innerText=txt;
       });
-
-      $("cuentasTitle").innerHTML     = (isNeg?"🏪":"🏦")+" Mis cuentas "+icon;
+      $("cuentasTitle").innerHTML     = (isNeg?"🏪":"🏦")+" Mis cuentas "+(isNeg?"🏪":"👤");
       $("cuentasAdminTitle").innerHTML= (isNeg?"🏪":"🏦")+" Cuentas del "+txt;
       $("catsAdminTitle").innerHTML   = "🏷️ Categorías del "+txt;
       $("listTitle").innerHTML        = "📋 "+txt+" · Movimientos del mes";
-      $("ctxSaldoLabel").innerText    = isNeg ? "Capital disponible del negocio" : "Saldo total disponible";
-
-      let tabT = $("tabTraspaso");
-      if (tabT) tabT.textContent = isNeg ? "🔀 → Personal" : "🔀 → Negocio";
+      $("ctxSaldoLabel").innerText    = isNeg?"Capital disponible del negocio":"Saldo total disponible";
+      let tabT=$("tabTraspaso");
+      if (tabT) tabT.textContent = isNeg?"🔀 → Personal":"🔀 → Negocio";
     }
 
-    /* ══════════════════════════════════════
-       CONSOLIDADO
-    ══════════════════════════════════════ */
-    async function fetchCtxData(ctx) {
+    /* ────────────────────────────────────
+       LIMPIAR CACHÉ
+    ──────────────────────────────────── */
+    function limpiarCache(ctx) {
+      if (!confirm(`¿Limpiar caché local de ${ctx}?`)) return;
+      localStorage.removeItem(keyForCtx("dataCache",ctx));
+      localStorage.removeItem(keyForCtx("pendingQueue",ctx));
+      if (ctx===contexto){data=[];pending=[];elSyncCount.innerText=0;elPendingCount.innerText=0;render();if(fbListo)load();}
+      renderCrossCard();
+      toast(`✔ Caché de ${ctx} limpiado`);
+    }
+
+    /* ════════════════════════════════════
+       ★ FIREBASE: CARGAR DATOS
+    ════════════════════════════════════ */
+    async function load() {
+      if (!fbListo || !window.db) {
+        // Usar caché local si Firebase no está listo
+        let cached = localStorage.getItem(keyFor("dataCache"));
+        if (cached) { data = JSON.parse(cached); elSyncCount.innerText = data.length; render(); }
+        return;
+      }
+
       try {
-        let r = await fetch(API_URL + "?t=" + Date.now() + "&ctx=" + ctx);
-        let arr = await r.json();
-        if (!Array.isArray(arr)) arr = [];
-        localStorage.setItem(keyForCtx("dataCache", ctx), JSON.stringify(arr));
+        setFbStatus("cargando", "⏳ Cargando...");
+        const snapshot = await window.fbGetDocs(
+          window.fbCollection(window.db, colName(contexto))
+        );
+        let fresh = [];
+        snapshot.forEach(docSnap => {
+          fresh.push({ ...docSnap.data(), ID: docSnap.id });
+        });
+        // Ordenar por fecha descendente
+        fresh.sort((a,b) => new Date(b.Fecha) - new Date(a.Fecha));
+
+        if (JSON.stringify(fresh) !== JSON.stringify(data)) {
+          data = fresh;
+          localStorage.setItem(keyFor("dataCache"), JSON.stringify(data));
+          elSyncCount.innerText = data.length;
+          render();
+          renderCrossCard();
+        }
+        setFbStatus("conectado", "🔥 Firebase OK");
+      } catch(e) {
+        console.error("Error cargando desde Firestore:", e);
+        setFbStatus("desconectado", "❌ Error Firestore");
+        // Usar caché local como fallback
+        let cached = localStorage.getItem(keyFor("dataCache"));
+        if (cached) { data = JSON.parse(cached); elSyncCount.innerText = data.length; render(); }
+        toast("⚠️ Usando datos locales (sin conexión)");
+      }
+    }
+
+    /* ════════════════════════════════════
+       ★ FIREBASE: GUARDAR DOCUMENTO
+    ════════════════════════════════════ */
+    async function fbGuardar(datos) {
+      if (!fbListo || !window.db) throw new Error("Firebase no disponible");
+      const docRef = await window.fbAddDoc(
+        window.fbCollection(window.db, colName(datos.Contexto || contexto)),
+        datos
+      );
+      return docRef.id;
+    }
+
+    /* ════════════════════════════════════
+       ★ FIREBASE: ELIMINAR DOCUMENTO
+    ════════════════════════════════════ */
+    async function fbEliminar(id, ctx) {
+      if (!fbListo || !window.db) return;
+      await window.fbDeleteDoc(
+        window.fbDoc(window.db, colName(ctx || contexto), id)
+      );
+    }
+
+    /* ════════════════════════════════════
+       ★ FIREBASE: ACTUALIZAR DOCUMENTO
+    ════════════════════════════════════ */
+    async function fbActualizar(id, cambios, ctx) {
+      if (!fbListo || !window.db) return;
+      await window.fbUpdateDoc(
+        window.fbDoc(window.db, colName(ctx || contexto), id),
+        cambios
+      );
+    }
+
+    /* ════════════════════════════════════
+       ★ FIREBASE: CARGAR CONTEXTO AJENO
+         (para el resumen consolidado)
+    ════════════════════════════════════ */
+    async function fetchCtxData(ctx) {
+      if (!fbListo || !window.db) {
+        let cached = localStorage.getItem(keyForCtx("dataCache",ctx));
+        return cached ? JSON.parse(cached) : [];
+      }
+      try {
+        const snapshot = await window.fbGetDocs(
+          window.fbCollection(window.db, colName(ctx))
+        );
+        let arr = [];
+        snapshot.forEach(docSnap => { arr.push({ ...docSnap.data(), ID: docSnap.id }); });
+        localStorage.setItem(keyForCtx("dataCache",ctx), JSON.stringify(arr));
         return arr;
       } catch(e) {
-        let cached = localStorage.getItem(keyForCtx("dataCache", ctx));
+        let cached = localStorage.getItem(keyForCtx("dataCache",ctx));
         return cached ? JSON.parse(cached) : [];
       }
     }
 
-    function calcCtxFromArray(arr, pend, cuentasCtx) {
-      let saldos = {};
-      cuentasCtx.forEach(c => { saldos[c.id] = Number(c.saldoInicial)||0; });
-      [...arr,...pend].forEach(x => {
-        let m = Number(x.Monto)||0;
-        if (x.Tipo==="Transferencia") {
-          if (saldos[x.CuentaOrigen]!==undefined)  saldos[x.CuentaOrigen]-=m;
-          if (saldos[x.CuentaDestino]!==undefined) saldos[x.CuentaDestino]+=m;
-        } else if (x.Tipo==="TraspasoSalida") {
-          let cid=x.Cuenta||""; if (saldos[cid]!==undefined) saldos[cid]-=m;
-        } else if (x.Tipo==="TraspasoEntrada") {
-          let cid=x.Cuenta||""; if (saldos[cid]!==undefined) saldos[cid]+=m;
-        } else {
-          let cid=x.Cuenta||""; if (saldos[cid]===undefined) saldos[cid]=0;
-          if (x.Tipo==="Ingreso") saldos[cid]+=m; else saldos[cid]-=m;
+    /* ────────────────────────────────────
+       GUARDAR MOVIMIENTO
+    ──────────────────────────────────── */
+    async function guardar() {
+      if (modoActual==="traspaso") { await guardarTraspaso(); return; }
+      let datos, saldos = calcSaldosCuentas();
+
+      if (modoActual==="transferencia") {
+        let m = parseMonto(elMontoTransfer.value);
+        if (m<=0) { toast("Ingresa un monto válido"); return; }
+        if (elCuentaOrigen.value===elCuentaDestino.value) { toast("Origen y destino deben ser distintos"); return; }
+        let saldoOrigen = saldos[elCuentaOrigen.value]||0;
+        if (m>saldoOrigen) {
+          let cO=cuentas.find(c=>c.id===elCuentaOrigen.value);
+          toast(`❌ Saldo insuficiente en ${cO?cO.icon+" "+cO.nombre:elCuentaOrigen.value}. Disponible: ${money(saldoOrigen)}`);
+          return;
         }
+        datos={Fecha:elFecha.value,Tipo:"Transferencia",CuentaOrigen:elCuentaOrigen.value,CuentaDestino:elCuentaDestino.value,Descripción:elDescTransfer.value.trim()||"Transferencia entre cuentas",Monto:m,Categoría:"🔄 Transferencia",Contexto:contexto};
+      } else {
+        let m = parseMonto(elMontoInput.value);
+        if (!elDescripcion.value.trim()||m<=0) { toast("Completa los datos"); return; }
+        if (modoActual==="gasto") {
+          let saldoCuenta = saldos[elCuentaSel.value]||0;
+          if (m>saldoCuenta) {
+            let c=cuentas.find(c=>c.id===elCuentaSel.value);
+            toast(`❌ Fondos insuficientes en ${c?c.icon+" "+c.nombre:elCuentaSel.value}. Disponible: ${money(saldoCuenta)}`);
+            return;
+          }
+        }
+        datos={Fecha:elFecha.value,Tipo:modoActual==="ingreso"?"Ingreso":"Gasto",Cuenta:elCuentaSel.value,Categoría:elCategoria.value,Descripción:elDescripcion.value.trim(),Monto:m,Nota:$("notaInput").value.trim(),Contexto:contexto};
+      }
+
+      elSaveBtn.disabled=true; elSaveBtn.innerText="Guardando...";
+
+      if (!navigator.onLine || !fbListo) {
+        pending.push({ ...datos, _tempId: "local_"+Date.now() });
+        localStorage.setItem(keyFor("pendingQueue"), JSON.stringify(pending));
+        elPendingCount.innerText = pending.length;
+        // También guardamos localmente para visualización inmediata
+        let localEntry = { ...datos, ID: "local_"+Date.now() };
+        data.push(localEntry);
+        localStorage.setItem(keyFor("dataCache"), JSON.stringify(data));
+        elSyncCount.innerText = data.length;
+        render(); renderCrossCard();
+        doneSave(); toast("☁ Guardado offline"); return;
+      }
+
+      try {
+        const newId = await fbGuardar(datos);
+        datos.ID = newId;
+        data.push(datos);
+        localStorage.setItem(keyFor("dataCache"), JSON.stringify(data));
+        elSyncCount.innerText = data.length;
+        render(); renderCrossCard();
+        toast("✔ Guardado en Firebase ✅");
+        setTimeout(load, 2000); // recarga para sincronizar
+      } catch(e) {
+        console.error("Error guardando en Firebase:", e);
+        pending.push({ ...datos, _tempId: "local_"+Date.now() });
+        localStorage.setItem(keyFor("pendingQueue"), JSON.stringify(pending));
+        elPendingCount.innerText = pending.length;
+        toast("☁ Guardado offline (Firebase falló)");
+      }
+      doneSave();
+    }
+
+    /* ────────────────────────────────────
+       GUARDAR TRASPASO
+    ──────────────────────────────────── */
+    async function guardarTraspaso() {
+      let m    = parseMonto($("montoTrspaso").value);
+      let desc = $("descTrspaso").value.trim() || "Traspaso entre contextos";
+      let dir  = $("traspasoDireccion").value;
+      let cuentaOrigenId  = $("traspasoOrigen").value;
+      let cuentaDestinoId = $("traspasoDestino").value;
+      let fecha = elFecha.value;
+      if (m<=0) { toast("Ingresa un monto válido"); return; }
+
+      let ctxOrig = dir==="p2n" ? "personal" : "negocio";
+      let ctxDest = dir==="p2n" ? "negocio"  : "personal";
+
+      // Verificar saldo origen
+      let cuentasOrig   = getCuentasCtx(ctxOrig);
+      let dataOrig      = JSON.parse(localStorage.getItem(keyForCtx("dataCache",ctxOrig)) || "[]");
+      let pendingOrig   = JSON.parse(localStorage.getItem(keyForCtx("pendingQueue",ctxOrig)) || "[]");
+      let saldosOrig    = {};
+      cuentasOrig.forEach(c=>{ saldosOrig[c.id] = Number(c.saldoInicial)||0; });
+      [...dataOrig,...pendingOrig].forEach(x=>{
+        let mx=Number(x.Monto)||0;
+        if (x.Tipo==="Transferencia"){if(saldosOrig[x.CuentaOrigen]!==undefined)saldosOrig[x.CuentaOrigen]-=mx;if(saldosOrig[x.CuentaDestino]!==undefined)saldosOrig[x.CuentaDestino]+=mx}
+        else if(x.Tipo==="TraspasoSalida"){if(saldosOrig[x.Cuenta]!==undefined)saldosOrig[x.Cuenta]-=mx}
+        else if(x.Tipo==="TraspasoEntrada"){if(saldosOrig[x.Cuenta]!==undefined)saldosOrig[x.Cuenta]+=mx}
+        else{let cid=x.Cuenta||"";if(saldosOrig[cid]===undefined)saldosOrig[cid]=0;if(x.Tipo==="Ingreso")saldosOrig[cid]+=mx;else saldosOrig[cid]-=mx}
       });
-      let todos=[ ...arr,...pend];
+      let saldoDisp = saldosOrig[cuentaOrigenId]||0;
+      if (m>saldoDisp) {
+        let cO=cuentasOrig.find(c=>c.id===cuentaOrigenId);
+        toast(`❌ Saldo insuficiente en ${ctxOrig==="negocio"?"🏪":"👤"} · ${cO?cO.icon+" "+cO.nombre:cuentaOrigenId}. Disponible: ${money(saldoDisp)}`);
+        return;
+      }
+
+      let ref = Date.now();
+      let regOrigen  = {Fecha:fecha,Tipo:"TraspasoSalida",Cuenta:cuentaOrigenId,Categoría:"🔀 Traspaso",Descripción:desc+" → "+(ctxDest==="negocio"?"🏪 Negocio":"👤 Personal"),Monto:m,Contexto:ctxOrig,TraspasoRef:ref};
+      let regDestino = {Fecha:fecha,Tipo:"TraspasoEntrada",Cuenta:cuentaDestinoId,Categoría:"🔀 Traspaso",Descripción:desc+" ← "+(ctxOrig==="negocio"?"🏪 Negocio":"👤 Personal"),Monto:m,Contexto:ctxDest,TraspasoRef:ref};
+
+      try {
+        if (fbListo) {
+          let idOrig = await fbGuardar(regOrigen);
+          let idDest = await fbGuardar(regDestino);
+          regOrigen.ID  = idOrig;
+          regDestino.ID = idDest;
+        }
+      } catch(e) { console.error("Error guardando traspaso en Firebase:", e); }
+
+      // Actualizar cachés locales
+      dataOrig.push(regOrigen);
+      localStorage.setItem(keyForCtx("dataCache",ctxOrig), JSON.stringify(dataOrig));
+      let dataDest = JSON.parse(localStorage.getItem(keyForCtx("dataCache",ctxDest)) || "[]");
+      dataDest.push(regDestino);
+      localStorage.setItem(keyForCtx("dataCache",ctxDest), JSON.stringify(dataDest));
+
+      if (contexto===ctxOrig)      { data = dataOrig;  elSyncCount.innerText = data.length; }
+      else if (contexto===ctxDest) { data = dataDest;  elSyncCount.innerText = data.length; }
+
+      $("montoTrspaso").value = $("descTrspaso").value = "";
+      render(); renderCrossCard(); updateStreak();
+      toast(`✔ Traspaso: ${dir==="p2n"?"👤→🏪":"🏪→👤"} ${money(m)}`);
+    }
+
+    function doneSave() {
+      elDescripcion.value=elMontoInput.value=elMontoTransfer.value=elDescTransfer.value=$("notaInput").value="";
+      elSaveBtn.disabled=false;
+      elSaveBtn.innerText=modoActual==="traspaso"?"🔀 Registrar traspaso":"💾 Guardar";
+      updateStreak();
+    }
+
+    /* ────────────────────────────────────
+       BORRAR
+    ──────────────────────────────────── */
+    async function borrar(id) {
+      if (!confirm("¿Eliminar movimiento?")) return;
+      // Buscar a qué contexto pertenece
+      let x = data.find(d => String(d.ID)===String(id));
+      let ctx = (x && x.Contexto) ? x.Contexto : contexto;
+      data = data.filter(d => String(d.ID) !== String(id));
+      localStorage.setItem(keyFor("dataCache"), JSON.stringify(data));
+      render(); renderCrossCard();
+      try {
+        // Solo intentamos borrar en Firestore si el ID no es temporal
+        if (fbListo && !String(id).startsWith("local_") && !String(id).startsWith("rec_")) {
+          await fbEliminar(String(id), ctx);
+          toast("🗑️ Eliminado de Firebase");
+        } else {
+          toast("🗑️ Eliminado localmente");
+        }
+      } catch(e) { console.error("Error borrando en Firebase:", e); toast("🗑️ Eliminado (sin sync)"); }
+    }
+
+    /* ────────────────────────────────────
+       EDITAR
+    ──────────────────────────────────── */
+    function abrirEditar(id) {
+      let x = data.find(d=>String(d.ID)===String(id));
+      if (!x || x.Tipo==="Transferencia" || x.Tipo==="TraspasoSalida" || x.Tipo==="TraspasoEntrada") {
+        toast("Este tipo de movimiento no se puede editar directamente"); return;
+      }
+      editandoId = String(id);
+      let editCatEl = $("editCategoria"); editCatEl.innerHTML="";
+      let modo = x.Tipo==="Ingreso" ? "ingreso" : "gasto";
+      categorias.filter(c=>c.tipo==="ambos"||c.tipo===modo).forEach(c=>{
+        let opt=document.createElement("option");
+        opt.value=opt.textContent=c.icon+" "+c.nombre;
+        if ((c.icon+" "+c.nombre)===x.Categoría) opt.selected=true;
+        editCatEl.appendChild(opt);
+      });
+      let editCuentaEl=$("editCuenta"); editCuentaEl.innerHTML="";
+      cuentas.forEach(c=>{
+        let opt=document.createElement("option");
+        opt.value=c.id; opt.textContent=c.icon+" "+c.nombre;
+        if (c.id===x.Cuenta) opt.selected=true;
+        editCuentaEl.appendChild(opt);
+      });
+      $("editFecha").value      = x.Fecha||"";
+      $("editDescripcion").value= x.Descripción||"";
+      $("editMonto").value      = Number(x.Monto||0).toLocaleString("es-CO");
+      $("editNota").value       = x.Nota||"";
+      $("modalEditar").classList.add("open");
+    }
+
+    async function confirmarEdicion() {
+      let x = data.find(d=>String(d.ID)===String(editandoId));
+      if (!x) { toast("Movimiento no encontrado"); cerrarModal("modalEditar"); return; }
+      let m = parseMonto($("editMonto").value);
+      if (!$("editDescripcion").value.trim()||m<=0) { toast("Completa los datos"); return; }
+      x.Fecha       = $("editFecha").value;
+      x.Categoría   = $("editCategoria").value;
+      x.Descripción = $("editDescripcion").value.trim();
+      x.Monto       = m;
+      x.Cuenta      = $("editCuenta").value;
+      x.Nota        = $("editNota").value.trim();
+      localStorage.setItem(keyFor("dataCache"), JSON.stringify(data));
+      try {
+        if (fbListo && !String(editandoId).startsWith("local_")) {
+          await fbActualizar(editandoId, {
+            Fecha:x.Fecha, Categoría:x.Categoría, Descripción:x.Descripción,
+            Monto:x.Monto, Cuenta:x.Cuenta, Nota:x.Nota
+          });
+          toast("✔ Movimiento actualizado en Firebase");
+        } else {
+          toast("✔ Movimiento actualizado localmente");
+        }
+      } catch(e) { toast("✔ Movimiento actualizado (sin sync)"); }
+      cerrarModal("modalEditar");
+      render(); renderCrossCard();
+      editandoId = null;
+    }
+
+    /* ────────────────────────────────────
+       SYNC OFFLINE → FIREBASE
+    ──────────────────────────────────── */
+    window.addEventListener("online", syncPending);
+
+    async function syncPending() {
+      if (!navigator.onLine || !fbListo || !pending.length) return;
+      let sent = 0;
+      let failedQueue = [];
+      for (let datos of pending) {
+        try {
+          let clean = { ...datos };
+          delete clean._tempId;
+          let newId = await fbGuardar(clean);
+          // Reemplazar entrada local temporal con ID real
+          data = data.map(d => {
+            if (String(d.ID) === String(datos._tempId || "")) return { ...clean, ID: newId };
+            return d;
+          });
+          sent++;
+        } catch(e) {
+          failedQueue.push(datos);
+        }
+      }
+      pending = failedQueue;
+      localStorage.setItem(keyFor("pendingQueue"), JSON.stringify(pending));
+      localStorage.setItem(keyFor("dataCache"),    JSON.stringify(data));
+      elPendingCount.innerText = pending.length;
+      elSyncCount.innerText    = data.length;
+      if (sent) { toast(`✔ ${sent} sincronizados con Firebase`); render(); }
+    }
+
+    /* ────────────────────────────────────
+       CONSOLIDADO
+    ──────────────────────────────────── */
+    function calcCtxFromArray(arr, pend, cuentasCtx) {
+      let saldos={};
+      cuentasCtx.forEach(c=>{saldos[c.id]=Number(c.saldoInicial)||0});
+      [...arr,...pend].forEach(x=>{
+        let m=Number(x.Monto)||0;
+        if (x.Tipo==="Transferencia"){if(saldos[x.CuentaOrigen]!==undefined)saldos[x.CuentaOrigen]-=m;if(saldos[x.CuentaDestino]!==undefined)saldos[x.CuentaDestino]+=m}
+        else if(x.Tipo==="TraspasoSalida"){let cid=x.Cuenta||"";if(saldos[cid]!==undefined)saldos[cid]-=m}
+        else if(x.Tipo==="TraspasoEntrada"){let cid=x.Cuenta||"";if(saldos[cid]!==undefined)saldos[cid]+=m}
+        else{let cid=x.Cuenta||"";if(saldos[cid]===undefined)saldos[cid]=0;if(x.Tipo==="Ingreso")saldos[cid]+=m;else saldos[cid]-=m}
+      });
+      let todos=[...arr,...pend];
       let ing=todos.reduce((a,x)=>x.Tipo==="Ingreso"?a+Number(x.Monto||0):a,0);
       let gas=todos.reduce((a,x)=>x.Tipo==="Gasto"?a+Number(x.Monto||0):a,0);
       let sal=Object.values(saldos).reduce((a,b)=>a+b,0);
       let traspasoEntradas=todos.filter(x=>x.Tipo==="TraspasoEntrada").reduce((a,x)=>a+Number(x.Monto||0),0);
-      let traspasoSalidas=todos.filter(x=>x.Tipo==="TraspasoSalida").reduce((a,x)=>a+Number(x.Monto||0),0);
-      return { ing, gas, sal, saldos, traspasoEntradas, traspasoSalidas };
+      let traspasoSalidas =todos.filter(x=>x.Tipo==="TraspasoSalida").reduce((a,x)=>a+Number(x.Monto||0),0);
+      return {ing,gas,sal,saldos,traspasoEntradas,traspasoSalidas};
     }
 
     function getCuentasCtx(ctx) {
-      let defaultPersonal=[{id:"nequi",nombre:"Nequi",icon:"📱",saldoInicial:0},{id:"davivienda",nombre:"Davivienda",icon:"🏦",saldoInicial:0},{id:"efectivo",nombre:"Efectivo",icon:"💵",saldoInicial:0}];
-      let defaultNegocio=[{id:"caja_neg",nombre:"Caja",icon:"🏪",saldoInicial:0},{id:"banco_neg",nombre:"Banco Neg.",icon:"🏦",saldoInicial:0}];
-      let def=ctx==="negocio"?defaultNegocio:defaultPersonal;
+      let defP=[{id:"nequi",nombre:"Nequi",icon:"📱",saldoInicial:0},{id:"davivienda",nombre:"Davivienda",icon:"🏦",saldoInicial:0},{id:"efectivo",nombre:"Efectivo",icon:"💵",saldoInicial:0}];
+      let defN=[{id:"caja_neg",nombre:"Caja",icon:"🏪",saldoInicial:0},{id:"banco_neg",nombre:"Banco Neg.",icon:"🏦",saldoInicial:0}];
+      let def=ctx==="negocio"?defN:defP;
       let stored=JSON.parse(localStorage.getItem(keyForCtx("cuentas",ctx))||JSON.stringify(def));
       return stored.map(c=>({saldoInicial:0,...c}));
     }
@@ -849,9 +1233,9 @@
       cross.style.display="block";
       summary.innerHTML=`<div class="consolidado-loading">⏳ Cargando datos...</div>`;
       traspos.innerHTML="";
-      let [arrP,arrN]=await Promise.all([fetchCtxData("personal"),fetchCtxData("negocio")]);
-      let pendP=JSON.parse(localStorage.getItem("pendingQueue")||"[]");
-      let pendN=JSON.parse(localStorage.getItem("pendingQueueNegocio")||"[]");
+      let [arrP,arrN] = await Promise.all([fetchCtxData("personal"),fetchCtxData("negocio")]);
+      let pendP = JSON.parse(localStorage.getItem("pendingQueue")||"[]");
+      let pendN = JSON.parse(localStorage.getItem("pendingQueueNegocio")||"[]");
       let cuentasP=getCuentasCtx("personal"), cuentasN=getCuentasCtx("negocio");
       let p=calcCtxFromArray(arrP,pendP,cuentasP), n=calcCtxFromArray(arrN,pendN,cuentasN);
       if (!p.ing&&!p.gas&&!n.ing&&!n.gas&&!p.sal&&!n.sal){cross.style.display="none";return;}
@@ -884,44 +1268,33 @@
     function refreshConsolidado(){renderCrossCard();toast("🔄 Actualizando consolidado...")}
     function money2(n){return "$"+Number(n).toLocaleString("es-CO")}
 
-    /* ══════════════════════════════════════
+    /* ────────────────────────────────────
        CATEGORÍAS
-    ══════════════════════════════════════ */
+    ──────────────────────────────────── */
     function saveCategorias(){localStorage.setItem(keyFor("categorias"),JSON.stringify(categorias))}
     function getCatsDefault(){return contexto==="negocio"?CATS_DEFAULT_NEGOCIO:CATS_DEFAULT_PERSONAL}
 
     function poblarSelectCategoria(modo) {
       elCategoria.innerHTML="";
       categorias.filter(c=>c.tipo==="ambos"||c.tipo===modo).forEach(c=>{
-        let opt=document.createElement("option");
-        opt.value=opt.textContent=c.icon+" "+c.nombre;
-        elCategoria.appendChild(opt);
+        let opt=document.createElement("option"); opt.value=opt.textContent=c.icon+" "+c.nombre; elCategoria.appendChild(opt);
       });
     }
 
     function addCategoria() {
-      let icon=$("newCatIcon").value.trim()||"📌";
-      let nombre=$("newCatNombre").value.trim();
-      let tipo=$("newCatTipo").value;
+      let icon=$("newCatIcon").value.trim()||"📌", nombre=$("newCatNombre").value.trim(), tipo=$("newCatTipo").value;
       if (!nombre){toast("Escribe el nombre");return}
       let id=nombre.toLowerCase().replace(/\s+/g,"_")+"_"+Date.now();
       categorias.push({id,nombre,icon,tipo});
-      saveCategorias();
-      $("newCatIcon").value=$("newCatNombre").value="";
-      renderCatsAdmin();
-      poblarSelectCategoria(modoActual==="ingreso"?"ingreso":"gasto");
-      poblarPresupuestoCatSel();
-      poblarRecSelects();
-      toast("✔ Categoría agregada");
+      saveCategorias(); $("newCatIcon").value=$("newCatNombre").value="";
+      renderCatsAdmin(); poblarSelectCategoria(modoActual==="ingreso"?"ingreso":"gasto");
+      poblarPresupuestoCatSel(); poblarRecSelects(); toast("✔ Categoría agregada");
     }
 
     function delCategoria(id) {
       if (getCatsDefault().find(c=>c.id===id)){toast("No puedes eliminar categorías por defecto");return}
       categorias=categorias.filter(c=>c.id!==id);
-      saveCategorias();
-      renderCatsAdmin();
-      poblarSelectCategoria(modoActual==="ingreso"?"ingreso":"gasto");
-      toast("Categoría eliminada");
+      saveCategorias(); renderCatsAdmin(); poblarSelectCategoria(modoActual==="ingreso"?"ingreso":"gasto"); toast("Categoría eliminada");
     }
 
     function renderCatsAdmin() {
@@ -930,28 +1303,19 @@
         `</div>`;
     }
 
-    /* ══════════════════════════════════════
+    /* ────────────────────────────────────
        CUENTAS
-    ══════════════════════════════════════ */
+    ──────────────────────────────────── */
     function poblarSelectsCuentas() {
       [elCuentaSel,elCuentaOrigen,elCuentaDestino].forEach(sel=>{
         sel.innerHTML="";
-        cuentas.forEach(c=>{
-          let opt=document.createElement("option");
-          opt.value=c.id; opt.textContent=c.icon+" "+c.nombre;
-          sel.appendChild(opt);
-        });
+        cuentas.forEach(c=>{let opt=document.createElement("option");opt.value=c.id;opt.textContent=c.icon+" "+c.nombre;sel.appendChild(opt)});
       });
       if (elCuentaDestino.options.length>1) elCuentaDestino.selectedIndex=1;
-
       let fs=$("filterCuentaSel");
       if (fs) {
         fs.innerHTML=`<option value="">Todas</option>`;
-        cuentas.forEach(c=>{
-          let opt=document.createElement("option");
-          opt.value=c.id; opt.textContent=c.icon+" "+c.nombre;
-          fs.appendChild(opt);
-        });
+        cuentas.forEach(c=>{let opt=document.createElement("option");opt.value=c.id;opt.textContent=c.icon+" "+c.nombre;fs.appendChild(opt)});
       }
     }
 
@@ -959,32 +1323,22 @@
       let selOrigen=$("traspasoOrigen"),selDestino=$("traspasoDestino"),selDir=$("traspasoDireccion");
       if (!selOrigen||!selDestino||!selDir) return;
       let dir=selDir.value, ctxOrig=dir==="p2n"?"personal":"negocio", ctxDest=dir==="p2n"?"negocio":"personal";
-      let cuentasOrig=getCuentasCtx(ctxOrig), cuentasDest=getCuentasCtx(ctxDest);
-      selOrigen.innerHTML="";
-      cuentasOrig.forEach(c=>{let opt=document.createElement("option");opt.value=c.id;opt.textContent=c.icon+" "+c.nombre;selOrigen.appendChild(opt)});
-      selDestino.innerHTML="";
-      cuentasDest.forEach(c=>{let opt=document.createElement("option");opt.value=c.id;opt.textContent=c.icon+" "+c.nombre;selDestino.appendChild(opt)});
+      let cO=getCuentasCtx(ctxOrig), cD=getCuentasCtx(ctxDest);
+      selOrigen.innerHTML=""; cO.forEach(c=>{let opt=document.createElement("option");opt.value=c.id;opt.textContent=c.icon+" "+c.nombre;selOrigen.appendChild(opt)});
+      selDestino.innerHTML=""; cD.forEach(c=>{let opt=document.createElement("option");opt.value=c.id;opt.textContent=c.icon+" "+c.nombre;selDestino.appendChild(opt)});
     }
 
     function addCuenta() {
       let nombre=$("newCuentaNombre").value.trim(), icon=$("newCuentaIcon").value;
       if (!nombre){toast("Escribe el nombre de la cuenta");return}
       let id=nombre.toLowerCase().replace(/\s+/g,"_")+"_"+Date.now();
-      cuentas.push({id,nombre,icon,saldoInicial:0});
-      saveCuentas();
-      $("newCuentaNombre").value="";
-      poblarSelectsCuentas();
-      render();
-      toast("✔ Cuenta agregada");
+      cuentas.push({id,nombre,icon,saldoInicial:0}); saveCuentas(); $("newCuentaNombre").value="";
+      poblarSelectsCuentas(); render(); toast("✔ Cuenta agregada");
     }
 
     function delCuenta(id) {
       if (!confirm("¿Eliminar esta cuenta?")) return;
-      cuentas=cuentas.filter(c=>c.id!==id);
-      saveCuentas();
-      poblarSelectsCuentas();
-      render();
-      toast("Cuenta eliminada");
+      cuentas=cuentas.filter(c=>c.id!==id); saveCuentas(); poblarSelectsCuentas(); render(); toast("Cuenta eliminada");
     }
 
     function saveCuentas(){localStorage.setItem(keyFor("cuentas"),JSON.stringify(cuentas))}
@@ -994,8 +1348,8 @@
       if (!cuentas.length){elCuentasAdmin.innerHTML=`<div class="alert mid">No hay cuentas.</div>`;return}
       cuentas.forEach(c=>{
         elCuentasAdmin.innerHTML+=`
-          <div class="cuenta-card" style="flex-direction:column;align-items:flex-start;gap:8px;">
-            <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
+          <div class="cuenta-card" style="flex-direction:column;align-items:flex-start;gap:8px">
+            <div style="display:flex;justify-content:space-between;width:100%;align-items:center">
               <div class="cuenta-left"><div class="cuenta-icon">${c.icon}</div><div class="cuenta-name">${c.nombre}</div></div>
               <button class="small-btn" onclick="delCuenta('${c.id}')">🗑️</button>
             </div>
@@ -1003,45 +1357,36 @@
       });
     }
 
-    /* ══════════════════════════════════════
+    /* ────────────────────────────────────
        SALDOS
-    ══════════════════════════════════════ */
+    ──────────────────────────────────── */
     function calcSaldosCuentas() {
       let saldos={};
       cuentas.forEach(c=>{saldos[c.id]=Number(c.saldoInicial)||0});
       [...data,...pending].forEach(x=>{
         let m=Number(x.Monto)||0;
-        if (x.Tipo==="Transferencia"){
-          if (saldos[x.CuentaOrigen]!==undefined)  saldos[x.CuentaOrigen]-=m;
-          if (saldos[x.CuentaDestino]!==undefined) saldos[x.CuentaDestino]+=m;
-        } else if (x.Tipo==="TraspasoSalida"){
-          let cid=x.Cuenta||""; if (saldos[cid]!==undefined) saldos[cid]-=m;
-        } else if (x.Tipo==="TraspasoEntrada"){
-          let cid=x.Cuenta||""; if (saldos[cid]!==undefined) saldos[cid]+=m;
-        } else {
-          let cid=x.Cuenta||""; if (saldos[cid]===undefined) saldos[cid]=0;
-          if (x.Tipo==="Ingreso") saldos[cid]+=m; else saldos[cid]-=m;
-        }
+        if (x.Tipo==="Transferencia"){if(saldos[x.CuentaOrigen]!==undefined)saldos[x.CuentaOrigen]-=m;if(saldos[x.CuentaDestino]!==undefined)saldos[x.CuentaDestino]+=m}
+        else if(x.Tipo==="TraspasoSalida"){let cid=x.Cuenta||"";if(saldos[cid]!==undefined)saldos[cid]-=m}
+        else if(x.Tipo==="TraspasoEntrada"){let cid=x.Cuenta||"";if(saldos[cid]!==undefined)saldos[cid]+=m}
+        else{let cid=x.Cuenta||"";if(saldos[cid]===undefined)saldos[cid]=0;if(x.Tipo==="Ingreso")saldos[cid]+=m;else saldos[cid]-=m}
       });
       return saldos;
     }
 
-    /* ══════════════════════════════════════
+    /* ────────────────────────────────────
        CIERRE DE MES
-    ══════════════════════════════════════ */
+    ──────────────────────────────────── */
     function abrirModalCierre() {
       let saldos=calcSaldosCuentas();
       let ing=data.reduce((a,x)=>x.Tipo==="Ingreso"?a+Number(x.Monto||0):a,0);
       let gas=data.reduce((a,x)=>x.Tipo==="Gasto"?a+Number(x.Monto||0):a,0);
-      let resumenHTML=`
-        <div class="mes-resumen">
+      let html=`<div class="mes-resumen">
           <div class="mes-kpi"><span>Ingresos</span><strong style="color:var(--ok)">${money(ing)}</strong></div>
           <div class="mes-kpi"><span>Gastos</span><strong style="color:var(--bad)">${money(gas)}</strong></div>
           <div class="mes-kpi"><span>Balance</span><strong>${money(ing-gas)}</strong></div>
-        </div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Saldos que quedarán como base:</div>`;
-      cuentas.forEach(c=>{resumenHTML+=`<div style="font-size:13px;font-weight:700;margin-bottom:4px">${c.icon} ${c.nombre}: ${money(saldos[c.id]||0)}</div>`});
-      $("modalResumen").innerHTML=resumenHTML;
+        </div><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Saldos que quedarán como base:</div>`;
+      cuentas.forEach(c=>{html+=`<div style="font-size:13px;font-weight:700;margin-bottom:4px">${c.icon} ${c.nombre}: ${money(saldos[c.id]||0)}</div>`});
+      $("modalResumen").innerHTML=html;
       $("modalCierre").classList.add("open");
     }
 
@@ -1054,43 +1399,35 @@
       let label=new Date().toLocaleDateString("es-CO",{month:"long",year:"numeric"});
       historial.unshift({label,ing,gas,saldosCierre:{...saldos},movimientos:[...data]});
       localStorage.setItem(keyFor("historialMeses"),JSON.stringify(historial));
-      cuentas=cuentas.map(c=>({...c,saldoInicial:saldos[c.id]||0}));
-      saveCuentas();
+      cuentas=cuentas.map(c=>({...c,saldoInicial:saldos[c.id]||0})); saveCuentas();
       data=[]; pending=[];
-      localStorage.setItem(keyFor("pendingQueue"),JSON.stringify([]));
-      localStorage.setItem(keyFor("dataCache"),JSON.stringify([]));
+      localStorage.setItem(keyFor("pendingQueue"),"[]");
+      localStorage.setItem(keyFor("dataCache"),"[]");
       elPendingCount.innerText=0; elSyncCount.innerText=0;
       cerrarModal("modalCierre");
       render(); renderHistorial(); renderCrossCard();
       toast("✔ Mes cerrado correctamente");
     }
 
-    /* ══════════════════════════════════════
+    /* ────────────────────────────────────
        HISTORIAL
-    ══════════════════════════════════════ */
+    ──────────────────────────────────── */
     function renderHistorial() {
       if (!historial.length){elHistorialCard.style.display="none";return}
-      elHistorialCard.style.display="block";
-      elHistorialLista.innerHTML="";
+      elHistorialCard.style.display="block"; elHistorialLista.innerHTML="";
       historial.forEach((mes,idx)=>{
         let movHTML="";
         if (mes.movimientos&&mes.movimientos.length) {
           let sorted=[...mes.movimientos].sort((a,b)=>new Date(b.Fecha)-new Date(a.Fecha));
           let lastDay="";
           sorted.forEach(x=>{
-            let m=Number(x.Monto)||0;
-            let cls=x.Tipo==="Ingreso"?"ingreso":x.Tipo==="Transferencia"?"transferencia":x.Tipo==="TraspasoSalida"||x.Tipo==="TraspasoEntrada"?"traspaso":"gasto";
+            let m=Number(x.Monto)||0, cls=x.Tipo==="Ingreso"?"ingreso":x.Tipo==="Transferencia"?"transferencia":x.Tipo==="TraspasoSalida"||x.Tipo==="TraspasoEntrada"?"traspaso":"gasto";
             if (x.Fecha!==lastDay){movHTML+=`<div class="timeline-day">${labelDay(x.Fecha)}</div>`;lastDay=x.Fecha}
             movHTML+=`<div class="item ${cls}"><div>${x.Categoría||""} - ${x.Descripción||""}</div><div class="price">${money(m)}</div></div>`;
           });
         } else {movHTML=`<div class="small">Sin movimientos.</div>`}
         let saldosHTML="";
-        if (mes.saldosCierre) {
-          saldosHTML=Object.entries(mes.saldosCierre).map(([cid,s])=>{
-            let c=cuentas.find(x=>x.id===cid), lbl=c?c.icon+" "+c.nombre:cid;
-            return `<span style="font-size:12px;color:var(--muted);margin-right:10px">${lbl}: <b style="color:var(--text)">${money(s)}</b></span>`;
-          }).join("");
-        }
+        if (mes.saldosCierre) saldosHTML=Object.entries(mes.saldosCierre).map(([cid,s])=>{let c=cuentas.find(x=>x.id===cid),lbl=c?c.icon+" "+c.nombre:cid;return `<span style="font-size:12px;color:var(--muted);margin-right:10px">${lbl}: <b style="color:var(--text)">${money(s)}</b></span>`;}).join("");
         elHistorialLista.innerHTML+=`
           <div class="mes-card">
             <div class="mes-card-title" onclick="toggleMes(${idx})">
@@ -1109,293 +1446,68 @@
       });
     }
 
-    function toggleMes(idx) {
-      let body=$("mesBody"+idx), arrow=$("mesArrow"+idx);
-      let open=body.classList.toggle("open");
-      arrow.textContent=open?"▼":"▶";
-    }
+    function toggleMes(idx){let body=$("mesBody"+idx),arrow=$("mesArrow"+idx),open=body.classList.toggle("open");arrow.textContent=open?"▼":"▶"}
 
-    /* ══════════════════════════════════════
+    /* ────────────────────────────────────
        MODO FORMULARIO
-    ══════════════════════════════════════ */
-    function setMode(mode, btn) {
+    ──────────────────────────────────── */
+    function setMode(mode,btn) {
       modoActual=mode;
       document.querySelectorAll(".mode-tab").forEach(t=>t.classList.remove("active","cross-active"));
       if (mode==="traspaso") btn.classList.add("cross-active"); else btn.classList.add("active");
       document.querySelectorAll(".form-section").forEach(s=>s.classList.remove("active"));
-      if (mode==="transferencia") $("fs-transfer").classList.add("active");
+      if (mode==="transferencia")    $("fs-transfer").classList.add("active");
       else if (mode==="traspaso") { $("fs-traspaso").classList.add("active"); poblarSelectsTraspaso(); }
       else { $("fs-normal").classList.add("active"); poblarSelectCategoria(mode==="ingreso"?"ingreso":"gasto"); }
       elSaveBtn.className=mode==="traspaso"?"cross-btn":"primary";
       elSaveBtn.innerText=mode==="traspaso"?"🔀 Registrar traspaso":"💾 Guardar";
     }
 
-    /* ══════════════════════════════════════
-       HELPERS
-    ══════════════════════════════════════ */
-    function toast(msg) {
+    /* ────────────────────────────────────
+       HELPERS GENERALES
+    ──────────────────────────────────── */
+    function toast(msg){
       elToast.innerText=msg; elToast.style.display="block";
       setTimeout(()=>elToast.style.display="none",2400);
     }
 
-    function goTab(tab, btn) {
+    function goTab(tab,btn) {
       document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
       $("tab-"+tab).classList.add("active");
       document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));
       btn.classList.add("active");
       if (tab==="list")     { renderHistorial(); renderListFiltrado(); }
-      if (tab==="settings") {
-        renderCuentasAdmin();
-        renderCatsAdmin();
-        // ← Marcar botón del tema activo cuando se abre Settings
-        actualizarBotonesTheme(localStorage.getItem("theme") || "dark");
-      }
+      if (tab==="settings") { renderCuentasAdmin(); renderCatsAdmin(); actualizarBotonesTheme(localStorage.getItem("theme")||"dark"); }
       if (tab==="dashboard"){ render(); renderComparativa(); }
       if (tab==="goals")    { renderBudgetList(); renderRecList(); }
     }
 
-    function money(n) {
+    function money(n){
       if (hidden) return "••••••";
       return "$"+Number(n).toLocaleString("es-CO");
     }
 
-    function toggleHide() {
-      hidden=!hidden;
-      localStorage.setItem("hideMoney",hidden?"1":"0");
-      render(); renderCrossCard();
-    }
+    function toggleHide(){hidden=!hidden;localStorage.setItem("hideMoney",hidden?"1":"0");render();renderCrossCard();}
 
-    function parseMonto(str) {
-      return Number(String(str).replace(/\./g,"").replace(",","."))||0;
-    }
+    function parseMonto(str){ return Number(String(str).replace(/\./g,"").replace(",","."))||0; }
 
-    /* ══════════════════════════════════════
-       labelDay — FIX ZONA HORARIA
-    ══════════════════════════════════════ */
     function labelDay(f) {
-      let now = new Date();
-      let todayStr = now.getFullYear() + "-" +
-        String(now.getMonth()+1).padStart(2,"0") + "-" +
-        String(now.getDate()).padStart(2,"0");
-      let ayer = new Date(now);
-      ayer.setDate(now.getDate()-1);
-      let ayerStr = ayer.getFullYear() + "-" +
-        String(ayer.getMonth()+1).padStart(2,"0") + "-" +
-        String(ayer.getDate()).padStart(2,"0");
-      if (f === todayStr) return "HOY";
-      if (f === ayerStr)  return "AYER";
-      let d = new Date(f+"T00:00:00");
-      return d.toLocaleDateString("es-CO",{day:"numeric",month:"short"});
+      let now=new Date();
+      let todayStr=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0")+"-"+String(now.getDate()).padStart(2,"0");
+      let ayer=new Date(now); ayer.setDate(now.getDate()-1);
+      let ayerStr=ayer.getFullYear()+"-"+String(ayer.getMonth()+1).padStart(2,"0")+"-"+String(ayer.getDate()).padStart(2,"0");
+      if (f===todayStr) return "HOY";
+      if (f===ayerStr)  return "AYER";
+      return new Date(f+"T00:00:00").toLocaleDateString("es-CO",{day:"numeric",month:"short"});
     }
 
-    /* ══════════════════════════════════════
-       LOAD
-    ══════════════════════════════════════ */
-    async function load() {
-      let cached=localStorage.getItem(keyFor("dataCache"));
-      if (cached){data=JSON.parse(cached);elSyncCount.innerText=data.length;render();}
-      try {
-        let r=await fetch(API_URL+"?t="+Date.now()+"&ctx="+contexto);
-        let fresh=await r.json();
-        if (!Array.isArray(fresh)) return;
-        if (JSON.stringify(fresh)!==JSON.stringify(data)){
-          data=fresh;
-          localStorage.setItem(keyFor("dataCache"),JSON.stringify(data));
-          elSyncCount.innerText=data.length;
-          render(); renderCrossCard();
-        }
-      } catch(e){console.error("Error cargando datos:",e)}
-    }
-
-    /* ══════════════════════════════════════
-       GUARDAR
-    ══════════════════════════════════════ */
-    async function guardar() {
-      if (modoActual==="traspaso"){await guardarTraspaso();return}
-      let datos, saldos=calcSaldosCuentas();
-
-      if (modoActual==="transferencia") {
-        let m=parseMonto(elMontoTransfer.value);
-        if (m<=0){toast("Ingresa un monto válido");return}
-        if (elCuentaOrigen.value===elCuentaDestino.value){toast("Origen y destino deben ser distintos");return}
-        let saldoOrigen=saldos[elCuentaOrigen.value]||0;
-        if (m>saldoOrigen){let cO=cuentas.find(c=>c.id===elCuentaOrigen.value);toast(`❌ Saldo insuficiente en ${cO?cO.icon+" "+cO.nombre:elCuentaOrigen.value}. Disponible: ${money(saldoOrigen)}`);return}
-        datos={Fecha:elFecha.value,Tipo:"Transferencia",CuentaOrigen:elCuentaOrigen.value,CuentaDestino:elCuentaDestino.value,Descripción:elDescTransfer.value.trim()||"Transferencia entre cuentas",Monto:m,Categoría:"🔄 Transferencia",Contexto:contexto};
-      } else {
-        let m=parseMonto(elMontoInput.value);
-        if (!elDescripcion.value.trim()||m<=0){toast("Completa los datos");return}
-        if (modoActual==="gasto"){
-          let saldoCuenta=saldos[elCuentaSel.value]||0;
-          if (m>saldoCuenta){let c=cuentas.find(c=>c.id===elCuentaSel.value);toast(`❌ Fondos insuficientes en ${c?c.icon+" "+c.nombre:elCuentaSel.value}. Disponible: ${money(saldoCuenta)}`);return}
-        }
-        datos={Fecha:elFecha.value,Tipo:modoActual==="ingreso"?"Ingreso":"Gasto",Cuenta:elCuentaSel.value,Categoría:elCategoria.value,Descripción:elDescripcion.value.trim(),Monto:m,Nota:$("notaInput").value.trim(),Contexto:contexto};
-      }
-
-      elSaveBtn.disabled=true; elSaveBtn.innerText="Guardando...";
-
-      if (!navigator.onLine){
-        pending.push(datos);
-        localStorage.setItem(keyFor("pendingQueue"),JSON.stringify(pending));
-        elPendingCount.innerText=pending.length;
-        doneSave(); toast("☁ Guardado offline"); return;
-      }
-
-      try {
-        await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(datos)});
-        datos.ID="local_"+Date.now();
-        data.push(datos);
-        localStorage.setItem(keyFor("dataCache"),JSON.stringify(data));
-        elSyncCount.innerText=data.length;
-        render(); renderCrossCard();
-        toast("✔ Guardado");
-        setTimeout(load,3000);
-      } catch(e){
-        pending.push(datos);
-        localStorage.setItem(keyFor("pendingQueue"),JSON.stringify(pending));
-        elPendingCount.innerText=pending.length;
-        toast("☁ Guardado offline");
-      }
-      doneSave();
-    }
-
-    /* ── GUARDAR TRASPASO ── */
-    async function guardarTraspaso() {
-      let m=parseMonto($("montoTrspaso").value);
-      let desc=$("descTrspaso").value.trim()||"Traspaso entre contextos";
-      let dir=$("traspasoDireccion").value;
-      let cuentaOrigenId=$("traspasoOrigen").value, cuentaDestinoId=$("traspasoDestino").value;
-      let fecha=elFecha.value;
-      if (m<=0){toast("Ingresa un monto válido");return}
-      let ctxOrig=dir==="p2n"?"personal":"negocio", ctxDest=dir==="p2n"?"negocio":"personal";
-      let cuentasOrig=getCuentasCtx(ctxOrig);
-      let dataOrig=JSON.parse(localStorage.getItem(keyForCtx("dataCache",ctxOrig))||"[]");
-      let pendingOrig=JSON.parse(localStorage.getItem(keyForCtx("pendingQueue",ctxOrig))||"[]");
-      let saldosOrig={};
-      cuentasOrig.forEach(c=>{saldosOrig[c.id]=Number(c.saldoInicial)||0});
-      [...dataOrig,...pendingOrig].forEach(x=>{
-        let mx=Number(x.Monto)||0;
-        if (x.Tipo==="Transferencia"){if(saldosOrig[x.CuentaOrigen]!==undefined)saldosOrig[x.CuentaOrigen]-=mx;if(saldosOrig[x.CuentaDestino]!==undefined)saldosOrig[x.CuentaDestino]+=mx}
-        else if (x.Tipo==="TraspasoSalida"){if(saldosOrig[x.Cuenta]!==undefined)saldosOrig[x.Cuenta]-=mx}
-        else if (x.Tipo==="TraspasoEntrada"){if(saldosOrig[x.Cuenta]!==undefined)saldosOrig[x.Cuenta]+=mx}
-        else {let cid=x.Cuenta||"";if(saldosOrig[cid]===undefined)saldosOrig[cid]=0;if(x.Tipo==="Ingreso")saldosOrig[cid]+=mx;else saldosOrig[cid]-=mx}
-      });
-      let saldoDisp=saldosOrig[cuentaOrigenId]||0;
-      if (m>saldoDisp){let cO=cuentasOrig.find(c=>c.id===cuentaOrigenId);let ctxLabel=ctxOrig==="negocio"?"🏪 Negocio":"👤 Personal";toast(`❌ Saldo insuficiente en ${ctxLabel} · ${cO?cO.icon+" "+cO.nombre:cuentaOrigenId}. Disponible: $${Number(saldoDisp).toLocaleString("es-CO")}`);return}
-      let ref=Date.now();
-      let regOrigen={ID:"trspaso_out_"+ref,Fecha:fecha,Tipo:"TraspasoSalida",Cuenta:cuentaOrigenId,Categoría:"🔀 Traspaso",Descripción:desc+" → "+(ctxDest==="negocio"?"🏪 Negocio":"👤 Personal"),Monto:m,Contexto:ctxOrig,TraspasoRef:ref};
-      let regDestino={ID:"trspaso_in_"+ref,Fecha:fecha,Tipo:"TraspasoEntrada",Cuenta:cuentaDestinoId,Categoría:"🔀 Traspaso",Descripción:desc+" ← "+(ctxOrig==="negocio"?"🏪 Negocio":"👤 Personal"),Monto:m,Contexto:ctxDest,TraspasoRef:ref};
-      dataOrig.push(regOrigen);
-      localStorage.setItem(keyForCtx("dataCache",ctxOrig),JSON.stringify(dataOrig));
-      let dataDest=JSON.parse(localStorage.getItem(keyForCtx("dataCache",ctxDest))||"[]");
-      dataDest.push(regDestino);
-      localStorage.setItem(keyForCtx("dataCache",ctxDest),JSON.stringify(dataDest));
-      if (contexto===ctxOrig){data=dataOrig;elSyncCount.innerText=data.length}
-      else if (contexto===ctxDest){data=dataDest;elSyncCount.innerText=data.length}
-      $("montoTrspaso").value=$("descTrspaso").value="";
-      render(); renderCrossCard(); updateStreak();
-      let dirLabel=dir==="p2n"?"👤 Personal → 🏪 Negocio":"🏪 Negocio → 👤 Personal";
-      toast(`✔ Traspaso: ${dirLabel} $${Number(m).toLocaleString("es-CO")}`);
-      if (navigator.onLine){
-        try {
-          await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(regOrigen)});
-          await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(regDestino)});
-        } catch(e){
-          let pendDest=JSON.parse(localStorage.getItem(keyForCtx("pendingQueue",ctxDest))||"[]");
-          pendDest.push(regDestino);
-          localStorage.setItem(keyForCtx("pendingQueue",ctxDest),JSON.stringify(pendDest));
-        }
-      }
-    }
-
-    function doneSave() {
-      elDescripcion.value=elMontoInput.value=elMontoTransfer.value=elDescTransfer.value=$("notaInput").value="";
-      elSaveBtn.disabled=false;
-      elSaveBtn.innerText=modoActual==="traspaso"?"🔀 Registrar traspaso":"💾 Guardar";
-      updateStreak();
-    }
-
-    /* ══════════════════════════════════════
-       EDITAR MOVIMIENTO
-    ══════════════════════════════════════ */
-    function abrirEditar(id) {
-      let x=data.find(d=>String(d.ID)===String(id));
-      if (!x||x.Tipo==="Transferencia"||x.Tipo==="TraspasoSalida"||x.Tipo==="TraspasoEntrada"){
-        toast("Este tipo de movimiento no se puede editar directamente");return;
-      }
-      editandoId=String(id);
-      let editCatEl=$("editCategoria"); editCatEl.innerHTML="";
-      let modo=x.Tipo==="Ingreso"?"ingreso":"gasto";
-      categorias.filter(c=>c.tipo==="ambos"||c.tipo===modo).forEach(c=>{
-        let opt=document.createElement("option");
-        opt.value=opt.textContent=c.icon+" "+c.nombre;
-        if ((c.icon+" "+c.nombre)===x.Categoría) opt.selected=true;
-        editCatEl.appendChild(opt);
-      });
-      let editCuentaEl=$("editCuenta"); editCuentaEl.innerHTML="";
-      cuentas.forEach(c=>{
-        let opt=document.createElement("option");
-        opt.value=c.id; opt.textContent=c.icon+" "+c.nombre;
-        if (c.id===x.Cuenta) opt.selected=true;
-        editCuentaEl.appendChild(opt);
-      });
-      $("editFecha").value=x.Fecha||"";
-      $("editDescripcion").value=x.Descripción||"";
-      $("editMonto").value=Number(x.Monto||0).toLocaleString("es-CO");
-      $("editNota").value=x.Nota||"";
-      $("modalEditar").classList.add("open");
-    }
-
-    function confirmarEdicion() {
-      let x=data.find(d=>String(d.ID)===String(editandoId));
-      if (!x){toast("Movimiento no encontrado");cerrarModal("modalEditar");return}
-      let m=parseMonto($("editMonto").value);
-      if (!$("editDescripcion").value.trim()||m<=0){toast("Completa los datos");return}
-      x.Fecha       = $("editFecha").value;
-      x.Categoría   = $("editCategoria").value;
-      x.Descripción = $("editDescripcion").value.trim();
-      x.Monto       = m;
-      x.Cuenta      = $("editCuenta").value;
-      x.Nota        = $("editNota").value.trim();
-      localStorage.setItem(keyFor("dataCache"),JSON.stringify(data));
-      cerrarModal("modalEditar");
-      render(); renderCrossCard();
-      toast("✔ Movimiento actualizado");
-      editandoId=null;
-    }
-
-    /* ══════════════════════════════════════
-       EXPORTAR CSV
-    ══════════════════════════════════════ */
-    function exportarCSV() {
-      let filas=data.map(x=>[
-        x.Fecha||"",
-        x.Tipo||"",
-        x.Categoría||"",
-        (x.Descripción||"").replace(/,/g,";"),
-        x.Monto||0,
-        x.Cuenta||x.CuentaOrigen||"",
-        x.Nota||""
-      ]);
-      let csv="Fecha,Tipo,Categoría,Descripción,Monto,Cuenta,Nota\n"+
-        filas.map(r=>r.join(",")).join("\n");
-      let blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"});
-      let url=URL.createObjectURL(blob);
-      let a=document.createElement("a");
-      a.href=url;
-      a.download=`movimientos_${contexto}_${new Date().toISOString().slice(0,7)}.csv`;
-      a.click();
-      URL.revokeObjectURL(url);
-      toast("📥 CSV exportado");
-    }
-
-    /* ══════════════════════════════════════
+    /* ────────────────────────────────────
        BÚSQUEDA Y FILTROS
-    ══════════════════════════════════════ */
-    function setFiltro(tipo, btn) {
+    ──────────────────────────────────── */
+    function setFiltro(tipo,btn) {
       filtroTipo=tipo;
       document.querySelectorAll(".filter-chip").forEach(c=>c.classList.remove("active"));
-      btn.classList.add("active");
-      renderListFiltrado();
+      btn.classList.add("active"); renderListFiltrado();
     }
 
     function renderListFiltrado() {
@@ -1409,10 +1521,7 @@
         if (filtroTipo==="transferencia"&&x.Tipo!=="Transferencia") return false;
         if (filtroTipo==="traspaso"&&x.Tipo!=="TraspasoSalida"&&x.Tipo!=="TraspasoEntrada") return false;
         if (cuentaFiltro&&x.Cuenta!==cuentaFiltro&&x.CuentaOrigen!==cuentaFiltro&&x.CuentaDestino!==cuentaFiltro) return false;
-        if (busqueda) {
-          let haystack=((x.Descripción||"")+" "+(x.Categoría||"")+" "+(x.Nota||"")).toLowerCase();
-          if (!haystack.includes(busqueda)) return false;
-        }
+        if (busqueda){let h=((x.Descripción||"")+" "+(x.Categoría||"")+" "+(x.Nota||"")).toLowerCase();if(!h.includes(busqueda))return false}
         return true;
       });
 
@@ -1425,7 +1534,6 @@
       });
 
       $("searchResultCount").innerText=filtrados.length+" resultado"+(filtrados.length!==1?"s":"");
-
       elLista.innerHTML="";
       if (!filtrados.length){elLista.innerHTML=`<div class="alert mid">Sin resultados para tu búsqueda.</div>`;return}
 
@@ -1433,19 +1541,15 @@
       filtrados.forEach(x=>{
         let m=Number(x.Monto)||0;
         let claseItem=x.Tipo==="Ingreso"?"ingreso":x.Tipo==="Transferencia"?"transferencia":x.Tipo==="TraspasoSalida"||x.Tipo==="TraspasoEntrada"?"traspaso":"gasto";
-        if (orden.startsWith("fecha")&&x.Fecha!==lastDay){
-          elLista.innerHTML+=`<div class="timeline-day">${labelDay(x.Fecha)}</div>`;
-          lastDay=x.Fecha;
-        }
+        if (orden.startsWith("fecha")&&x.Fecha!==lastDay){elLista.innerHTML+=`<div class="timeline-day">${labelDay(x.Fecha)}</div>`;lastDay=x.Fecha}
         let cuentaLabel="";
         if (x.Tipo==="Transferencia"){let ori=cuentas.find(c=>c.id===x.CuentaOrigen),dest=cuentas.find(c=>c.id===x.CuentaDestino);cuentaLabel=`<span class="badge">🔄 ${ori?ori.icon+" "+ori.nombre:x.CuentaOrigen} → ${dest?dest.icon+" "+dest.nombre:x.CuentaDestino}</span>`}
-        else if (x.Tipo==="TraspasoSalida"||x.Tipo==="TraspasoEntrada"){let c=cuentas.find(c=>c.id===x.Cuenta),signo=x.Tipo==="TraspasoEntrada"?"📥":"📤";cuentaLabel=`<span class="badge cross-badge">${signo} ${c?c.icon+" "+c.nombre:x.Cuenta||""}</span>`}
-        else if (x.Cuenta){let c=cuentas.find(c=>c.id===x.Cuenta);if(c)cuentaLabel=`<span class="badge">${c.icon} ${c.nombre}</span>`}
+        else if(x.Tipo==="TraspasoSalida"||x.Tipo==="TraspasoEntrada"){let c=cuentas.find(c=>c.id===x.Cuenta),sig=x.Tipo==="TraspasoEntrada"?"📥":"📤";cuentaLabel=`<span class="badge cross-badge">${sig} ${c?c.icon+" "+c.nombre:x.Cuenta||""}</span>`}
+        else if(x.Cuenta){let c=cuentas.find(c=>c.id===x.Cuenta);if(c)cuentaLabel=`<span class="badge">${c.icon} ${c.nombre}</span>`}
         let notaHTML=x.Nota?`<div style="font-size:11px;color:var(--muted);margin-top:3px">📝 ${x.Nota}</div>`:"";
-        let isPending=!x.ID;
+        let isPending=!x.ID||String(x.ID).startsWith("local_");
         let pBadge=isPending?`<span class="badge" style="background:rgba(245,158,11,.2);color:var(--warn)">⏳</span>`:"";
-        let editBtn=(x.Tipo==="Ingreso"||x.Tipo==="Gasto")
-          ?`<button class="warn-btn" onclick="abrirEditar('${x.ID}')">✏️</button>`:"";
+        let editBtn=(x.Tipo==="Ingreso"||x.Tipo==="Gasto")?`<button class="warn-btn" onclick="abrirEditar('${x.ID}')">✏️</button>`:"";
         elLista.innerHTML+=`
           <div class="item ${claseItem}">
             <div>${x.Categoría} - ${x.Descripción}${cuentaLabel}${pBadge}</div>
@@ -1458,9 +1562,9 @@
       });
     }
 
-    /* ══════════════════════════════════════
+    /* ────────────────────────────────────
        FAVORITOS
-    ══════════════════════════════════════ */
+    ──────────────────────────────────── */
     function usarFavorito(cat,des,montoVal,cuentaId){
       setMode("gasto",document.querySelectorAll(".mode-tab")[1]);
       elCategoria.value=cat; elDescripcion.value=des;
@@ -1469,191 +1573,114 @@
       toast("Favorito cargado");
     }
 
-    /* ══════════════════════════════════════
+    /* ────────────────────────────────────
        STREAK
-    ══════════════════════════════════════ */
-    function updateStreak() {
+    ──────────────────────────────────── */
+    function updateStreak(){
       let todayStr=new Date().toISOString().slice(0,10), last=localStorage.getItem("lastSave");
       if (last!==todayStr){streak++;localStorage.setItem("streak",streak);localStorage.setItem("lastSave",todayStr);elStreakBox.innerText=streak}
     }
 
-    /* ══════════════════════════════════════
-       SYNC
-    ══════════════════════════════════════ */
-    window.addEventListener("online",syncPending);
-
-    async function syncPending() {
-      if (!navigator.onLine||!pending.length) return;
-      let sent=0;
-      while (pending.length){
-        try{await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(pending[0])});pending.shift();sent++}
-        catch(e){break}
-      }
-      localStorage.setItem(keyFor("pendingQueue"),JSON.stringify(pending));
-      elPendingCount.innerText=pending.length;
-      if (sent){toast("✔ "+sent+" sincronizados");load()}
+    /* ────────────────────────────────────
+       EXPORTAR CSV
+    ──────────────────────────────────── */
+    function exportarCSV() {
+      let filas=data.map(x=>[x.Fecha||"",x.Tipo||"",x.Categoría||"",(x.Descripción||"").replace(/,/g,";"),x.Monto||0,x.Cuenta||x.CuentaOrigen||"",x.Nota||""]);
+      let csv="Fecha,Tipo,Categoría,Descripción,Monto,Cuenta,Nota\n"+filas.map(r=>r.join(",")).join("\n");
+      let blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"});
+      let url=URL.createObjectURL(blob);
+      let a=document.createElement("a"); a.href=url; a.download=`movimientos_${contexto}_${new Date().toISOString().slice(0,7)}.csv`; a.click();
+      URL.revokeObjectURL(url); toast("📥 CSV exportado");
     }
 
-    /* ══════════════════════════════════════
-       BORRAR
-    ══════════════════════════════════════ */
-    async function borrar(id) {
-      if (!confirm("Eliminar movimiento")) return;
-      data=data.filter(x=>String(x.ID)!==String(id));
-      localStorage.setItem(keyFor("dataCache"),JSON.stringify(data));
-      render(); renderCrossCard();
-      try {
-        await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"delete",ID:id})});
-        toast("Eliminado");
-      } catch(e){}
-    }
-
-    /* ══════════════════════════════════════
+    /* ────────────────────────────────────
        METAS
-    ══════════════════════════════════════ */
-    function addGoal() {
+    ──────────────────────────────────── */
+    function addGoal(){
       let n=elGoalName.value.trim(), v=Number(elGoalValue.value);
       if (!n||v<=0){toast("Completa la meta");return}
       goals.push({nombre:n,valor:v});
       localStorage.setItem(keyFor("goals"),JSON.stringify(goals));
-      elGoalName.value=elGoalValue.value="";
-      render(); toast("🎯 Meta guardada");
+      elGoalName.value=elGoalValue.value=""; render(); toast("🎯 Meta guardada");
     }
+    function delGoal(i){goals.splice(i,1);localStorage.setItem(keyFor("goals"),JSON.stringify(goals));render()}
 
-    function delGoal(i){
-      goals.splice(i,1);
-      localStorage.setItem(keyFor("goals"),JSON.stringify(goals));
-      render();
+    /* ────────────────────────────────────
+       PRESUPUESTO
+    ──────────────────────────────────── */
+    function poblarPresupuestoCatSel(){
+      let sel=$("budgetCatSel"); if (!sel) return; sel.innerHTML="";
+      categorias.filter(c=>c.tipo==="gasto"||c.tipo==="ambos").forEach(c=>{let opt=document.createElement("option");opt.value=opt.textContent=c.icon+" "+c.nombre;sel.appendChild(opt)});
     }
-
-    /* ══════════════════════════════════════
-       PRESUPUESTO POR CATEGORÍA
-    ══════════════════════════════════════ */
-    function poblarPresupuestoCatSel() {
-      let sel=$("budgetCatSel"); if (!sel) return;
-      sel.innerHTML="";
-      categorias.filter(c=>c.tipo==="gasto"||c.tipo==="ambos").forEach(c=>{
-        let opt=document.createElement("option");
-        opt.value=c.icon+" "+c.nombre; opt.textContent=c.icon+" "+c.nombre;
-        sel.appendChild(opt);
-      });
-    }
-
     function getBudgets(){return JSON.parse(localStorage.getItem(keyFor("budgets"))||"{}")}
     function saveBudgets(b){localStorage.setItem(keyFor("budgets"),JSON.stringify(b))}
 
-    function addBudget() {
-      let cat=$("budgetCatSel").value;
-      let monto=parseMonto($("budgetMonto").value);
+    function addBudget(){
+      let cat=$("budgetCatSel").value, monto=parseMonto($("budgetMonto").value);
       if (!cat||monto<=0){toast("Completa los datos del presupuesto");return}
-      let b=getBudgets();
-      b[cat]=monto;
-      saveBudgets(b);
-      $("budgetMonto").value="";
-      renderBudgetList();
-      toast("✔ Presupuesto guardado");
+      let b=getBudgets(); b[cat]=monto; saveBudgets(b); $("budgetMonto").value=""; renderBudgetList(); toast("✔ Presupuesto guardado");
     }
+    function delBudget(cat){let b=getBudgets();delete b[cat];saveBudgets(b);renderBudgetList();toast("Presupuesto eliminado")}
 
-    function delBudget(cat){
-      let b=getBudgets(); delete b[cat]; saveBudgets(b); renderBudgetList(); toast("Presupuesto eliminado");
-    }
-
-    function renderBudgetList() {
+    function renderBudgetList(){
       let el=$("budgetList"); if (!el) return;
-      let b=getBudgets();
-      let cats=Object.keys(b);
+      let b=getBudgets(), cats=Object.keys(b);
       if (!cats.length){el.innerHTML=`<div class="alert mid">No hay presupuestos definidos.</div>`;return}
       let gastoReal={};
-      data.filter(x=>x.Tipo==="Gasto").forEach(x=>{
-        gastoReal[x.Categoría]=(gastoReal[x.Categoría]||0)+Number(x.Monto||0);
-      });
+      data.filter(x=>x.Tipo==="Gasto").forEach(x=>{gastoReal[x.Categoría]=(gastoReal[x.Categoría]||0)+Number(x.Monto||0)});
       el.innerHTML="";
       cats.forEach(cat=>{
-        let limite=b[cat], gastado=gastoReal[cat]||0;
-        let pct=Math.min((gastado/limite)*100,100);
-        let color=pct>=100?"var(--bad)":pct>=80?"var(--warn)":"var(--ok)";
-        let barClass=pct>=100?"over":pct>=80?"warn":"";
-        let alerta=pct>=100?`<div class="alert bad" style="margin-top:6px">🚨 ¡Presupuesto superado por ${money(gastado-limite)}!</div>`:
-                   pct>=80?`<div class="alert mid" style="margin-top:6px">⚠️ Cerca del límite: queda ${money(limite-gastado)}</div>`:"";
+        let limite=b[cat], gastado=gastoReal[cat]||0, pct=Math.min((gastado/limite)*100,100);
+        let color=pct>=100?"var(--bad)":pct>=80?"var(--warn)":"var(--ok)", barClass=pct>=100?"over":pct>=80?"warn":"";
+        let alerta=pct>=100?`<div class="alert bad" style="margin-top:6px">🚨 Presupuesto superado por ${money(gastado-limite)}</div>`:pct>=80?`<div class="alert mid" style="margin-top:6px">⚠️ Queda ${money(limite-gastado)}</div>`:"";
         el.innerHTML+=`
           <div class="budget-item">
-            <div class="budget-row">
-              <div class="budget-label">${cat}</div>
-              <button class="small-btn" onclick="delBudget('${cat.replace(/'/g,"\\'")}')">🗑️</button>
-            </div>
-            <div class="budget-amounts">
-              <span style="color:var(--bad)">${money(gastado)}</span> de <span>${money(limite)}</span>
-              <span style="float:right;font-weight:700;color:${color}">${pct.toFixed(0)}%</span>
-            </div>
+            <div class="budget-row"><div class="budget-label">${cat}</div><button class="small-btn" onclick="delBudget('${cat.replace(/'/g,"\\'")}')">🗑️</button></div>
+            <div class="budget-amounts"><span style="color:var(--bad)">${money(gastado)}</span> de <span>${money(limite)}</span><span style="float:right;font-weight:700;color:${color}">${pct.toFixed(0)}%</span></div>
             <div class="progress"><div class="bar ${barClass}" style="width:${pct}%;background:${color}"></div></div>
             ${alerta}
           </div>`;
       });
     }
 
-    /* ══════════════════════════════════════
+    /* ────────────────────────────────────
        GASTOS RECURRENTES
-    ══════════════════════════════════════ */
-    function poblarRecSelects() {
-      let recCuenta=$("recCuentaSel"), recCat=$("recCatSel");
-      if (!recCuenta||!recCat) return;
-      recCuenta.innerHTML="";
-      cuentas.forEach(c=>{
-        let opt=document.createElement("option"); opt.value=c.id; opt.textContent=c.icon+" "+c.nombre;
-        recCuenta.appendChild(opt);
-      });
-      recCat.innerHTML="";
-      categorias.filter(c=>c.tipo==="gasto"||c.tipo==="ambos").forEach(c=>{
-        let opt=document.createElement("option"); opt.value=opt.textContent=c.icon+" "+c.nombre;
-        recCat.appendChild(opt);
-      });
+    ──────────────────────────────────── */
+    function poblarRecSelects(){
+      let rC=$("recCuentaSel"), rCat=$("recCatSel"); if (!rC||!rCat) return;
+      rC.innerHTML=""; cuentas.forEach(c=>{let opt=document.createElement("option");opt.value=c.id;opt.textContent=c.icon+" "+c.nombre;rC.appendChild(opt)});
+      rCat.innerHTML=""; categorias.filter(c=>c.tipo==="gasto"||c.tipo==="ambos").forEach(c=>{let opt=document.createElement("option");opt.value=opt.textContent=c.icon+" "+c.nombre;rCat.appendChild(opt)});
     }
-
     function getRecurrentes(){return JSON.parse(localStorage.getItem(keyFor("recurrentes"))||"[]")}
     function saveRecurrentes(r){localStorage.setItem(keyFor("recurrentes"),JSON.stringify(r))}
 
-    function addRecurrente() {
-      let cuenta=$("recCuentaSel").value;
-      let cat=$("recCatSel").value;
-      let desc=$("recDesc").value.trim();
-      let monto=parseMonto($("recMonto").value);
-      if (!desc||monto<=0){toast("Completa los datos del recurrente");return}
-      let recs=getRecurrentes();
-      recs.push({id:"rec_"+Date.now(),cuenta,cat,desc,monto});
-      saveRecurrentes(recs);
-      $("recDesc").value=$("recMonto").value="";
-      renderRecList();
-      toast("✔ Recurrente agregado");
+    function addRecurrente(){
+      let cuenta=$("recCuentaSel").value, cat=$("recCatSel").value, desc=$("recDesc").value.trim(), monto=parseMonto($("recMonto").value);
+      if (!desc||monto<=0){toast("Completa los datos");return}
+      let recs=getRecurrentes(); recs.push({id:"rec_"+Date.now(),cuenta,cat,desc,monto}); saveRecurrentes(recs);
+      $("recDesc").value=$("recMonto").value=""; renderRecList(); toast("✔ Recurrente agregado");
     }
+    function delRecurrente(id){let recs=getRecurrentes().filter(r=>r.id!==id);saveRecurrentes(recs);renderRecList();toast("Recurrente eliminado")}
 
-    function delRecurrente(id){
-      let recs=getRecurrentes().filter(r=>r.id!==id);
-      saveRecurrentes(recs); renderRecList(); toast("Recurrente eliminado");
-    }
-
-    function aplicarRecurrentes() {
-      let recs=getRecurrentes();
-      if (!recs.length){toast("No hay recurrentes definidos");return}
-      if (!confirm(`¿Aplicar ${recs.length} gastos recurrentes al mes actual?`)) return;
-      let hoy=new Date();
-      let fecha=hoy.getFullYear()+"-"+String(hoy.getMonth()+1).padStart(2,"0")+"-"+String(hoy.getDate()).padStart(2,"0");
-      recs.forEach(r=>{
-        let datos={Fecha:fecha,Tipo:"Gasto",Cuenta:r.cuenta,Categoría:r.cat,Descripción:r.desc+" (recurrente)",Monto:r.monto,Nota:"Aplicado automáticamente",Contexto:contexto,ID:"rec_"+Date.now()+"_"+Math.random()};
+    async function aplicarRecurrentes(){
+      let recs=getRecurrentes(); if (!recs.length){toast("No hay recurrentes");return}
+      if (!confirm(`¿Aplicar ${recs.length} gastos recurrentes?`)) return;
+      let hoy=new Date(), fecha=hoy.getFullYear()+"-"+String(hoy.getMonth()+1).padStart(2,"0")+"-"+String(hoy.getDate()).padStart(2,"0");
+      for (let r of recs){
+        let datos={Fecha:fecha,Tipo:"Gasto",Cuenta:r.cuenta,Categoría:r.cat,Descripción:r.desc+" (recurrente)",Monto:r.monto,Nota:"Aplicado automáticamente",Contexto:contexto};
+        if (fbListo){
+          try{let nid=await fbGuardar(datos);datos.ID=nid}catch(e){datos.ID="rec_"+Date.now()+"_"+Math.random()}
+        } else { datos.ID="rec_"+Date.now()+"_"+Math.random(); }
         data.push(datos);
-        if (navigator.onLine){
-          fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(datos)}).catch(()=>{});
-        }
-      });
+      }
       localStorage.setItem(keyFor("dataCache"),JSON.stringify(data));
-      elSyncCount.innerText=data.length;
-      render(); renderCrossCard();
+      elSyncCount.innerText=data.length; render(); renderCrossCard();
       toast(`✔ ${recs.length} recurrentes aplicados`);
     }
 
-    function renderRecList() {
+    function renderRecList(){
       let el=$("recList"); if (!el) return;
-      let recs=getRecurrentes();
-      if (!recs.length){el.innerHTML=`<div class="alert mid">No hay gastos recurrentes.</div>`;return}
+      let recs=getRecurrentes(); if (!recs.length){el.innerHTML=`<div class="alert mid">No hay gastos recurrentes.</div>`;return}
       let totalRec=recs.reduce((a,r)=>a+Number(r.monto||0),0);
       el.innerHTML=`<div class="small" style="margin-bottom:8px">Total fijo mensual: <b>${money(totalRec)}</b></div>`;
       recs.forEach(r=>{
@@ -1661,20 +1688,17 @@
         el.innerHTML+=`
           <div class="rec-card">
             <div class="rec-row">
-              <div>
-                <div style="font-weight:700;font-size:13px">${r.cat} · ${r.desc}</div>
-                <div class="small">${c?c.icon+" "+c.nombre:r.cuenta} · <b>${money(r.monto)}</b></div>
-              </div>
+              <div><div style="font-weight:700;font-size:13px">${r.cat} · ${r.desc}</div><div class="small">${c?c.icon+" "+c.nombre:r.cuenta} · <b>${money(r.monto)}</b></div></div>
               <button class="small-btn" onclick="delRecurrente('${r.id}')">🗑️</button>
             </div>
           </div>`;
       });
     }
 
-    /* ══════════════════════════════════════
+    /* ────────────────────────────────────
        COMPARATIVA DE MESES
-    ══════════════════════════════════════ */
-    function renderComparativa() {
+    ──────────────────────────────────── */
+    function renderComparativa(){
       let el=$("compareContent"); if (!el) return;
       if (!historial.length&&!data.length){el.innerHTML=`<div class="alert mid">Necesitas al menos 1 mes cerrado para comparar.</div>`;return}
       let meses=[];
@@ -1685,63 +1709,47 @@
       let maxVal=Math.max(...meses.map(m=>Math.max(m.ing,m.gas)),1);
       el.innerHTML="";
       meses.forEach(m=>{
-        let pctIng=(m.ing/maxVal*100).toFixed(1);
-        let pctGas=(m.gas/maxVal*100).toFixed(1);
-        let bal=m.ing-m.gas;
+        let pctIng=(m.ing/maxVal*100).toFixed(1), pctGas=(m.gas/maxVal*100).toFixed(1), bal=m.ing-m.gas;
         el.innerHTML+=`
           <div style="margin-bottom:14px;padding:12px;background:rgba(255,255,255,.03);border-radius:14px;border:1px solid ${m.actual?"rgba(37,99,235,.3)":"var(--line)"}">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
               <span style="font-weight:700;font-size:13px">${m.label}${m.actual?` <span class="badge" style="background:rgba(37,99,235,.2);color:var(--primary)">actual</span>`:""}</span>
               <span style="font-size:12px;color:${bal>=0?"var(--ok)":"var(--bad)"}">Balance: ${money(bal)}</span>
             </div>
-            <div class="compare-bar-wrap">
-              <div class="compare-label">💰 Ingresos: ${money(m.ing)}</div>
-              <div class="compare-bar-bg"><div class="compare-bar-fill" style="width:${pctIng}%;background:var(--ok)"></div></div>
-            </div>
-            <div class="compare-bar-wrap" style="margin-top:6px">
-              <div class="compare-label">💸 Gastos: ${money(m.gas)}</div>
-              <div class="compare-bar-bg"><div class="compare-bar-fill" style="width:${pctGas}%;background:var(--bad)"></div></div>
-            </div>
+            <div class="compare-bar-wrap"><div class="compare-label">💰 Ingresos: ${money(m.ing)}</div><div class="compare-bar-bg"><div class="compare-bar-fill" style="width:${pctIng}%;background:var(--ok)"></div></div></div>
+            <div class="compare-bar-wrap" style="margin-top:6px"><div class="compare-label">💸 Gastos: ${money(m.gas)}</div><div class="compare-bar-bg"><div class="compare-bar-fill" style="width:${pctGas}%;background:var(--bad)"></div></div></div>
           </div>`;
       });
     }
 
-    /* ══════════════════════════════════════
+    /* ────────────────────────────────────
        RENDER PRINCIPAL
-    ══════════════════════════════════════ */
-    function render() {
+    ──────────────────────────────────── */
+    function render(){
       let ing=0,gas=0,ah=0,cats={};
-      let sorted=[...data].sort((a,b)=>new Date(b.Fecha)-new Date(a.Fecha));
-      sorted.forEach(x=>{
+      [...data].sort((a,b)=>new Date(b.Fecha)-new Date(a.Fecha)).forEach(x=>{
         let m=Number(x.Monto)||0;
         if (x.Tipo==="Ingreso") ing+=m;
         else if (x.Tipo==="Gasto") gas+=m;
-        let catStr=String(x.Categoría||"");
-        if (catStr.includes("Ahorro")||catStr.includes("Reinversión")) ah+=m;
+        let cs=String(x.Categoría||"");
+        if (cs.includes("Ahorro")||cs.includes("Reinversión")) ah+=m;
         if (x.Tipo==="Gasto") cats[x.Categoría]=(cats[x.Categoría]||0)+m;
       });
       let saldos=calcSaldosCuentas();
       let saldoTotal=Object.values(saldos).reduce((a,b)=>a+b,0);
       elSaldoTop.innerText=money(saldoTotal);
-      renderCuentas(saldos);
-      renderCockpit(ing,gas,ah);
-      renderCoach(ing,gas,cats);
-      renderGoals(ah);
-      renderBudgetList();
+      renderCuentas(saldos); renderCockpit(ing,gas,ah); renderCoach(ing,gas,cats);
+      renderGoals(ah); renderBudgetList();
       if ($("tab-dashboard").classList.contains("active")) charts(cats,ing,gas,saldos);
       renderFavorites();
       if ($("tab-list").classList.contains("active")) renderListFiltrado();
     }
 
-    /* ══════════════════════════════════════
-       RENDER CUENTAS
-    ══════════════════════════════════════ */
-    function renderCuentas(saldos) {
+    function renderCuentas(saldos){
       elCuentasResumen.innerHTML=elDistBar.innerHTML=elDistLegend.innerHTML="";
       let totalPos=cuentas.reduce((a,c)=>a+Math.max(saldos[c.id]||0,0),0)||1;
       cuentas.forEach((c,i)=>{
-        let s=saldos[c.id]||0, cls=s>=0?"positive":"negative";
-        let color=ACC_COLORS[i%ACC_COLORS.length];
+        let s=saldos[c.id]||0, cls=s>=0?"positive":"negative", color=ACC_COLORS[i%ACC_COLORS.length];
         elCuentasResumen.innerHTML+=`
           <div class="cuenta-card">
             <div class="cuenta-left"><div class="cuenta-icon">${c.icon}</div><div class="cuenta-name">${c.nombre}</div></div>
@@ -1753,10 +1761,7 @@
       });
     }
 
-    /* ══════════════════════════════════════
-       RENDER FAVORITOS
-    ══════════════════════════════════════ */
-    function renderFavorites() {
+    function renderFavorites(){
       let map={};
       data.forEach(x=>{
         if (x.Tipo==="Transferencia"||x.Tipo==="TraspasoSalida"||x.Tipo==="TraspasoEntrada") return;
@@ -1775,59 +1780,47 @@
       });
     }
 
-    /* ══════════════════════════════════════
-       COCKPIT
-    ══════════════════════════════════════ */
-    function renderCockpit(ing,gas,ah) {
+    function renderCockpit(ing,gas,ah){
       let hoy=new Date();
       let todayStr=hoy.getFullYear()+"-"+String(hoy.getMonth()+1).padStart(2,"0")+"-"+String(hoy.getDate()).padStart(2,"0");
       let hoyGastado=data.filter(x=>x.Fecha===todayStr&&x.Tipo==="Gasto").reduce((a,b)=>a+Number(b.Monto||0),0);
-      let disponible=Math.max((ing-gas)/7,0);
-      let isNeg=contexto==="negocio";
+      let disponible=Math.max((ing-gas)/7,0), isNeg=contexto==="negocio";
       let traspasoSalidas=data.filter(x=>x.Tipo==="TraspasoSalida").reduce((a,x)=>a+Number(x.Monto||0),0);
       let traspasoEntradas=data.filter(x=>x.Tipo==="TraspasoEntrada").reduce((a,x)=>a+Number(x.Monto||0),0);
       let traspasoNeto=traspasoEntradas-traspasoSalidas;
-      let b=getBudgets();
-      let gastoReal={};
+      let b=getBudgets(), gastoReal={};
       data.filter(x=>x.Tipo==="Gasto").forEach(x=>{gastoReal[x.Categoría]=(gastoReal[x.Categoría]||0)+Number(x.Monto||0)});
-      let alertasBudget=Object.keys(b).filter(cat=>{let pct=(gastoReal[cat]||0)/b[cat]*100;return pct>=80});
+      let alertasBudget=Object.keys(b).filter(cat=>(gastoReal[cat]||0)/b[cat]*100>=80);
       elCockpit.innerHTML=`
         <div class="grid2">
           <div class="kpi"><span>Hoy gastado</span><strong>${money(hoyGastado)}</strong></div>
-          <div class="kpi"><span>${isNeg?"Flujo diario est.":"Puedes gastar hoy"}</span><strong>${money(disponible)}</strong></div>
+          <div class="kpi"><span>${isNeg?"Flujo diario":"Puedes gastar"}</span><strong>${money(disponible)}</strong></div>
           <div class="kpi"><span>${isNeg?"Reinversión":"Ahorro real"}</span><strong>${money(ah)}</strong></div>
           <div class="kpi"><span>${isNeg?"Utilidad neta":"Balance neto"}</span><strong>${money(ing-gas)}</strong></div>
         </div>
-        ${traspasoNeto!==0?`<div class="alert info" style="margin-top:8px">🔀 Traspasos este mes: <b>${traspasoNeto>0?"+":""}${money(traspasoNeto)}</b> neto</div>`:""}
-        ${alertasBudget.map(cat=>{
-          let pct=((gastoReal[cat]||0)/b[cat]*100).toFixed(0);
-          return `<div class="alert ${pct>=100?"bad":"mid"}" style="margin-top:6px">${pct>=100?"🚨":"⚠️"} Presupuesto <b>${cat}</b>: ${pct}% usado</div>`;
-        }).join("")}`;
+        ${traspasoNeto!==0?`<div class="alert info" style="margin-top:8px">🔀 Traspasos: <b>${traspasoNeto>0?"+":""}${money(traspasoNeto)}</b></div>`:""}
+        ${alertasBudget.map(cat=>{let pct=((gastoReal[cat]||0)/b[cat]*100).toFixed(0);return`<div class="alert ${pct>=100?"bad":"mid"}" style="margin-top:6px">${pct>=100?"🚨":"⚠️"} Presupuesto <b>${cat}</b>: ${pct}%</div>`;}).join("")}`;
     }
 
-    /* ══════════════════════════════════════
-       COACH
-    ══════════════════════════════════════ */
-    function renderCoach(ing,gas,cats) {
+    function renderCoach(ing,gas,cats){
       let txt="", balance=ing-gas, isNeg=contexto==="negocio";
-      if (balance>0)       txt+=`<div class="alert good">🟢 ${isNeg?"Negocio rentable. Utilidad positiva este mes.":"Salud financiera positiva. Vas cerrando con superávit."}</div>`;
-      else if (balance===0)txt+=`<div class="alert mid">🟡 Vas en punto de equilibrio. ${isNeg?"Revisa costos para mejorar margen.":"Controla próximos gastos."}</div>`;
-      else                 txt+=`<div class="alert bad">🔴 ${isNeg?"Gastos superan ingresos. Revisa costos urgente.":"Gastas más de lo que ingresas actualmente."}</div>`;
+      if (balance>0)        txt+=`<div class="alert good">🟢 ${isNeg?"Negocio rentable. Utilidad positiva.":"Salud financiera positiva."}</div>`;
+      else if (balance===0) txt+=`<div class="alert mid">🟡 Punto de equilibrio. ${isNeg?"Revisa costos.":"Controla gastos."}</div>`;
+      else                  txt+=`<div class="alert bad">🔴 ${isNeg?"Gastos superan ingresos.":"Gastas más de lo que ingresas."}</div>`;
       let topEntry=Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
-      if (topEntry){let porc=((topEntry[1]/Math.max(gas,1))*100).toFixed(0);txt+=`<div class="alert bad">⚠️ Mayor ${isNeg?"costo":"fuga"}: <b>${topEntry[0]}</b> (${porc}% de ${isNeg?"costos":"gastos"})</div>`}
-      let hoy=new Date(),dia=hoy.getDate();
-      if (dia>0){let prom=gas/dia,dias=new Date(hoy.getFullYear(),hoy.getMonth()+1,0).getDate(),proy=Math.round(prom*dias),sproj=ing-proy;if(sproj>0)txt+=`<div class="alert good">📈 ${isNeg?"Utilidad proyectada:":"Si sigues así cerrarás con"} <b>${money(sproj)}</b></div>`;else txt+=`<div class="alert bad">📉 ${isNeg?"Cierre proyectado en pérdida:":"Al ritmo actual cerrarías en"} <b>${money(sproj)}</b></div>`}
-      if (topEntry) txt+=`<div class="alert mid">💡 Bajando <b>${topEntry[0]}</b> un 15% ${isNeg?"mejorarías margen en":"ahorrarías"} <b>${money(Math.round(topEntry[1]*.15))}</b></div>`;
-      txt+=`<div class="alert good">🔥 Racha activa: <b>${streak}</b> días registrando movimientos</div>`;
-      if (isNeg&&ing>0){let margen=((balance/ing)*100).toFixed(1),margenColor=balance>0?"var(--ok)":"var(--bad)";txt+=`<div class="alert mid">📊 Margen neto: <b style="color:${margenColor}">${margen}%</b></div>`}
-      if (!isNeg&&gas<ing*.70&&ing>0) txt+=`<div class="alert good">🚀 Excelente control: gastos bajo el 70% de tus ingresos.</div>`;
+      if (topEntry){let porc=((topEntry[1]/Math.max(gas,1))*100).toFixed(0);txt+=`<div class="alert bad">⚠️ Mayor ${isNeg?"costo":"fuga"}: <b>${topEntry[0]}</b> (${porc}%)</div>`}
+      let hoy=new Date(), dia=hoy.getDate();
+      if (dia>0){let prom=gas/dia, dias=new Date(hoy.getFullYear(),hoy.getMonth()+1,0).getDate(), proy=Math.round(prom*dias), sproj=ing-proy;
+        if (sproj>0) txt+=`<div class="alert good">📈 Proyección: <b>${money(sproj)}</b></div>`;
+        else txt+=`<div class="alert bad">📉 Proyección negativa: <b>${money(sproj)}</b></div>`;}
+      if (topEntry) txt+=`<div class="alert mid">💡 Bajar <b>${topEntry[0]}</b> 15% = ${money(Math.round(topEntry[1]*.15))} ahorrado</div>`;
+      txt+=`<div class="alert good">🔥 Racha: <b>${streak}</b> días</div>`;
+      if (isNeg&&ing>0){let margen=((balance/ing)*100).toFixed(1),mc=balance>0?"var(--ok)":"var(--bad)";txt+=`<div class="alert mid">📊 Margen: <b style="color:${mc}">${margen}%</b></div>`}
+      if (!isNeg&&gas<ing*.70&&ing>0) txt+=`<div class="alert good">🚀 Gastos bajo 70% de ingresos. ¡Excelente!</div>`;
       elCoach.innerHTML=txt;
     }
 
-    /* ══════════════════════════════════════
-       METAS
-    ══════════════════════════════════════ */
-    function renderGoals(ah) {
+    function renderGoals(ah){
       elGoalList.innerHTML="";
       if (!goals.length){elGoalList.innerHTML=`<div class="alert mid">No tienes metas aún.</div>`;return}
       goals.forEach((g,i)=>{
@@ -1843,21 +1836,19 @@
       });
     }
 
-    /* ══════════════════════════════════════
+    /* ────────────────────────────────────
        GRÁFICOS
-    ══════════════════════════════════════ */
-    function charts(cats,ing,gas,saldos) {
+    ──────────────────────────────────── */
+    function charts(cats,ing,gas,saldos){
       [c1,c2,c3,c4,c5,c6].forEach(c=>{if(c)c.destroy()});
-      let accLabels=cuentas.map(c=>c.icon+" "+c.nombre);
-      let accValues=cuentas.map(c=>saldos[c.id]||0);
-      let accColors=cuentas.map((_,i)=>ACC_COLORS[i%ACC_COLORS.length]);
+      let accLabels=cuentas.map(c=>c.icon+" "+c.nombre), accValues=cuentas.map(c=>saldos[c.id]||0), accColors=cuentas.map((_,i)=>ACC_COLORS[i%ACC_COLORS.length]);
       c6=new Chart($("chart6"),{type:"bar",data:{labels:accLabels,datasets:[{data:accValues,backgroundColor:accColors}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:false}}}});
       if (Object.keys(cats).length) c1=new Chart($("chart1"),{type:"doughnut",data:{labels:Object.keys(cats),datasets:[{data:Object.values(cats)}]}});
       c2=new Chart($("chart2"),{type:"bar",data:{labels:["Ingresos",contexto==="negocio"?"Costos":"Gastos"],datasets:[{data:[ing,gas],backgroundColor:["#22c55e","#ef4444"]}]}});
       let dias={},saldo=0;
       [...data].sort((a,b)=>new Date(a.Fecha)-new Date(b.Fecha)).forEach(x=>{
         let m=Number(x.Monto)||0;
-        if (x.Tipo==="Ingreso")saldo+=m;else if(x.Tipo==="Gasto")saldo-=m;else if(x.Tipo==="TraspasoEntrada")saldo+=m;else if(x.Tipo==="TraspasoSalida")saldo-=m;
+        if(x.Tipo==="Ingreso")saldo+=m;else if(x.Tipo==="Gasto")saldo-=m;else if(x.Tipo==="TraspasoEntrada")saldo+=m;else if(x.Tipo==="TraspasoSalida")saldo-=m;
         dias[x.Fecha]=saldo;
       });
       c3=new Chart($("chart3"),{type:"line",data:{labels:Object.keys(dias),datasets:[{data:Object.values(dias),fill:false,tension:0.3,borderColor:"#2563eb"}]}});
@@ -1870,15 +1861,13 @@
       c5=new Chart($("chart5"),{type:"bar",data:{labels:tf.map(x=>x[0]),datasets:[{data:tf.map(x=>x[1])}]},options:{indexAxis:"y"}});
     }
 
-    /* ══════════════════════════════════════
+    /* ════════════════════════════════════
        INIT
-    ══════════════════════════════════════ */
-    // ← Aplicar tema guardado ANTES de renderizar
+    ════════════════════════════════════ */
     aplicarTemaGuardado();
-
-    elFecha.valueAsDate=new Date();
-    elToday.innerText=new Date().toLocaleDateString("es-CO",{weekday:"long",day:"numeric",month:"long"});
-    elStreakBox.innerText=streak;
+    elFecha.valueAsDate = new Date();
+    elToday.innerText = new Date().toLocaleDateString("es-CO",{weekday:"long",day:"numeric",month:"long"});
+    elStreakBox.innerText = streak;
 
     cargarCuentasDeContexto();
     cargarCategoriasDeContexto();
@@ -1892,10 +1881,9 @@
     poblarRecSelects();
     render();
     renderCrossCard();
-    load();
-    syncPending();
+    // load() se llamará cuando Firebase esté listo (evento "firebaseReady")
 
-    $("traspasoDireccion").addEventListener("change",poblarSelectsTraspaso);
+    $("traspasoDireccion").addEventListener("change", poblarSelectsTraspaso);
   </script>
 
   <script>
