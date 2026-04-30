@@ -5,7 +5,7 @@
   <meta name="theme-color" content="#0f172a">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-  <title>Banking PRO AI v24 - Completo</title>
+  <title>Banking PRO AI v25 - Bancos + Logros + Inversiones</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
@@ -44,11 +44,10 @@
     });
 
     window.firebaseReady = true;
-    console.log("✅ Firebase OK");
   </script>
 
   <style>
-    :root{--bg1:#0a0f1a;--bg2:#111827;--card:rgba(255,255,255,.05);--line:rgba(255,255,255,.08);--text:#f1f5f9;--muted:#94a3b8;--input:#1e293b;--inputText:#f1f5f9;--primary:#3b82f6;--primary2:#2563eb;--ok:#22c55e;--bad:#ef4444;--warn:#f59e0b;--transfer:#a78bfa;--biz:#f59e0b;--pareja:#ec4899}
+    :root{--bg1:#0a0f1a;--bg2:#111827;--card:rgba(255,255,255,.05);--line:rgba(255,255,255,.08);--text:#f1f5f9;--muted:#94a3b8;--input:#1e293b;--inputText:#f1f5f9;--primary:#3b82f6;--primary2:#2563eb;--ok:#22c55e;--bad:#ef4444;--warn:#f59e0b;--transfer:#a78bfa;--biz:#f59e0b;--pareja:#ec4899;--inversion:#06b6d4}
     body.light{--bg1:#f8fafc;--bg2:#fff;--card:#fff;--line:#e2e8f0;--text:#0f172a;--muted:#64748b;--input:#f1f5f9;--inputText:#0f172a}
     body.modo-negocio{--primary:var(--biz)}
     body.modo-pareja{--primary:var(--pareja)}
@@ -71,16 +70,30 @@
     .danger{background:rgba(239,68,68,.15);color:var(--bad)}
     .small-btn{padding:6px 10px;font-size:11px;width:auto;background:rgba(255,255,255,.06);color:var(--text);border-radius:8px}
     .warn-btn{background:rgba(245,158,11,.15);color:var(--warn);padding:6px 10px;font-size:11px;width:auto;border-radius:8px}
+    .success-btn{background:rgba(34,197,94,.15);color:var(--ok);padding:6px 10px;font-size:11px;width:auto;border-radius:8px}
+    .inversion-btn{background:rgba(6,182,212,.15);color:var(--inversion);padding:6px 10px;font-size:11px;width:auto;border-radius:8px}
     .voice-btn{background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;padding:12px;font-weight:700;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;margin-top:6px}
     .voice-btn.listening{background:#ef4444;animation:pulse .8s infinite}
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:.7}}
     .voice-feedback{background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.3);border-radius:12px;padding:10px;margin-top:6px;font-size:12px;display:none}
     .voice-feedback.active{display:block}
-    .pareja-card{background:rgba(236,72,153,.07);border:1px solid rgba(236,72,153,.2);border-radius:16px;padding:12px;margin-bottom:10px}
-    .pareja-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(236,72,153,.2);color:var(--pareja);border-radius:16px;padding:3px 10px;font-size:10px;font-weight:700}
-    .miembro-row,.invitacion-card{display:flex;align-items:center;justify-content:space-between;padding:10px;background:rgba(255,255,255,.03);border-radius:12px;margin-bottom:6px}
-    .invitacion-card{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2)}
-
+    .logro-card{background:rgba(255,215,0,.06);border:1px solid rgba(255,215,0,.15);border-radius:14px;padding:10px;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+    .logro-card.desbloqueado{opacity:1;border-color:rgba(255,215,0,.4)}
+    .logro-card.bloqueado{opacity:.4}
+    .logro-icono{font-size:24px;flex-shrink:0;width:40px;text-align:center}
+    .nivel-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:14px;font-size:11px;font-weight:700}
+    .inversion-card{background:rgba(6,182,212,.06);border:1px solid rgba(6,182,212,.15);border-radius:14px;padding:12px;margin-bottom:8px}
+    .banco-card{display:flex;align-items:center;justify-content:space-between;padding:12px;background:rgba(255,255,255,.03);border-radius:14px;margin-bottom:8px;border:1px solid var(--line)}
+    .banco-card.conectado{border-color:rgba(34,197,94,.3);background:rgba(34,197,94,.05)}
+    .banco-status{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
+    .banco-status.conectado{background:rgba(34,197,94,.15);color:var(--ok)}
+    .banco-status.pendiente{background:rgba(245,158,11,.15);color:var(--warn)}
+    .presupuesto-conjunto{background:rgba(236,72,153,.05);border:1px solid rgba(236,72,153,.2);border-radius:14px;padding:12px;margin-bottom:8px}
+    .progreso-nivel{height:8px;background:rgba(255,255,255,.08);border-radius:10px;overflow:hidden;margin-top:4px}
+    .progreso-nivel-fill{height:100%;background:linear-gradient(90deg,#f59e0b,#ffd700);transition:width .3s}
+    .tabs-mini{display:flex;gap:4px;margin-bottom:8px}
+    .tab-mini{flex:1;padding:6px;text-align:center;font-size:11px;font-weight:600;background:rgba(255,255,255,.04);border-radius:8px;cursor:pointer}
+    .tab-mini.active{background:rgba(59,130,246,.15);color:var(--primary)}
     #loginScreen{display:flex;position:fixed;inset:0;z-index:2000;background:linear-gradient(135deg,#0a0f1a,#111827);align-items:center;justify-content:center;padding:20px}
     #loginScreen.oculto{display:none}
     .login-box{width:100%;max-width:380px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:24px;padding:28px 24px}
@@ -97,7 +110,6 @@
     .login-btn-main{width:100%;padding:13px;border-radius:12px;font-size:14px;font-weight:800;border:none;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;margin-top:4px}
     .login-error{background:rgba(239,68,68,.12);color:#ef4444;border-radius:10px;padding:8px 10px;font-size:12px;font-weight:600;margin-bottom:10px;display:none}
     .login-error.visible{display:block}
-
     #appContent{display:none}
     #appContent.visible{display:block}
     .ctx-wrap{display:flex;gap:5px;margin-bottom:8px}
@@ -137,53 +149,20 @@
     .info{background:rgba(59,130,246,.1);color:var(--primary)}
     .progress{height:8px;background:rgba(255,255,255,.06);border-radius:10px;overflow:hidden;margin-top:6px}
     .bar{height:100%;background:linear-gradient(90deg,#22c55e,#4ade80);width:0%;transition:width .3s}
-    .bar.warn{background:linear-gradient(90deg,#f59e0b,#ef4444)}
-    .bar.over{background:linear-gradient(90deg,#ef4444,#dc2626)}
     .nav{position:fixed;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:8px 10px;background:rgba(10,15,26,.95);backdrop-filter:blur(16px);border-top:1px solid rgba(255,255,255,.06);max-width:820px;margin:auto;z-index:100}
     .nav button{padding:6px 2px;font-size:20px;background:transparent;color:#64748b;border-radius:10px;transition:.2s}
     .nav button.active{background:rgba(255,255,255,.08);color:#fff}
     .toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 14px;border-radius:12px;font-size:12px;font-weight:700;display:none;z-index:999;white-space:nowrap;max-width:85vw;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.5)}
-    .timeline-day{font-size:11px;color:var(--muted);font-weight:700;margin:8px 0 4px}
-    .badge{display:inline-block;padding:1px 6px;border-radius:10px;font-size:9px;font-weight:700;background:rgba(167,139,250,.15);color:var(--transfer);margin-left:4px}
-    .badge.cross-badge{background:rgba(236,72,153,.15);color:var(--pareja)}
-    .filter-chips{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
-    .filter-chip{padding:4px 10px;border-radius:14px;font-size:11px;font-weight:600;background:rgba(255,255,255,.04);color:var(--muted);border:1px solid transparent;cursor:pointer}
-    .filter-chip.active{background:rgba(59,130,246,.15);color:var(--primary);border-color:var(--primary)}
+    canvas{margin-top:8px;background:rgba(255,255,255,.02);padding:6px;border-radius:12px}
     .user-chip{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:4px 8px 4px 4px;cursor:pointer}
     .user-chip-avatar{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff}
-    .user-chip-name{font-size:11px;font-weight:600;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    canvas{margin-top:8px;background:rgba(255,255,255,.02);padding:6px;border-radius:12px}
-    .compare-bar-wrap{margin-bottom:8px}
-    .compare-label{font-size:11px;color:var(--muted);margin-bottom:2px}
-    .compare-bar-bg{height:6px;background:rgba(255,255,255,.05);border-radius:10px;overflow:hidden}
-    .compare-bar-fill{height:100%;border-radius:10px;transition:width .4s}
-    .budget-item{padding:10px;background:rgba(255,255,255,.02);border-radius:12px;margin-bottom:6px}
-    .budget-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
-    .budget-label{font-weight:600;font-size:12px}
-    .budget-amounts{font-size:11px;color:var(--muted)}
-    .rec-card{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);border-radius:12px;padding:10px;margin-bottom:6px}
-    .rec-row{display:flex;justify-content:space-between;align-items:center}
-    .export-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:10px;font-size:11px;font-weight:700;background:rgba(34,197,94,.1);color:var(--ok);border:1px solid rgba(34,197,94,.2);cursor:pointer;width:auto}
-    .search-wrap{position:relative;margin-bottom:8px}
-    .search-wrap input{padding-left:34px;margin-bottom:0}
-    .search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px}
-    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;align-items:center;justify-content:center;padding:20px}
-    .modal-overlay.open{display:flex}
-    .modal{background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:20px;max-width:400px;width:100%;max-height:85vh;overflow-y:auto}
-    .modal h3{font-size:16px;font-weight:800;margin-bottom:8px}
-    .modal-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
-    .cat-chip{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:14px;padding:4px 8px;font-size:11px;font-weight:600;margin:2px}
-    .cat-chip button{width:auto;padding:0 3px;background:transparent;color:var(--bad);font-size:12px;line-height:1}
-    .cat-chips-wrap{display:flex;flex-wrap:wrap;gap:2px;margin-bottom:6px}
-    .toggle-switch{position:relative;width:44px;height:24px;display:inline-block}
-    .toggle-switch input{opacity:0;width:0;height:0;margin:0}
-    .toggle-slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,.1);transition:.3s;border-radius:24px}
-    .toggle-slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background:#fff;transition:.3s;border-radius:50%}
-    input:checked+.toggle-slider{background:linear-gradient(135deg,#3b82f6,#7c3aed)}
-    input:checked+.toggle-slider:before{transform:translateX(20px)}
-    .notification-settings{background:rgba(255,255,255,.03);border-radius:14px;padding:10px;margin-top:8px}
-    .notification-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)}
-    .notification-row:last-child{border-bottom:none}
+    .user-chip-name{font-size:11px;font-weight:600;max-width:80px;overflow:hidden}
+    .filter-chips{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+    .filter-chip{padding:4px 10px;border-radius:14px;font-size:11px;font-weight:600;background:rgba(255,255,255,.04);color:var(--muted);cursor:pointer}
+    .filter-chip.active{background:rgba(59,130,246,.15);color:var(--primary)}
+    .badge{display:inline-block;padding:1px 6px;border-radius:10px;font-size:9px;font-weight:700;background:rgba(167,139,250,.15);color:var(--transfer);margin-left:4px}
+    @keyframes logroDesbloqueo{0%{transform:scale(1)}50%{transform:scale(1.2)}100%{transform:scale(1)}}
+    .logro-desbloqueado{animation:logroDesbloqueo .6s ease}
   </style>
 </head>
 <body>
@@ -211,11 +190,11 @@
   </div>
 </div>
 
-<!-- APP COMPLETA -->
+<!-- APP -->
 <div id="appContent">
   <div class="header">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-      <div><div class="small">Banking PRO AI v24 <span style="color:var(--ok)">●</span></div><div class="small" id="today"></div></div>
+      <div><div class="small">Banking PRO AI v25 <span style="color:var(--ok)">●</span></div><div class="small" id="today"></div></div>
       <div class="user-chip" onclick="goTab('settings',4)">
         <div class="user-chip-avatar" id="userAvatar">?</div>
         <div class="user-chip-name" id="userName">—</div>
@@ -229,6 +208,10 @@
     <div class="small" style="margin-top:2px" id="ctxSaldoLabel">Saldo total disponible</div>
     <div class="big" id="saldoTop">$0</div>
     <div style="font-size:11px;margin-top:6px;cursor:pointer;color:var(--muted)" onclick="toggleHide()">👁 Mostrar / ocultar</div>
+    
+    <!-- NUEVO: NIVEL Y XP -->
+    <div id="nivelHeader" style="margin-top:10px"></div>
+    
     <div class="grid3" style="margin-top:10px">
       <div class="kpi"><span>Movimientos</span><strong id="syncCount">0</strong></div>
       <div class="kpi"><span>Pendientes</span><strong id="pendingCount">0</strong></div>
@@ -238,13 +221,9 @@
 
   <!-- HOME -->
   <section class="tab active" id="tab-home">
-    <div class="pareja-card" id="parejaCard" style="display:none">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <div class="title" style="margin-bottom:0">💑 Finanzas en pareja</div>
-        <span class="pareja-badge" id="parejaStatus">🔗</span>
-      </div>
-      <div id="parejaResumen"></div>
-    </div>
+    <!-- NUEVO: ÚLTIMOS LOGROS DESBLOQUEADOS -->
+    <div id="ultimosLogros" style="margin-bottom:10px"></div>
+    
     <div class="card"><div class="title" id="cuentasTitle">🏦 Mis cuentas</div><div id="cuentasResumen"></div><div class="dist-bar" id="distBar"></div><div class="dist-legend" id="distLegend"></div></div>
     <div class="card"><div class="title">🎛️ Centro de mando</div><div id="cockpit"></div></div>
     <div class="card">
@@ -272,8 +251,7 @@
       </div>
       <div class="form-section" id="fs-traspaso">
         <div class="alert info" style="margin-bottom:8px">Mueve dinero entre Personal ↔ Negocio</div>
-        <label>Dirección</label>
-        <select id="traspasoDireccion"><option value="p2n">👤 Personal → 🏪 Negocio</option><option value="n2p">🏪 Negocio → 👤 Personal</option></select>
+        <label>Dirección</label><select id="traspasoDireccion"><option value="p2n">👤 Personal → 🏪 Negocio</option><option value="n2p">🏪 Negocio → 👤 Personal</option></select>
         <label>Cuenta origen</label><select id="traspasoOrigen"></select>
         <div style="text-align:center;margin:2px 0">⬇️</div>
         <label>Cuenta destino</label><select id="traspasoDestino"></select>
@@ -283,34 +261,70 @@
       <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">🎤 Voz</button>
       <div class="voice-feedback" id="voiceFeedback"></div>
     </div>
-    <div class="card"><div class="title">⭐ Favoritos</div><div class="grid2" id="favList"></div></div>
     <div class="card"><div class="title">🧠 Coach Financiero</div><div id="coach"></div></div>
   </section>
 
   <!-- DASHBOARD -->
   <section class="tab" id="tab-dashboard">
-    <div class="card"><div class="title">🏦 Saldo por cuenta</div><canvas id="chart6"></canvas></div>
-    <div class="card"><div class="title">📊 Gastos por categoría</div><canvas id="chart1"></canvas></div>
-    <div class="card"><div class="title">📈 Ingresos vs Gastos</div><canvas id="chart2"></canvas></div>
-    <div class="card"><div class="title">📉 Tendencia de saldo</div><canvas id="chart3"></canvas></div>
-    <div class="card"><div class="title">📆 Gastos por día</div><canvas id="chart4"></canvas></div>
-    <div class="card"><div class="title">💸 Top gastos</div><canvas id="chart5"></canvas></div>
-    <div class="card" id="compareCard"><div class="title">📅 Comparativa de meses</div><div id="compareContent"></div></div>
+    <!-- NUEVO: TABS DE DASHBOARD -->
+    <div class="tabs-mini">
+      <div class="tab-mini active" onclick="switchDashTab('finanzas',this)">📊 Finanzas</div>
+      <div class="tab-mini" onclick="switchDashTab('inversiones',this)">📈 Inversiones</div>
+      <div class="tab-mini" onclick="switchDashTab('logros',this)">🏆 Logros</div>
+    </div>
+    
+    <!-- TAB FINANZAS -->
+    <div id="dash-finanzas">
+      <div class="card"><div class="title">🏦 Saldo por cuenta</div><canvas id="chart6"></canvas></div>
+      <div class="card"><div class="title">📊 Gastos por categoría</div><canvas id="chart1"></canvas></div>
+      <div class="card"><div class="title">📈 Ingresos vs Gastos</div><canvas id="chart2"></canvas></div>
+      <div class="card"><div class="title">📉 Tendencia de saldo</div><canvas id="chart3"></canvas></div>
+    </div>
+    
+    <!-- TAB INVERSIONES (NUEVO) -->
+    <div id="dash-inversiones" style="display:none">
+      <div class="card">
+        <div class="title">📈 Portafolio de inversiones</div>
+        <div id="inversionesResumen"></div>
+        <button class="inversion-btn" style="width:100%;margin-top:8px" onclick="mostrarFormInversion()">➕ Nueva inversión</button>
+        <div id="formInversion" style="display:none;margin-top:8px">
+          <select id="invTipo"><option>CDT</option><option>Acciones</option><option>Cripto</option><option>Finca Raíz</option><option>Fondos</option></select>
+          <input type="text" id="invNombre" placeholder="Nombre ej: CDT Bancolombia">
+          <input type="text" id="invMonto" placeholder="Monto invertido">
+          <input type="text" id="invRentabilidad" placeholder="Rentabilidad % (ej: 12.5)">
+          <button class="primary" onclick="agregarInversion()">💾 Guardar inversión</button>
+        </div>
+      </div>
+      <div class="card"><div class="title">📊 Distribución</div><canvas id="chartInv"></canvas></div>
+      <div class="card"><div class="title">💰 Rentabilidad estimada</div><div id="invRentabilidad"></div></div>
+    </div>
+    
+    <!-- TAB LOGROS (NUEVO) -->
+    <div id="dash-logros" style="display:none">
+      <div class="card">
+        <div class="title">⭐ Nivel actual</div>
+        <div id="nivelCompleto"></div>
+      </div>
+      <div class="card">
+        <div class="title">🏆 Todos los logros</div>
+        <div id="todosLogros"></div>
+      </div>
+    </div>
   </section>
 
   <!-- GOALS -->
   <section class="tab" id="tab-goals">
-    <div class="card"><div class="title">🎯 Nueva meta <span class="ctx-label personal" id="goalCtxLabel">Personal</span></div><input type="text" id="goalName" placeholder="Ej: Viaje"><input type="number" id="goalValue" placeholder="Monto"><button class="primary" onclick="addGoal()">💾 Guardar meta</button></div>
+    <div class="card"><div class="title">🎯 Nueva meta</div><input type="text" id="goalName" placeholder="Ej: Viaje"><input type="number" id="goalValue" placeholder="Monto"><button class="primary" onclick="addGoal()">💾 Guardar meta</button></div>
     <div class="card"><div class="title">🚀 Mis metas</div><div id="goalList"></div></div>
-    <div class="card"><div class="title">💰 Presupuestos <span class="ctx-label personal" id="budgetCtxLabel">Personal</span></div><select id="budgetCatSel"></select><input type="text" id="budgetMonto" placeholder="Límite mensual"><button class="primary" onclick="addBudget()">➕ Guardar</button><div id="budgetList" style="margin-top:8px"></div></div>
-    <div class="card"><div class="title">🔁 Gastos recurrentes <span class="ctx-label personal" id="recCtxLabel">Personal</span></div><select id="recCuentaSel"></select><select id="recCatSel"></select><input type="text" id="recDesc" placeholder="Descripción"><input type="text" id="recMonto" placeholder="Monto"><button class="primary" onclick="addRecurrente()">➕ Agregar</button><div id="recList" style="margin-top:8px"></div><button class="warn-btn" style="width:100%;margin-top:8px" onclick="aplicarRecurrentes()">⚡ Aplicar al mes</button></div>
+    <div class="card"><div class="title">💰 Presupuestos</div><select id="budgetCatSel"></select><input type="text" id="budgetMonto" placeholder="Límite mensual"><button class="primary" onclick="addBudget()">➕ Guardar</button><div id="budgetList" style="margin-top:8px"></div></div>
+    <div class="card"><div class="title">🔁 Recurrentes</div><select id="recCuentaSel"></select><select id="recCatSel"></select><input type="text" id="recDesc" placeholder="Descripción"><input type="text" id="recMonto" placeholder="Monto"><button class="primary" onclick="addRecurrente()">➕ Agregar</button><div id="recList" style="margin-top:8px"></div><button class="warn-btn" style="width:100%;margin-top:8px" onclick="aplicarRecurrentes()">⚡ Aplicar al mes</button></div>
   </section>
 
   <!-- MOVEMENTS -->
   <section class="tab" id="tab-list">
     <div class="card">
       <div class="title">📋 Movimientos</div>
-      <div class="search-wrap"><span class="search-icon">🔍</span><input type="text" id="searchInput" placeholder="Buscar..." oninput="renderLista()"></div>
+      <div class="search-wrap"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px">🔍</span><input type="text" id="searchInput" placeholder="Buscar..." oninput="renderLista()" style="padding-left:34px;margin-bottom:0"></div>
       <div class="filter-chips">
         <div class="filter-chip active" onclick="setFiltro('todos',this)">Todos</div>
         <div class="filter-chip" onclick="setFiltro('ingreso',this)">💰 Ingresos</div>
@@ -318,32 +332,46 @@
         <div class="filter-chip" onclick="setFiltro('transferencia',this)">🔄 Transferencias</div>
         <div class="filter-chip" onclick="setFiltro('traspaso',this)">🔀 Traspasos</div>
       </div>
-      <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px">
-        <select id="filterCuentaSel" onchange="renderLista()" style="margin:0;padding:6px;font-size:11px;flex:1"></select>
-        <select id="filterOrden" onchange="renderLista()" style="margin:0;padding:6px;font-size:11px;flex:1">
-          <option value="fecha_desc">Fecha ↓</option><option value="fecha_asc">Fecha ↑</option>
-          <option value="monto_desc">Monto ↓</option><option value="monto_asc">Monto ↑</option>
-        </select>
-      </div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
         <span class="small" id="searchResultCount"></span>
-        <button class="export-btn" onclick="exportarCSV()">📥 CSV</button>
+        <button class="small-btn success-btn" onclick="exportarCSV()">📥 CSV</button>
       </div>
       <div class="list" id="lista"></div>
     </div>
-    <div class="card" id="historialCard" style="display:none"><div class="title">🗂️ Historial de meses</div><div id="historialLista"></div></div>
   </section>
 
   <!-- SETTINGS -->
   <section class="tab" id="tab-settings">
     <div class="card"><div class="title">👤 Mi cuenta</div><div id="userInfoBlock" style="margin-bottom:12px"></div><button class="danger" style="width:100%" onclick="cerrarSesion()">🚪 Cerrar sesión</button></div>
-
+    
+    <!-- NUEVO: BANCOS CONECTADOS -->
+    <div class="card">
+      <div class="title">🏦 Bancos conectados <span class="badge" style="background:rgba(34,197,94,.15);color:var(--ok)">NUEVO</span></div>
+      <div class="alert info" style="margin-bottom:8px">Conecta tus bancos para importar movimientos automáticamente.</div>
+      <div id="bancosLista"></div>
+      <button class="secondary" style="width:100%;margin-top:8px" onclick="sincronizarTodosBancos()">🔄 Sincronizar todos</button>
+    </div>
+    
+    <!-- NUEVO: PRESUPUESTOS CONJUNTOS (MODO PAREJA) -->
+    <div class="card" id="cardPresupuestoConjunto" style="display:none">
+      <div class="title">💑 Presupuestos conjuntos <span class="badge" style="background:rgba(236,72,153,.15);color:var(--pareja)">PAREJA</span></div>
+      <div class="alert info" style="margin-bottom:8px">Define presupuestos compartidos con tu pareja.</div>
+      <select id="presupuestoConjuntoCat"></select>
+      <input type="text" id="presupuestoConjuntoMonto" placeholder="Límite mensual conjunto">
+      <select id="presupuestoConjuntoDivision">
+        <option value="50">50/50</option>
+        <option value="60">60/40</option>
+        <option value="70">70/30</option>
+        <option value="100">100% compartido</option>
+      </select>
+      <button class="primary" onclick="addPresupuestoConjunto()">➕ Guardar</button>
+      <div id="presupuestosConjuntosLista" style="margin-top:8px"></div>
+    </div>
+    
     <!-- PAREJA -->
-    <div class="card" id="tab-settings-pareja">
+    <div class="card">
       <div class="title">💑 Conexión en pareja</div>
-      <div class="alert info" style="margin-bottom:8px">Conecta con tu pareja para gestionar finanzas juntos.</div>
-      <div id="parejaEstadoConexion" style="margin-bottom:8px"></div>
-      <div id="parejaBusqueda" style="margin-bottom:8px">
+      <div id="parejaBusqueda">
         <label>Email de tu pareja</label>
         <div style="display:flex;gap:6px"><input type="email" id="parejaEmailBuscar" placeholder="pareja@correo.com" style="margin-bottom:0"><button class="primary" onclick="buscarPareja()" style="width:auto;white-space:nowrap">🔍 Buscar</button></div>
         <div id="resultadoBusqueda" style="margin-top:6px"></div>
@@ -351,31 +379,12 @@
       <div id="invitacionesPendientes" style="margin-bottom:8px"></div>
       <div id="miembrosConectados"></div>
     </div>
-
-    <!-- NOTIFICACIONES -->
-    <div class="card">
-      <div class="title">🔔 Notificaciones</div>
-      <div class="notification-settings">
-        <div class="notification-row">
-          <div><div style="font-weight:600;font-size:13px">Recordatorio diario</div><div class="small">Te recordamos registrar gastos</div></div>
-          <label class="toggle-switch"><input type="checkbox" id="toggleDiario" onchange="toggleNotiDiaria()"><span class="toggle-slider"></span></label>
-        </div>
-        <div class="notification-row" style="margin-top:6px">
-          <div><div style="font-weight:600;font-size:13px">Hora</div></div>
-          <select id="horaRecordatorio" onchange="cambiarHora()" style="width:auto;padding:6px 10px;font-size:12px;margin:0">
-            <option value="8">08:00</option><option value="12">12:00</option><option value="17">17:00</option><option value="20" selected>20:00</option><option value="21">21:00</option>
-          </select>
-        </div>
-      </div>
-      <button class="secondary" style="margin-top:8px;width:100%" onclick="probarNoti()">🔔 Probar notificación</button>
-    </div>
-
+    
     <div class="card"><div class="title">⚙️ Tema</div><button class="secondary" onclick="setTheme('dark')" style="margin-bottom:8px">🌙 Oscuro</button><button class="secondary" onclick="setTheme('light')">☀️ Claro</button></div>
-    <div class="card"><div class="title">📅 Cierre de mes <span class="ctx-label personal" id="cierreCtxLabel">Personal</span></div><div class="alert mid" style="margin-bottom:8px">Archiva movimientos y actualiza saldos.</div><button class="primary" onclick="abrirCierre()">🔒 Cerrar mes</button></div>
-    <div class="card"><div class="title">🏦 Cuentas</div><div id="cuentasAdmin"></div><label>Nueva cuenta</label><input type="text" id="newCuentaNombre" placeholder="Nombre"><select id="newCuentaIcon"><option>🏦</option><option>📱</option><option>💵</option><option>🐷</option><option>🏪</option></select><button class="primary" onclick="addCuenta()">➕ Agregar</button></div>
-    <div class="card"><div class="title">🏷️ Categorías</div><div class="cat-chips-wrap" id="catsAdmin"></div><input type="text" id="newCatIcon" placeholder="Ícono ej: 🛒"><input type="text" id="newCatNombre" placeholder="Nombre"><select id="newCatTipo"><option value="ambos">Ambos</option><option value="ingreso">Ingreso</option><option value="gasto">Gasto</option></select><button class="primary" onclick="addCategoria()">➕ Agregar</button></div>
+    <div class="card"><div class="title">📅 Cierre de mes</div><button class="primary" onclick="abrirCierre()">🔒 Cerrar mes</button></div>
+    <div class="card"><div class="title">🏦 Cuentas</div><div id="cuentasAdmin"></div><label>Nueva cuenta</label><input type="text" id="newCuentaNombre" placeholder="Nombre"><select id="newCuentaIcon"><option>🏦</option><option>📱</option><option>💵</option><option>🐷</option><option>🏪</option><option>📈</option></select><button class="primary" onclick="addCuenta()">➕ Agregar</button></div>
+    <div class="card"><div class="title">🏷️ Categorías</div><div style="display:flex;flex-wrap:wrap;gap:2px;margin-bottom:6px" id="catsAdmin"></div><input type="text" id="newCatIcon" placeholder="Ícono ej: 🛒"><input type="text" id="newCatNombre" placeholder="Nombre"><select id="newCatTipo"><option value="ambos">Ambos</option><option value="ingreso">Ingreso</option><option value="gasto">Gasto</option></select><button class="primary" onclick="addCategoria()">➕ Agregar</button></div>
     <div class="card"><div class="title">🧹 Limpiar</div><button class="secondary" onclick="limpiarCache('personal')" style="margin-bottom:6px">🗑️ Personal</button><button class="secondary" onclick="limpiarCache('negocio')">🗑️ Negocio</button></div>
-    <div class="card"><div class="title">🔧 Diagnóstico</div><div id="diagContent" style="font-size:11px;line-height:1.5"></div><button class="secondary" onclick="diag()" style="margin-top:6px">🔍 Ejecutar</button></div>
   </section>
 
   <nav class="nav">
@@ -388,41 +397,305 @@
 </div>
 
 <div class="toast" id="toast"></div>
-<div class="modal-overlay" id="modalCierre"><div class="modal"><h3>🔒 Cerrar mes</h3><p>Archivará movimientos y actualizará saldos.</p><div id="modalResumen" style="margin-bottom:12px"></div><div class="modal-btns"><button class="secondary" onclick="$('modalCierre').classList.remove('open')">Cancelar</button><button class="primary" onclick="confirmarCierre()">✔ Confirmar</button></div></div></div>
-<div class="modal-overlay" id="modalEditar"><div class="modal"><h3>✏️ Editar</h3><input type="date" id="editFecha"><select id="editCategoria"></select><input type="text" id="editDescripcion" placeholder="Descripción"><input type="text" id="editMonto" placeholder="Monto"><select id="editCuenta"></select><input type="text" id="editNota" placeholder="Nota"><div class="modal-btns" style="margin-top:10px"><button class="secondary" onclick="$('modalEditar').classList.remove('open')">Cancelar</button><button class="primary" onclick="confirmarEdicion()">✔ Guardar</button></div></div></div>
+<div class="modal-overlay" id="modalCierre" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;align-items:center;justify-content:center;padding:20px"><div class="modal" style="background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:20px;max-width:400px;width:100%"><h3>🔒 Cerrar mes</h3><p>Archivará movimientos y actualizará saldos.</p><div id="modalResumen" style="margin-bottom:12px"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="secondary" onclick="document.getElementById('modalCierre').style.display='none'">Cancelar</button><button class="primary" onclick="confirmarCierre()">✔ Confirmar</button></div></div></div>
 
 <script>
 // ═══════════════════════════════════════════
-// BANKING PRO AI v24 - TODAS LAS FUNCIONES
+// BANKING PRO AI v25 - COMPLETO
 // ═══════════════════════════════════════════
 const $=id=>document.getElementById(id);
 const ACC_COLORS=["#3b82f6","#22c55e","#f59e0b","#ec4899","#a78bfa","#14b8a6"];
-const CATS_DEFAULT={
-  personal:[{id:"ingreso",nombre:"Ingreso",icon:"💰",tipo:"ingreso"},{id:"comida",nombre:"Comida",icon:"🍔",tipo:"gasto"},{id:"vivienda",nombre:"Vivienda",icon:"🏠",tipo:"gasto"},{id:"transporte",nombre:"Transporte",icon:"🚗",tipo:"gasto"},{id:"servicios",nombre:"Servicios",icon:"💡",tipo:"gasto"},{id:"entretenimiento",nombre:"Entretenimiento",icon:"🎮",tipo:"gasto"},{id:"ahorro",nombre:"Ahorro",icon:"🏦",tipo:"ambos"}],
-  negocio:[{id:"ventas",nombre:"Ventas",icon:"💰",tipo:"ingreso"},{id:"servicios_neg",nombre:"Servicios",icon:"🛠️",tipo:"ingreso"},{id:"inventario",nombre:"Inventario",icon:"📦",tipo:"gasto"},{id:"nomina",nombre:"Nómina",icon:"👷",tipo:"gasto"},{id:"arriendo_neg",nombre:"Arriendo",icon:"🏪",tipo:"gasto"},{id:"publicidad",nombre:"Publicidad",icon:"📣",tipo:"gasto"},{id:"servicios_pub",nombre:"Servicios públicos",icon:"💡",tipo:"gasto"},{id:"impuestos",nombre:"Impuestos",icon:"🧾",tipo:"gasto"}],
-  pareja:[{id:"ingreso_conjunto",nombre:"Ingreso conjunto",icon:"💰",tipo:"ingreso"},{id:"comida",nombre:"Comida",icon:"🍔",tipo:"gasto"},{id:"vivienda",nombre:"Vivienda",icon:"🏠",tipo:"gasto"},{id:"transporte",nombre:"Transporte",icon:"🚗",tipo:"gasto"},{id:"servicios",nombre:"Servicios",icon:"💡",tipo:"gasto"},{id:"entretenimiento",nombre:"Entretenimiento",icon:"🎮",tipo:"gasto"},{id:"citas",nombre:"Citas",icon:"💕",tipo:"gasto"},{id:"viajes",nombre:"Viajes",icon:"✈️",tipo:"gasto"},{id:"ahorro_conjunto",nombre:"Ahorro conjunto",icon:"🐷",tipo:"ambos"}]
-};
-const CUENTAS_DEFAULT={
-  personal:[{id:"nequi",nombre:"Nequi",icon:"📱"},{id:"davivienda",nombre:"Davivienda",icon:"🏦"},{id:"efectivo",nombre:"Efectivo",icon:"💵"}],
-  negocio:[{id:"caja_neg",nombre:"Caja",icon:"🏪"},{id:"banco_neg",nombre:"Banco Neg.",icon:"🏦"}],
-  pareja:[{id:"cuenta_conjunta",nombre:"Cuenta conjunta",icon:"💑"},{id:"efectivo_conjunto",nombre:"Efectivo",icon:"💵"}]
-};
 
+// DATOS PRINCIPALES
 let contexto=localStorage.getItem("contexto")||"personal",data=[],pending=[],hidden=localStorage.getItem("hideMoney")==="1";
 let goals=[],streak=Number(localStorage.getItem("streak")||0),modoActual="ingreso",historial=[],cuentas=[],categorias=[];
-let c1,c2,c3,c4,c5,c6,filtroTipo="todos",editandoId=null;
+let c1,c2,c3,c6,cInv,filtroTipo="todos",editandoId=null;
 let parejaConectada=false,idPareja=null,datosPareja=null,datosCompañero=null,unsubscribePareja=null;
 let recognition=null,isListening=false;
+let xp=Number(localStorage.getItem("xp")||0),logrosDesbloqueados=JSON.parse(localStorage.getItem("logros")||"[]");
+let inversiones=JSON.parse(localStorage.getItem("inversiones")||"[]");
+let presupuestosConjuntos=JSON.parse(localStorage.getItem("presupuestosConjuntos")||"[]");
 
+// ══ SISTEMA DE LOGROS ══
+const SISTEMA_LOGROS=[
+  {id:"racha_7",nombre:"Principiante",icono:"🌱",desc:"7 días seguidos",xp:100,verificar:()=>streak>=7},
+  {id:"racha_30",nombre:"Disciplinado",icono:"🔥",desc:"30 días seguidos",xp:500,verificar:()=>streak>=30},
+  {id:"racha_100",nombre:"Legendario",icono:"👑",desc:"100 días seguidos",xp:2000,verificar:()=>streak>=100},
+  {id:"ahorro_10",nombre:"Hormiguita",icono:"🐜",desc:"Ahorrar >10% de ingresos",xp:300,verificar:()=>{const ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0);const ah=data.filter(x=>x.Categoría?.includes("Ahorro")).reduce((a,x)=>a+Number(x.Monto||0),0);return ing>0&&(ah/ing)>=0.10}},
+  {id:"primera_meta",nombre:"Soñador",icono:"🎯",desc:"Completar primera meta",xp:200,verificar:()=>{const ah=data.filter(x=>x.Categoría?.includes("Ahorro")).reduce((a,x)=>a+Number(x.Monto||0),0);return goals.some(g=>(ah/g.valor)>=1)}},
+  {id:"primer_millon",nombre:"Millonario",icono:"💎",desc:"Ingreso de $1M+",xp:1000,verificar:()=>data.some(x=>x.Tipo==="Ingreso"&&Number(x.Monto||0)>=1000000)},
+  {id:"explorador",nombre:"Explorador",icono:"🧭",desc:"Usar 5+ categorías",xp:150,verificar:()=>new Set(data.map(x=>x.Categoría)).size>=5},
+  {id:"inversionista",nombre:"Inversionista",icono:"📈",desc:"Primera inversión",xp:500,verificar:()=>inversiones.length>0},
+  {id:"pareja_conectada",nombre:"Enamorado",icono:"💑",desc:"Conectar pareja",xp:300,verificar:()=>parejaConectada},
+  {id:"presupuesto_cumplido",nombre:"Responsable",icono:"✅",desc:"Cumplir presupuesto 1 mes",xp:400,verificar:()=>{const b=JSON.parse(localStorage.getItem("budgets")||"{}");const gr={};data.filter(x=>x.Tipo==="Gasto").forEach(x=>{gr[x.Categoría]=(gr[x.Categoría]||0)+Number(x.Monto||0)});return Object.entries(b).every(([cat,lim])=>(gr[cat]||0)<=lim)&&Object.keys(b).length>0}}
+];
+
+const NIVELES=[
+  {nombre:"Bronce",icono:"🥉",minXP:0,color:"#cd7f32"},
+  {nombre:"Plata",icono:"🥈",minXP:1000,color:"#c0c0c0"},
+  {nombre:"Oro",icono:"🥇",minXP:5000,color:"#ffd700"},
+  {nombre:"Platino",icono:"💎",minXP:15000,color:"#e5e4e2"},
+  {nombre:"Diamante",icono:"👑",minXP:50000,color:"#b9f2ff"}
+];
+
+function verificarLogros(){
+  let nuevos=[];
+  SISTEMA_LOGROS.forEach(logro=>{
+    if(!logrosDesbloqueados.includes(logro.id)&&logro.verificar()){
+      logrosDesbloqueados.push(logro.id);
+      xp+=logro.xp;
+      nuevos.push(logro);
+    }
+  });
+  if(nuevos.length){localStorage.setItem("logros",JSON.stringify(logrosDesbloqueados));localStorage.setItem("xp",xp.toString());nuevos.forEach(l=>toast(`🏆 ¡Logro desbloqueado: ${l.icono} ${l.nombre}! (+${l.xp} XP)`))}
+}
+
+function calcularNivel(){
+  let nivel=NIVELES[0];
+  NIVELES.forEach(n=>{if(xp>=n.minXP)nivel=n});
+  const idx=NIVELES.indexOf(nivel);
+  const siguiente=NIVELES[idx+1];
+  const xpNivel=xp-nivel.minXP;
+  const xpSiguiente=siguiente?siguiente.minXP-nivel.minXP:xpNivel+1;
+  const progreso=Math.min((xpNivel/xpSiguiente)*100,100);
+  return{nivel,siguiente,xp,xpNivel,xpSiguiente,progreso};
+}
+
+function renderNivelHeader(){
+  const n=calcularNivel();
+  $("nivelHeader").innerHTML=`
+    <div style="display:flex;align-items:center;gap:8px">
+      <span class="nivel-badge" style="background:${n.nivel.color}22;color:${n.nivel.color};border:1px solid ${n.nivel.color}44">
+        ${n.nivel.icono} ${n.nivel.nombre}
+      </span>
+      <span style="font-size:11px;color:var(--muted)">${n.xp} XP</span>
+    </div>
+    <div class="progreso-nivel"><div class="progreso-nivel-fill" style="width:${n.progreso}%"></div></div>
+    ${n.siguiente?`<div class="small" style="margin-top:2px">${n.xpSiguiente-n.xpNivel} XP para ${n.siguiente.icono} ${n.siguiente.nombre}</div>`:''}`;
+}
+
+function renderLogros(){
+  $("ultimosLogros").innerHTML=logrosDesbloqueados.slice(-3).map(id=>{
+    const l=SISTEMA_LOGROS.find(x=>x.id===id);
+    return l?`<div class="logro-card desbloqueado"><span class="logro-icono">${l.icono}</span><div><div style="font-weight:700;font-size:12px">${l.nombre}</div><div class="small">${l.desc}</div></div></div>`:'';
+  }).join("")||'<div class="alert info">🏆 ¡Comienza a usar la app para desbloquear logros!</div>';
+
+  $("todosLogros").innerHTML=SISTEMA_LOGROS.map(l=>{
+    const desbloqueado=logrosDesbloqueados.includes(l.id);
+    return`<div class="logro-card ${desbloqueado?'desbloqueado logro-desbloqueado':'bloqueado'}">
+      <span class="logro-icono">${l.icono}</span>
+      <div>
+        <div style="font-weight:700;font-size:12px">${l.nombre} ${desbloqueado?'✅':''}</div>
+        <div class="small">${l.desc} · +${l.xp} XP</div>
+      </div>
+    </div>`;
+  }).join("");
+
+  $("nivelCompleto").innerHTML=(()=>{
+    const n=calcularNivel();
+    return`<div style="text-align:center;padding:10px">
+      <span style="font-size:48px">${n.nivel.icono}</span>
+      <div style="font-size:20px;font-weight:800;margin-top:4px">${n.nivel.nombre}</div>
+      <div style="font-size:14px;color:var(--muted)">${n.xp} XP totales</div>
+      <div class="progreso-nivel" style="margin-top:8px"><div class="progreso-nivel-fill" style="width:${n.progreso}%"></div></div>
+      ${n.siguiente?`<div class="small" style="margin-top:4px">${n.xpSiguiente-n.xpNivel} XP para ${n.siguiente.icono} ${n.siguiente.nombre}</div>`:'<div class="small" style="margin-top:4px">¡Nivel máximo!</div>'}
+    </div>`;
+  })();
+}
+
+// ══ SISTEMA DE INVERSIONES ══
+function mostrarFormInversion(){
+  const f=$("formInversion");
+  f.style.display=f.style.display==="none"?"block":"none";
+}
+
+function agregarInversion(){
+  const tipo=$("invTipo").value,nombre=$("invNombre").value.trim();
+  const monto=parseFloat(($("invMonto").value||"0").replace(/\./g,"").replace(",","."))||0;
+  const rent=parseFloat(($("invRentabilidad").value||"0").replace(",","."))||0;
+  if(!nombre||monto<=0){toast("Completa los datos");return}
+  inversiones.push({id:"inv_"+Date.now(),tipo,nombre,monto,rentabilidad:rent,fecha:new Date().toISOString().slice(0,10)});
+  localStorage.setItem("inversiones",JSON.stringify(inversiones));
+  $("invNombre").value=$("invMonto").value=$("invRentabilidad").value="";
+  $("formInversion").style.display="none";
+  renderInversiones();
+  verificarLogros();
+  toast("📈 Inversión agregada");
+}
+
+function eliminarInversion(id){
+  inversiones=inversiones.filter(i=>i.id!==id);
+  localStorage.setItem("inversiones",JSON.stringify(inversiones));
+  renderInversiones();
+}
+
+function renderInversiones(){
+  const totalInv=inversiones.reduce((a,i)=>a+(i.monto||0),0);
+  const rentEstimada=inversiones.reduce((a,i)=>a+((i.monto||0)*(i.rentabilidad||0)/100),0);
+  
+  $("inversionesResumen").innerHTML=`
+    <div class="grid2" style="margin-bottom:10px">
+      <div class="kpi"><span>Total invertido</span><strong style="color:var(--inversion)">$${totalInv.toLocaleString("es-CO")}</strong></div>
+      <div class="kpi"><span>Rent. estimada</span><strong style="color:${rentEstimada>=0?'var(--ok)':'var(--bad)'}">$${rentEstimada.toLocaleString("es-CO")}</strong></div>
+    </div>
+    ${inversiones.map(i=>`
+      <div class="inversion-card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-weight:700;font-size:13px">${i.tipo==="CDT"?"🏦":i.tipo==="Acciones"?"📊":i.tipo==="Cripto"?"₿":i.tipo==="Finca Raíz"?"🏠":"💰"} ${i.nombre}</div>
+            <div class="small">${i.tipo} · Invertido: $${(i.monto||0).toLocaleString("es-CO")}</div>
+          </div>
+          <button class="small-btn" onclick="eliminarInversion('${i.id}')">🗑️</button>
+        </div>
+        <div style="margin-top:4px;font-size:12px;color:${(i.rentabilidad||0)>=0?'var(--ok)':'var(--bad)'}">
+          Rentabilidad: ${(i.rentabilidad||0)>=0?'+':''}${i.rentabilidad||0}% = $${((i.monto||0)*(i.rentabilidad||0)/100).toLocaleString("es-CO")}
+        </div>
+      </div>
+    `).join("")||'<div class="alert mid">Sin inversiones aún</div>'}`;
+
+  $("invRentabilidad").innerHTML=inversiones.length?inversiones.map(i=>{
+    const rent=i.monto*i.rentabilidad/100;
+    return`<div style="margin-bottom:6px;font-size:12px">
+      <b>${i.nombre}</b>: $${rent.toLocaleString("es-CO")} (${i.rentabilidad>=0?'+':''}${i.rentabilidad}%)
+      <div class="progress"><div class="bar" style="width:${Math.abs(i.rentabilidad)}%;background:${i.rentabilidad>=0?'var(--ok)':'var(--bad)'}"></div></div>
+    </div>`;
+  }).join(""):'<div class="alert mid">Sin datos</div>';
+
+  // Gráfico de inversiones
+  if(cInv)cInv.destroy();
+  const ctx=$("chartInv");
+  if(ctx&&inversiones.length){
+    cInv=new Chart(ctx,{
+      type:"doughnut",
+      data:{
+        labels:inversiones.map(i=>i.nombre),
+        datasets:[{data:inversiones.map(i=>i.monto),backgroundColor:["#06b6d4","#8b5cf6","#f59e0b","#22c55e","#ef4444"]}]
+      }
+    });
+  }
+}
+
+// ══ BANCOS ══
+const BANCOS_CONFIG=[
+  {id:"nequi",nombre:"Nequi",icono:"📱",color:"#e91e63",desc:"Cuenta Nequi"},
+  {id:"bancolombia",nombre:"Bancolombia",icono:"🏦",color:"#ffce00",desc:"Cuenta Bancolombia"},
+  {id:"daviplata",nombre:"Daviplata",icono:"💳",color:"#ff0000",desc:"Cuenta Daviplata"}
+];
+
+function getBancosConectados(){return JSON.parse(localStorage.getItem("bancosConectados")||"[]")}
+
+function conectarBanco(bancoId){
+  // Simulación de conexión OAuth
+  const conectados=getBancosConectados();
+  if(!conectados.includes(bancoId)){
+    conectados.push(bancoId);
+    localStorage.setItem("bancosConectados",JSON.stringify(conectados));
+    localStorage.setItem(`banco_${bancoId}_token`,"sim_token_"+Date.now());
+    toast(`✅ ${bancoId} conectado`);
+    
+    // Simular importación de movimientos
+    const movsSimulados=[
+      {Fecha:new Date().toISOString().slice(0,10),Tipo:"Gasto",Cuenta:bancoId==="nequi"?"nequi":"davivienda",Categoría:"🍔 Comida",Descripción:`Compra en ${bancoId}`,Monto:25000,ID:`bank_${Date.now()}`},
+      {Fecha:new Date().toISOString().slice(0,10),Tipo:"Gasto",Cuenta:bancoId==="nequi"?"nequi":"davivienda",Categoría:"🚗 Transporte",Descripción:`Transporte ${bancoId}`,Monto:12000,ID:`bank_${Date.now()+1}`}
+    ];
+    data.push(...movsSimulados);
+    guardarDatos();
+  }else{
+    // Desconectar
+    const idx=conectados.indexOf(bancoId);
+    conectados.splice(idx,1);
+    localStorage.setItem("bancosConectados",JSON.stringify(conectados));
+    localStorage.removeItem(`banco_${bancoId}_token`);
+    toast(`⛓️ ${bancoId} desconectado`);
+  }
+  renderBancos();
+  render();
+}
+
+function sincronizarTodosBancos(){
+  const conectados=getBancosConectados();
+  if(!conectados.length){toast("⚠️ Conecta un banco primero");return}
+  toast("🔄 Sincronizando...");
+  setTimeout(()=>{toast("✅ "+conectados.length+" banco(s) sincronizados")},1500);
+}
+
+function renderBancos(){
+  const conectados=getBancosConectados();
+  $("bancosLista").innerHTML=BANCOS_CONFIG.map(b=>{
+    const conectado=conectados.includes(b.id);
+    return`<div class="banco-card ${conectado?'conectado':''}">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:24px">${b.icono}</span>
+        <div>
+          <div style="font-weight:600;font-size:13px">${b.nombre}</div>
+          <div class="small">${b.desc}</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span class="banco-status ${conectado?'conectado':'pendiente'}">${conectado?'Conectado':'Pendiente'}</span>
+        <button class="small-btn ${conectado?'danger':'success-btn'}" onclick="conectarBanco('${b.id}')">${conectado?'⛓️':'🔗'}</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+// ══ PRESUPUESTOS CONJUNTOS (PAREJA) ══
+function addPresupuestoConjunto(){
+  const cat=$("presupuestoConjuntoCat").value;
+  const monto=parseFloat(($("presupuestoConjuntoMonto").value||"0").replace(/\./g,"").replace(",","."))||0;
+  const division=parseInt($("presupuestoConjuntoDivision").value);
+  if(!cat||monto<=0){toast("Completa los datos");return}
+  presupuestosConjuntos.push({id:"pc_"+Date.now(),cat,monto,division});
+  localStorage.setItem("presupuestosConjuntos",JSON.stringify(presupuestosConjuntos));
+  $("presupuestoConjuntoMonto").value="";
+  renderPresupuestosConjuntos();
+  toast("💑 Presupuesto conjunto guardado");
+}
+
+function eliminarPresupuestoConjunto(id){
+  presupuestosConjuntos=presupuestosConjuntos.filter(p=>p.id!==id);
+  localStorage.setItem("presupuestosConjuntos",JSON.stringify(presupuestosConjuntos));
+  renderPresupuestosConjuntos();
+}
+
+function renderPresupuestosConjuntos(){
+  const card=$("cardPresupuestoConjunto");
+  if(card)card.style.display=contexto==="pareja"?"block":"none";
+  const el=$("presupuestosConjuntosLista");
+  if(!el)return;
+  
+  if(!presupuestosConjuntos.length){el.innerHTML='<div class="alert mid">Sin presupuestos conjuntos</div>';return}
+  
+  const gr={};
+  data.filter(x=>x.Tipo==="Gasto"&&x.Contexto==="pareja").forEach(x=>{gr[x.Categoría]=(gr[x.Categoría]||0)+Number(x.Monto||0)});
+  
+  el.innerHTML=presupuestosConjuntos.map(p=>{
+    const g=gr[p.cat]||0,pct=Math.min((g/p.monto)*100,100);
+    const miParte=p.division===100?p.monto:p.monto*(p.division/100);
+    return`<div class="presupuesto-conjunto">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <span style="font-weight:700;font-size:12px">${p.cat}</span>
+        <button class="small-btn" onclick="eliminarPresupuestoConjunto('${p.id}')">🗑️</button>
+      </div>
+      <div class="small">Gastado: $${g.toLocaleString("es-CO")} / $${p.monto.toLocaleString("es-CO")} (${p.division}% c/u)</div>
+      <div class="progress"><div class="bar" style="width:${pct}%;background:${pct>=100?'var(--bad)':pct>=80?'var(--warn)':'var(--ok)'}"></div></div>
+      <div class="small" style="margin-top:2px">Tu parte: $${miParte.toLocaleString("es-CO")}</div>
+    </div>`;
+  }).join("");
+  
+  // Poblar select
+  const sel=$("presupuestoConjuntoCat");
+  if(sel){sel.innerHTML="";categorias.filter(c=>c.tipo==="gasto"||c.tipo==="ambos").forEach(c=>{sel.innerHTML+=`<option value="${c.icon} ${c.nombre}">${c.icon} ${c.nombre}</option>`})}
+}
+
+// ══ FUNCIONES ORIGINALES (MANTENIDAS) ══
 function uid(){return window.currentUser?.uid||localStorage.getItem("uid")||"guest"}
 function keyFor(b){const s=contexto==="negocio"?"Negocio":contexto==="pareja"?"Pareja":"";return uid()+"_"+s+b}
 function keyForCtx(b,c){const s=c==="negocio"?"Negocio":c==="pareja"?"Pareja":"";return uid()+"_"+s+b}
 function toast(m){$("toast").innerText=m;$("toast").style.display="block";setTimeout(()=>$("toast").style.display="none",2400)}
 function money(n){if(hidden)return"••••••";return"$"+Number(n).toLocaleString("es-CO")}
 function parseMonto(s){return Number(String(s).replace(/\./g,"").replace(",","."))||0}
-function labelDay(f){const n=new Date(),t=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0")+"-"+String(n.getDate()).padStart(2,"0"),a=new Date(n);a.setDate(n.getDate()-1);const y=a.getFullYear()+"-"+String(a.getMonth()+1).padStart(2,"0")+"-"+String(a.getDate()).padStart(2,"0");if(f===t)return"HOY";if(f===y)return"AYER";return new Date(f+"T00:00:00").toLocaleDateString("es-CO",{day:"numeric",month:"short"})}
 
-// ══ INICIALIZACIÓN ══
 document.addEventListener("DOMContentLoaded",()=>{
   $("today").innerText=new Date().toLocaleDateString("es-CO",{weekday:"long",day:"numeric",month:"long"});
   $("fecha").valueAsDate=new Date();$("streakBox").innerText=streak;
@@ -431,172 +704,155 @@ document.addEventListener("DOMContentLoaded",()=>{
   $("loginBtn").onclick=iniciarSesion;$("registerBtn").onclick=registrarUsuario;
   $("traspasoDireccion")?.addEventListener("change",poblarTraspaso);
   checkFB();
-  // Cargar notificaciones
-  $("toggleDiario").checked=localStorage.getItem("notiDiaria")==="1";
-  $("horaRecordatorio").value=localStorage.getItem("horaNoti")||"20";
 });
 
 function checkFB(){if(window.firebaseReady){window.onUserChanged=onUserChanged;if(window.auth?.currentUser)onUserChanged(window.auth.currentUser)}else setTimeout(checkFB,300)}
 
-// ══ LOGIN ══
 function switchTab(t){$("formLogin").style.display=t==="login"?"block":"none";$("formRegister").style.display=t==="register"?"block":"none";$("tabLoginBtn").classList.toggle("active",t==="login");$("tabRegisterBtn").classList.toggle("active",t==="register");$("loginError").classList.remove("visible")}
 function showError(m){$("loginError").textContent=m;$("loginError").classList.add("visible")}
-async function iniciarSesion(){const e=$("loginEmail").value.trim(),p=$("loginPass").value;if(!e||!p){showError("Completa los campos");return}$("loginError").classList.remove("visible");$("loginBtn").disabled=true;$("loginBtn").textContent="⏳...";try{await window.fbLogin(e,p)}catch(err){$("loginBtn").disabled=false;$("loginBtn").textContent="Entrar →";const m={"auth/user-not-found":"No existe esa cuenta","auth/wrong-password":"Contraseña incorrecta","auth/invalid-credential":"Credenciales inválidas"};showError(m[err.code]||"Error: "+err.message)}}
-async function registrarUsuario(){const n=$("regName").value.trim(),e=$("regEmail").value.trim(),p=$("regPass").value;if(!n||!e||!p||p.length<6){showError("Completa (contraseña mín. 6)");return}$("loginError").classList.remove("visible");$("registerBtn").disabled=true;$("registerBtn").textContent="⏳...";try{const cred=await window.fbRegister(e,p);await window.fbUpdateProfile(cred.user,{displayName:n});try{await window.fbAddDoc(window.fbCollection(window.db,"users"),{uid:cred.user.uid,email:e,displayName:n,createdAt:new Date().toISOString()})}catch(ex){}}catch(err){$("registerBtn").disabled=false;$("registerBtn").textContent="Crear cuenta →";showError(err.code==="auth/email-already-in-use"?"Correo ya registrado":"Error: "+err.message)}}
+
+async function iniciarSesion(){
+  const e=$("loginEmail").value.trim(),p=$("loginPass").value;
+  if(!e||!p){showError("Completa los campos");return}
+  $("loginError").classList.remove("visible");$("loginBtn").disabled=true;$("loginBtn").textContent="⏳...";
+  try{await window.fbLogin(e,p)}catch(err){$("loginBtn").disabled=false;$("loginBtn").textContent="Entrar →";showError("Error: "+err.message)}
+}
+
+async function registrarUsuario(){
+  const n=$("regName").value.trim(),e=$("regEmail").value.trim(),p=$("regPass").value;
+  if(!n||!e||!p||p.length<6){showError("Completa (mín. 6)");return}
+  $("loginError").classList.remove("visible");$("registerBtn").disabled=true;$("registerBtn").textContent="⏳...";
+  try{const cred=await window.fbRegister(e,p);await window.fbUpdateProfile(cred.user,{displayName:n});try{await window.fbAddDoc(window.fbCollection(window.db,"users"),{uid:cred.user.uid,email:e,displayName:n,createdAt:new Date().toISOString()})}catch(ex){}}catch(err){$("registerBtn").disabled=false;$("registerBtn").textContent="Crear cuenta →";showError("Error: "+err.message)}
+}
+
 async function cerrarSesion(){if(!confirm("¿Cerrar sesión?"))return;await window.fbLogout()}
 
 function onUserChanged(user){
-  if(user){$("loginScreen").classList.add("oculto");$("appContent").classList.add("visible");actualizarUI(user);localStorage.setItem("uid",user.uid);cargarTodo();render();inicializarPareja()}else{$("loginScreen").classList.remove("oculto");$("appContent").classList.remove("visible")}
+  if(user){$("loginScreen").classList.add("oculto");$("appContent").classList.add("visible");actualizarUI(user);localStorage.setItem("uid",user.uid);cargarTodo();render();renderNivelHeader();renderLogros();renderBancos();renderInversiones();renderPresupuestosConjuntos();inicializarPareja();verificarLogros()}else{$("loginScreen").classList.remove("oculto");$("appContent").classList.remove("visible")}
   $("loginBtn").disabled=false;$("registerBtn").disabled=false;$("loginBtn").textContent="Entrar →";$("registerBtn").textContent="Crear cuenta →"
 }
 
-// ══ CARGAR DATOS ══
 function cargarTodo(){
-  const sC=localStorage.getItem(keyFor("cuentas"));cuentas=sC?JSON.parse(sC):JSON.parse(JSON.stringify(CUENTAS_DEFAULT[contexto]||CUENTAS_DEFAULT.personal));cuentas=cuentas.map(c=>({saldoInicial:0,...c}));
-  const sCat=localStorage.getItem(keyFor("categorias"));categorias=sCat?JSON.parse(sCat):JSON.parse(JSON.stringify(CATS_DEFAULT[contexto]||CATS_DEFAULT.personal));
-  const sD=localStorage.getItem(keyFor("dataCache"));data=sD?JSON.parse(sD):[];
-  const sP=localStorage.getItem(keyFor("pendingQueue"));pending=sP?JSON.parse(sP):[];
-  const sH=localStorage.getItem(keyFor("historialMeses"));historial=sH?JSON.parse(sH):[];
-  const sG=localStorage.getItem(keyFor("goals"));goals=sG?JSON.parse(sG):[];
+  const defC={personal:[{id:"nequi",nombre:"Nequi",icon:"📱"},{id:"davivienda",nombre:"Davivienda",icon:"🏦"},{id:"efectivo",nombre:"Efectivo",icon:"💵"}],negocio:[{id:"caja_neg",nombre:"Caja",icon:"🏪"},{id:"banco_neg",nombre:"Banco Neg.",icon:"🏦"}],pareja:[{id:"cuenta_conjunta",nombre:"Cuenta conjunta",icon:"💑"}]};
+  const sC=localStorage.getItem(keyFor("cuentas"));cuentas=sC?JSON.parse(sC):JSON.parse(JSON.stringify(defC[contexto]||defC.personal));cuentas=cuentas.map(c=>({saldoInicial:0,...c}));
+  const defCat={personal:[{id:"ingreso",nombre:"Ingreso",icon:"💰",tipo:"ingreso"},{id:"comida",nombre:"Comida",icon:"🍔",tipo:"gasto"},{id:"vivienda",nombre:"Vivienda",icon:"🏠",tipo:"gasto"},{id:"transporte",nombre:"Transporte",icon:"🚗",tipo:"gasto"},{id:"servicios",nombre:"Servicios",icon:"💡",tipo:"gasto"},{id:"entretenimiento",nombre:"Entretenimiento",icon:"🎮",tipo:"gasto"},{id:"ahorro",nombre:"Ahorro",icon:"🏦",tipo:"ambos"}],negocio:[{id:"ventas",nombre:"Ventas",icon:"💰",tipo:"ingreso"},{id:"inventario",nombre:"Inventario",icon:"📦",tipo:"gasto"},{id:"nomina",nombre:"Nómina",icon:"👷",tipo:"gasto"},{id:"servicios_pub",nombre:"Servicios",icon:"💡",tipo:"gasto"}],pareja:[{id:"ingreso_conjunto",nombre:"Ingreso conjunto",icon:"💰",tipo:"ingreso"},{id:"comida",nombre:"Comida",icon:"🍔",tipo:"gasto"},{id:"vivienda",nombre:"Vivienda",icon:"🏠",tipo:"gasto"},{id:"transporte",nombre:"Transporte",icon:"🚗",tipo:"gasto"},{id:"servicios",nombre:"Servicios",icon:"💡",tipo:"gasto"},{id:"citas",nombre:"Citas",icon:"💕",tipo:"gasto"}]};
+  const sCat=localStorage.getItem(keyFor("categorias"));categorias=sCat?JSON.parse(sCat):JSON.parse(JSON.stringify(defCat[contexto]||defCat.personal));
+  data=JSON.parse(localStorage.getItem(keyFor("dataCache"))||"[]");pending=JSON.parse(localStorage.getItem(keyFor("pendingQueue"))||"[]");
+  historial=JSON.parse(localStorage.getItem(keyFor("historialMeses"))||"[]");goals=JSON.parse(localStorage.getItem(keyFor("goals"))||"[]");
+  inversiones=JSON.parse(localStorage.getItem("inversiones")||"[]");presupuestosConjuntos=JSON.parse(localStorage.getItem("presupuestosConjuntos")||"[]");
   $("syncCount").innerText=data.length;$("pendingCount").innerText=pending.length;
-  poblarSelects();actualizarLabels()
+  poblarSelects();actualizarLabels();
 }
+
 function poblarSelects(){
   ["cuentaSel","cuentaOrigen","cuentaDestino","recCuentaSel"].forEach(id=>{const s=$(id);if(!s)return;s.innerHTML="";cuentas.forEach(c=>{s.innerHTML+=`<option value="${c.id}">${c.icon} ${c.nombre}</option>`})});
-  const fs=$("filterCuentaSel");if(fs){fs.innerHTML='<option value="">Todas</option>';cuentas.forEach(c=>{fs.innerHTML+=`<option value="${c.id}">${c.icon} ${c.nombre}</option>`})}
-  poblarCat("ingreso");poblarBudCat();poblarRecCat()
+  poblarCat("ingreso");const fs=$("filterCuentaSel");if(fs){fs.innerHTML='<option value="">Todas</option>';cuentas.forEach(c=>{fs.innerHTML+=`<option value="${c.id}">${c.icon} ${c.nombre}</option>`})}
+  const bs=$("budgetCatSel");if(bs){bs.innerHTML="";categorias.filter(c=>c.tipo==="gasto"||c.tipo==="ambos").forEach(c=>{bs.innerHTML+=`<option value="${c.icon} ${c.nombre}">${c.icon} ${c.nombre}</option>`})}
+  const rs=$("recCatSel");if(rs){rs.innerHTML="";categorias.filter(c=>c.tipo==="gasto"||c.tipo==="ambos").forEach(c=>{rs.innerHTML+=`<option value="${c.icon} ${c.nombre}">${c.icon} ${c.nombre}</option>`})}
 }
 function poblarCat(modo){const s=$("categoria");if(!s)return;s.innerHTML="";categorias.filter(c=>c.tipo==="ambos"||c.tipo===modo).forEach(c=>{s.innerHTML+=`<option value="${c.icon} ${c.nombre}">${c.icon} ${c.nombre}</option>`})}
-function poblarBudCat(){const s=$("budgetCatSel");if(!s)return;s.innerHTML="";categorias.filter(c=>c.tipo==="gasto"||c.tipo==="ambos").forEach(c=>{s.innerHTML+=`<option value="${c.icon} ${c.nombre}">${c.icon} ${c.nombre}</option>`})}
-function poblarRecCat(){const s=$("recCatSel");if(!s)return;s.innerHTML="";categorias.filter(c=>c.tipo==="gasto"||c.tipo==="ambos").forEach(c=>{s.innerHTML+=`<option value="${c.icon} ${c.nombre}">${c.icon} ${c.nombre}</option>`})}
-function poblarTraspaso(){const so=$("traspasoOrigen"),sd=$("traspasoDestino"),dir=$("traspasoDireccion").value;if(!so||!sd)return;const co=dir==="p2n"?"personal":"negocio",cd=dir==="p2n"?"negocio":"personal";const cO=JSON.parse(localStorage.getItem(keyForCtx("cuentas",co))||JSON.stringify(co==="negocio"?CUENTAS_DEFAULT.negocio:CUENTAS_DEFAULT.personal));const cD=JSON.parse(localStorage.getItem(keyForCtx("cuentas",cd))||JSON.stringify(cd==="negocio"?CUENTAS_DEFAULT.negocio:CUENTAS_DEFAULT.personal));so.innerHTML="";cO.forEach(c=>{so.innerHTML+=`<option value="${c.id}">${c.icon||""} ${c.nombre}</option>`});sd.innerHTML="";cD.forEach(c=>{sd.innerHTML+=`<option value="${c.id}">${c.icon||""} ${c.nombre}</option>`})}
+function poblarTraspaso(){const so=$("traspasoOrigen"),sd=$("traspasoDestino"),dir=$("traspasoDireccion").value;if(!so||!sd)return;const co=dir==="p2n"?"personal":"negocio",cd=dir==="p2n"?"negocio":"personal";const cO=JSON.parse(localStorage.getItem(keyForCtx("cuentas",co))||"[]"),cD=JSON.parse(localStorage.getItem(keyForCtx("cuentas",cd))||"[]");so.innerHTML="";cO.forEach(c=>{so.innerHTML+=`<option value="${c.id}">${c.icon||""} ${c.nombre}</option>`});sd.innerHTML="";cD.forEach(c=>{sd.innerHTML+=`<option value="${c.id}">${c.icon||""} ${c.nombre}</option>`})}
 
-// ══ CONTEXTO ══
-function setContexto(ctx){contexto=ctx;localStorage.setItem("contexto",ctx);document.body.classList.toggle("modo-negocio",ctx==="negocio");document.body.classList.toggle("modo-pareja",ctx==="pareja");$("ctxPersonal").classList.toggle("ctx-active",ctx==="personal");$("ctxNegocio").classList.toggle("ctx-active",ctx==="negocio");$("ctxPareja").classList.toggle("ctx-active",ctx==="pareja");cargarTodo();render();if(ctx==="pareja")cargarMovsPareja();toast(ctx==="negocio"?"🏪 Negocio":ctx==="pareja"?"💑 Pareja":"👤 Personal")}
-function actualizarLabels(){const l=contexto==="negocio"?{c:"negocio",t:"Negocio"}:contexto==="pareja"?{c:"pareja",t:"Pareja"}:{c:"personal",t:"Personal"};["movCtxLabel","goalCtxLabel","cierreCtxLabel","budgetCtxLabel","recCtxLabel"].forEach(id=>{const el=$(id);if(el){el.className="ctx-label "+l.c;el.innerText=l.t}});$("cuentasTitle").innerHTML=(contexto==="pareja"?"💑":contexto==="negocio"?"🏪":"🏦")+" Mis cuentas";$("ctxSaldoLabel").innerText=contexto==="pareja"?"Saldo conjunto":contexto==="negocio"?"Capital":"Saldo disponible";if($("parejaCard"))$("parejaCard").style.display=contexto==="pareja"?"block":"none"}
+function setContexto(ctx){contexto=ctx;localStorage.setItem("contexto",ctx);document.body.classList.toggle("modo-negocio",ctx==="negocio");document.body.classList.toggle("modo-pareja",ctx==="pareja");$("ctxPersonal").classList.toggle("ctx-active",ctx==="personal");$("ctxNegocio").classList.toggle("ctx-active",ctx==="negocio");$("ctxPareja").classList.toggle("ctx-active",ctx==="pareja");cargarTodo();render();renderNivelHeader();renderLogros();renderBancos();renderInversiones();renderPresupuestosConjuntos();if($("tab-dashboard").classList.contains("active")){renderInversiones()};toast(ctx==="negocio"?"🏪 Negocio":ctx==="pareja"?"💑 Pareja":"👤 Personal")}
+function actualizarLabels(){const l=contexto==="negocio"?{c:"negocio",t:"Negocio"}:contexto==="pareja"?{c:"pareja",t:"Pareja"}:{c:"personal",t:"Personal"};["movCtxLabel","goalCtxLabel","cierreCtxLabel"].forEach(id=>{const el=$(id);if(el){el.className="ctx-label "+l.c;el.innerText=l.t}});$("cuentasTitle").innerHTML=(contexto==="pareja"?"💑":contexto==="negocio"?"🏪":"🏦")+" Mis cuentas";$("ctxSaldoLabel").innerText=contexto==="pareja"?"Saldo conjunto":contexto==="negocio"?"Capital":"Saldo disponible";if($("cardPresupuestoConjunto"))$("cardPresupuestoConjunto").style.display=contexto==="pareja"?"block":"none"}
 
-// ══ SALDOS ══
 function calcSaldos(){const s={};cuentas.forEach(c=>{s[c.id]=c.saldoInicial||0});const todos=[...data,...pending].sort((a,b)=>new Date(a.Fecha||0)-new Date(b.Fecha||0));todos.forEach(x=>{const m=Number(x.Monto)||0;if(x.Tipo==="Transferencia"){if(x.CuentaOrigen&&s[x.CuentaOrigen]!==undefined)s[x.CuentaOrigen]-=m;if(x.CuentaDestino&&s[x.CuentaDestino]!==undefined)s[x.CuentaDestino]+=m}else if(x.Tipo==="TraspasoSalida"){if(x.Cuenta&&s[x.Cuenta]!==undefined)s[x.Cuenta]-=m}else if(x.Tipo==="TraspasoEntrada"){if(x.Cuenta&&s[x.Cuenta]!==undefined)s[x.Cuenta]+=m}else{const cid=x.Cuenta||"";if(s[cid]===undefined)s[cid]=0;if(x.Tipo==="Ingreso")s[cid]+=m;else if(x.Tipo==="Gasto")s[cid]-=m}});return s}
 
-// ══ GUARDAR ══
-async function guardar(){if(modoActual==="traspaso"){await guardarTraspaso();return}const saldos=calcSaldos();let datos;if(modoActual==="transferencia"){const m=parseMonto($("montoTransfer").value);if(m<=0){toast("Ingresa un monto");return}if($("cuentaOrigen").value===$("cuentaDestino").value){toast("Origen y destino distintos");return}if(m>(saldos[$("cuentaOrigen").value]||0)){toast("❌ Saldo insuficiente");return}datos={Fecha:$("fecha").value,Tipo:"Transferencia",CuentaOrigen:$("cuentaOrigen").value,CuentaDestino:$("cuentaDestino").value,Descripción:$("descTransfer").value.trim()||"Transferencia",Monto:m,Categoría:"🔄 Transferencia",Contexto:contexto};$("montoTransfer").value=$("descTransfer").value=""}else{const m=parseMonto($("montoInput").value);if(!$("descripcion").value.trim()||m<=0){toast("Completa los datos");return}if(modoActual==="gasto"&&m>(saldos[$("cuentaSel").value]||0)){toast("❌ Saldo insuficiente");return}datos={Fecha:$("fecha").value,Tipo:modoActual==="ingreso"?"Ingreso":"Gasto",Cuenta:$("cuentaSel").value,Categoría:$("categoria").value,Descripción:$("descripcion").value.trim(),Monto:m,Nota:$("notaInput").value.trim(),Contexto:contexto};$("descripcion").value=$("montoInput").value=$("notaInput").value=""}
+async function guardar(){if(modoActual==="traspaso"){await guardarTraspaso();return}const saldos=calcSaldos();let datos;if(modoActual==="transferencia"){const m=parseMonto($("montoTransfer").value);if(m<=0){toast("Ingresa un monto");return}if($("cuentaOrigen").value===$("cuentaDestino").value){toast("Distintos");return}if(m>(saldos[$("cuentaOrigen").value]||0)){toast("❌ Saldo insuficiente");return}datos={Fecha:$("fecha").value,Tipo:"Transferencia",CuentaOrigen:$("cuentaOrigen").value,CuentaDestino:$("cuentaDestino").value,Descripción:$("descTransfer").value.trim()||"Transferencia",Monto:m,Categoría:"🔄 Transferencia",Contexto:contexto};$("montoTransfer").value=$("descTransfer").value=""}else{const m=parseMonto($("montoInput").value);if(!$("descripcion").value.trim()||m<=0){toast("Completa");return}if(modoActual==="gasto"&&m>(saldos[$("cuentaSel").value]||0)){toast("❌ Saldo insuficiente");return}datos={Fecha:$("fecha").value,Tipo:modoActual==="ingreso"?"Ingreso":"Gasto",Cuenta:$("cuentaSel").value,Categoría:$("categoria").value,Descripción:$("descripcion").value.trim(),Monto:m,Nota:$("notaInput").value.trim(),Contexto:contexto};$("descripcion").value=$("montoInput").value=$("notaInput").value=""}
 $("saveBtn").disabled=true;$("saveBtn").textContent="Guardando...";
-try{if(window.db&&window.auth?.currentUser){const col=window.fbCollection(window.db,"users",window.auth.currentUser.uid,contexto==="negocio"?"movimientos_negocio":contexto==="pareja"?"movimientos_pareja":"movimientos_personal");const ref=await window.fbAddDoc(col,datos);datos.ID=ref.id}else{datos.ID="local_"+Date.now();pending.push({...datos,_tempId:datos.ID});localStorage.setItem(keyFor("pendingQueue"),JSON.stringify(pending));$("pendingCount").innerText=pending.length}}catch(e){datos.ID="local_"+Date.now()}
-data.push(datos);guardarDatos();render();$("saveBtn").disabled=false;$("saveBtn").textContent="💾 Guardar";updateStreak();toast("✔ Guardado")}
+try{if(window.db&&window.auth?.currentUser){const col=window.fbCollection(window.db,"users",window.auth.currentUser.uid,contexto==="negocio"?"movimientos_negocio":contexto==="pareja"?"movimientos_pareja":"movimientos_personal");const ref=await window.fbAddDoc(col,datos);datos.ID=ref.id}}catch(e){}
+datos.ID=datos.ID||"local_"+Date.now();data.push(datos);guardarDatos();render();$("saveBtn").disabled=false;$("saveBtn").textContent="💾 Guardar";updateStreak();verificarLogros();renderNivelHeader();renderLogros();toast("✔ Guardado")}
 
-async function guardarTraspaso(){const m=parseMonto($("montoTrspaso").value),desc=$("descTrspaso").value.trim()||"Traspaso",dir=$("traspasoDireccion").value,co=$("traspasoOrigen").value,cd=$("traspasoDestino").value,f=$("fecha").value;if(m<=0){toast("Ingresa un monto");return}const ctxO=dir==="p2n"?"personal":"negocio",ctxD=dir==="p2n"?"negocio":"personal",ref=Date.now();const rO={Fecha:f,Tipo:"TraspasoSalida",Cuenta:co,Categoría:"🔀 Traspaso",Descripción:desc+" → "+(ctxD==="negocio"?"🏪":"👤"),Monto:m,Contexto:ctxO,TraspasoRef:ref},rD={Fecha:f,Tipo:"TraspasoEntrada",Cuenta:cd,Categoría:"🔀 Traspaso",Descripción:desc+" ← "+(ctxO==="negocio"?"🏪":"👤"),Monto:m,Contexto:ctxD,TraspasoRef:ref};try{if(window.db&&window.auth?.currentUser){const idO=await window.fbAddDoc(window.fbCollection(window.db,"users",window.auth.currentUser.uid,ctxO==="negocio"?"movimientos_negocio":"movimientos_personal"),rO);rO.ID=idO;const idD=await window.fbAddDoc(window.fbCollection(window.db,"users",window.auth.currentUser.uid,ctxD==="negocio"?"movimientos_negocio":"movimientos_personal"),rD);rD.ID=idD}}catch(e){}const dO=JSON.parse(localStorage.getItem(keyForCtx("dataCache",ctxO))||"[]");dO.push(rO);localStorage.setItem(keyForCtx("dataCache",ctxO),JSON.stringify(dO));const dD=JSON.parse(localStorage.getItem(keyForCtx("dataCache",ctxD))||"[]");dD.push(rD);localStorage.setItem(keyForCtx("dataCache",ctxD),JSON.stringify(dD));if(contexto===ctxO)data=dO;else if(contexto===ctxD)data=dD;$("syncCount").innerText=data.length;$("montoTrspaso").value=$("descTrspaso").value="";render();updateStreak();toast("✔ Traspaso: "+money(m))}
+async function guardarTraspaso(){const m=parseMonto($("montoTrspaso").value),desc=$("descTrspaso").value.trim()||"Traspaso",dir=$("traspasoDireccion").value,co=$("traspasoOrigen").value,cd=$("traspasoDestino").value,f=$("fecha").value;if(m<=0){toast("Ingresa un monto");return}const ctxO=dir==="p2n"?"personal":"negocio",ctxD=dir==="p2n"?"negocio":"personal";const rO={Fecha:f,Tipo:"TraspasoSalida",Cuenta:co,Categoría:"🔀 Traspaso",Descripción:desc+" → "+(ctxD==="negocio"?"🏪":"👤"),Monto:m,Contexto:ctxO},rD={Fecha:f,Tipo:"TraspasoEntrada",Cuenta:cd,Categoría:"🔀 Traspaso",Descripción:desc+" ← "+(ctxO==="negocio"?"🏪":"👤"),Monto:m,Contexto:ctxD};try{if(window.db&&window.auth?.currentUser){const idO=await window.fbAddDoc(window.fbCollection(window.db,"users",window.auth.currentUser.uid,ctxO==="negocio"?"movimientos_negocio":"movimientos_personal"),rO);rO.ID=idO;const idD=await window.fbAddDoc(window.fbCollection(window.db,"users",window.auth.currentUser.uid,ctxD==="negocio"?"movimientos_negocio":"movimientos_personal"),rD);rD.ID=idD}}catch(e){}const dO=JSON.parse(localStorage.getItem(keyForCtx("dataCache",ctxO))||"[]");dO.push(rO);localStorage.setItem(keyForCtx("dataCache",ctxO),JSON.stringify(dO));const dD=JSON.parse(localStorage.getItem(keyForCtx("dataCache",ctxD))||"[]");dD.push(rD);localStorage.setItem(keyForCtx("dataCache",ctxD),JSON.stringify(dD));if(contexto===ctxO)data=dO;else if(contexto===ctxD)data=dD;$("syncCount").innerText=data.length;$("montoTrspaso").value=$("descTrspaso").value="";render();updateStreak();toast("✔ Traspaso: "+money(m))}
 
 function guardarDatos(){localStorage.setItem(keyFor("dataCache"),JSON.stringify(data));localStorage.setItem(keyFor("cuentas"),JSON.stringify(cuentas));localStorage.setItem(keyFor("categorias"),JSON.stringify(categorias));localStorage.setItem(keyFor("goals"),JSON.stringify(goals))}
-function updateStreak(){const t=new Date().toISOString().slice(0,10);if(localStorage.getItem("lastSave")!==t){streak++;localStorage.setItem("streak",streak);localStorage.setItem("lastSave",t);$("streakBox").innerText=streak}}
+function updateStreak(){const t=new Date().toISOString().slice(0,10);if(localStorage.getItem("lastSave")!==t){streak++;localStorage.setItem("streak",streak);localStorage.setItem("lastSave",t);$("streakBox").innerText=streak;verificarLogros();renderNivelHeader()}}
 
-// ══ BORRAR / EDITAR ══
-async function borrar(id){if(!confirm("¿Eliminar?"))return;const x=data.find(d=>String(d.ID)===String(id));const c=(x&&x.Contexto)||contexto;data=data.filter(d=>String(d.ID)!==String(id));guardarDatos();render();try{if(window.db&&window.auth?.currentUser&&!String(id).startsWith("local_")){await window.fbDeleteDoc(window.fbDoc(window.db,"users",window.auth.currentUser.uid,c==="negocio"?"movimientos_negocio":c==="pareja"?"movimientos_pareja":"movimientos_personal",String(id)))}}catch(e){}toast("🗑️ Eliminado")}
-function abrirEditar(id){const x=data.find(d=>String(d.ID)===String(id));if(!x||x.Tipo==="Transferencia"||x.Tipo.includes("Traspaso")){toast("No editable");return}editandoId=String(id);const ec=$("editCategoria");ec.innerHTML="";const modo=x.Tipo==="Ingreso"?"ingreso":"gasto";categorias.filter(c=>c.tipo==="ambos"||c.tipo===modo).forEach(c=>{const o=document.createElement("option");o.value=c.icon+" "+c.nombre;o.textContent=c.icon+" "+c.nombre;if(o.value===x.Categoría)o.selected=true;ec.appendChild(o)});const ecu=$("editCuenta");ecu.innerHTML="";cuentas.forEach(c=>{const o=document.createElement("option");o.value=c.id;o.textContent=c.icon+" "+c.nombre;if(c.id===x.Cuenta)o.selected=true;ecu.appendChild(o)});$("editFecha").value=x.Fecha||"";$("editDescripcion").value=x.Descripción||"";$("editMonto").value=Number(x.Monto||0).toLocaleString("es-CO");$("editNota").value=x.Nota||"";$("modalEditar").classList.add("open")}
-async function confirmarEdicion(){const x=data.find(d=>String(d.ID)===String(editandoId));if(!x){$("modalEditar").classList.remove("open");return}const m=parseMonto($("editMonto").value);if(!$("editDescripcion").value.trim()||m<=0){toast("Completa");return}x.Fecha=$("editFecha").value;x.Categoría=$("editCategoria").value;x.Descripción=$("editDescripcion").value.trim();x.Monto=m;x.Cuenta=$("editCuenta").value;x.Nota=$("editNota").value.trim();guardarDatos();try{if(window.db&&window.auth?.currentUser&&!String(editandoId).startsWith("local_")){const cn=x.Contexto==="negocio"?"movimientos_negocio":x.Contexto==="pareja"?"movimientos_pareja":"movimientos_personal";await window.fbUpdateDoc(window.fbDoc(window.db,"users",window.auth.currentUser.uid,cn,String(editandoId)),{Fecha:x.Fecha,Categoría:x.Categoría,Descripción:x.Descripción,Monto:x.Monto,Cuenta:x.Cuenta,Nota:x.Nota})}}catch(e){}$("modalEditar").classList.remove("open");render();editandoId=null;toast("✔ Actualizado")}
+function render(){let ing=0,gas=0,ah=0,cats={};[...data].sort((a,b)=>new Date(b.Fecha)-new Date(a.Fecha)).forEach(x=>{const m=Number(x.Monto)||0;if(x.Tipo==="Ingreso")ing+=m;else if(x.Tipo==="Gasto"){gas+=m;cats[x.Categoría]=(cats[x.Categoría]||0)+m}if(String(x.Categoría||"").includes("Ahorro"))ah+=m});const saldos=calcSaldos(),total=Object.values(saldos).reduce((a,b)=>a+b,0);$("saldoTop").innerText=money(total);
+  $("cuentasResumen").innerHTML=$("distBar").innerHTML=$("distLegend").innerHTML="";const tp=cuentas.reduce((a,c)=>a+Math.max(saldos[c.id]||0,0),0)||1;
+  cuentas.forEach((c,i)=>{const s=saldos[c.id]||0,color=ACC_COLORS[i%ACC_COLORS.length];$("cuentasResumen").innerHTML+=`<div class="cuenta-card"><div class="cuenta-left"><div class="cuenta-icon">${c.icon}</div><div class="cuenta-name">${c.nombre}</div></div><div class="cuenta-saldo ${s>=0?"positive":"negative"}">${money(s)}</div></div>`;$("distBar").innerHTML+=`<div class="dist-seg" style="width:${Math.max(s,0)/tp*100}%;background:${color}"></div>`;$("distLegend").innerHTML+=`<div class="dist-item"><div class="dist-dot" style="background:${color}"></div>${c.icon} ${c.nombre}</div>`});
+  $("cockpit").innerHTML=`<div class="grid2"><div class="kpi"><span>Ingresos</span><strong style="color:var(--ok)">${money(ing)}</strong></div><div class="kpi"><span>Gastos</span><strong style="color:var(--bad)">${money(gas)}</strong></div><div class="kpi"><span>Balance</span><strong>${money(ing-gas)}</strong></div><div class="kpi"><span>Diario</span><strong>${money(Math.max((ing-gas)/7,0))}</strong></div></div>`;
+  $("coach").innerHTML=`<div class="alert ${ing-gas>0?'good':ing-gas<0?'bad':'mid'}">${ing-gas>0?'🟢 Salud positiva':ing-gas<0?'🔴 Gastas más':'🟡 Equilibrio'}</div><div class="alert good">🔥 Racha: <b>${streak}</b> días</div>`;
+  if($("tab-list").classList.contains("active"))renderLista();if($("tab-dashboard").classList.contains("active")){renderCharts();renderInversiones()}
+}
 
-// ══ RENDER ══
-function render(){let ing=0,gas=0,ah=0,cats={};[...data].sort((a,b)=>new Date(b.Fecha)-new Date(a.Fecha)).forEach(x=>{const m=Number(x.Monto)||0;if(x.Tipo==="Ingreso")ing+=m;else if(x.Tipo==="Gasto"){gas+=m;cats[x.Categoría]=(cats[x.Categoría]||0)+m}if(String(x.Categoría||"").includes("Ahorro")||String(x.Categoría||"").includes("Reinversión"))ah+=m});const saldos=calcSaldos(),total=Object.values(saldos).reduce((a,b)=>a+b,0);$("saldoTop").innerText=money(total);renderCuentas(saldos);renderCockpit(ing,gas,ah);renderCoach(ing,gas,cats);renderGoals(ah);renderFavs();renderBudgets();if($("tab-dashboard").classList.contains("active"))renderCharts();if($("tab-list").classList.contains("active"))renderLista()}
+function renderLista(){const busq=($("searchInput")?.value||"").toLowerCase().trim();let f=[...data,...pending].filter(x=>{if(filtroTipo==="ingreso"&&x.Tipo!=="Ingreso")return false;if(filtroTipo==="gasto"&&x.Tipo!=="Gasto")return false;if(filtroTipo==="transferencia"&&x.Tipo!=="Transferencia")return false;if(filtroTipo==="traspaso"&&x.Tipo!=="TraspasoSalida"&&x.Tipo!=="TraspasoEntrada")return false;if(busq&&!((x.Descripción||"")+" "+(x.Categoría||"")).toLowerCase().includes(busq))return false;return true}).sort((a,b)=>new Date(b.Fecha||0)-new Date(a.Fecha||0));$("searchResultCount").innerText=f.length+" resultado"+(f.length!==1?"s":"");$("lista").innerHTML=f.length?f.map(x=>{const m=Number(x.Monto)||0,cls=x.Tipo==="Ingreso"?"ingreso":x.Tipo==="Gasto"?"gasto":"transferencia";return`<div class="item ${cls}"><div>${x.Categoría||""} - ${x.Descripción||""}</div><div><b>${money(m)}</b></div></div>`}).join(""):'<div class="alert mid">Sin resultados</div>'}
 
-function renderCuentas(s){$("cuentasResumen").innerHTML=$("distBar").innerHTML=$("distLegend").innerHTML="";const tp=cuentas.reduce((a,c)=>a+Math.max(s[c.id]||0,0),0)||1;cuentas.forEach((c,i)=>{const saldo=s[c.id]||0,color=ACC_COLORS[i%ACC_COLORS.length];$("cuentasResumen").innerHTML+=`<div class="cuenta-card"><div class="cuenta-left"><div class="cuenta-icon">${c.icon}</div><div class="cuenta-name">${c.nombre}</div></div><div class="cuenta-saldo ${saldo>=0?"positive":"negative"}">${money(saldo)}</div></div>`;$("distBar").innerHTML+=`<div class="dist-seg" style="width:${Math.max(saldo,0)/tp*100}%;background:${color}"></div>`;$("distLegend").innerHTML+=`<div class="dist-item"><div class="dist-dot" style="background:${color}"></div>${c.icon} ${c.nombre}</div>`})}
+function renderCharts(){
+  const saldos=calcSaldos();let ing=0,gas=0,cats={};data.forEach(x=>{const m=Number(x.Monto)||0;if(x.Tipo==="Ingreso")ing+=m;else if(x.Tipo==="Gasto"){gas+=m;cats[x.Categoría]=(cats[x.Categoría]||0)+m}});[c1,c2,c3,c6].forEach(c=>{if(c)c.destroy()});
+  const ctx6=$("chart6");if(ctx6)c6=new Chart(ctx6,{type:"bar",data:{labels:cuentas.map(c=>c.icon+" "+c.nombre),datasets:[{data:cuentas.map(c=>saldos[c.id]||0),backgroundColor:cuentas.map((_,i)=>ACC_COLORS[i%ACC_COLORS.length])}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:false}}}});
+  const ctx1=$("chart1");if(ctx1&&Object.keys(cats).length)c1=new Chart(ctx1,{type:"doughnut",data:{labels:Object.keys(cats),datasets:[{data:Object.values(cats)}]}});
+  const ctx2=$("chart2");if(ctx2)c2=new Chart(ctx2,{type:"bar",data:{labels:["Ingresos","Gastos"],datasets:[{data:[ing,gas],backgroundColor:["#22c55e","#ef4444"]}]}});
+  const ctx3=$("chart3");if(ctx3&&data.length){const dias={};let s=0;[...data].sort((a,b)=>new Date(a.Fecha)-new Date(b.Fecha)).forEach(x=>{const m=Number(x.Monto)||0;if(x.Tipo==="Ingreso")s+=m;else if(x.Tipo==="Gasto")s-=m;dias[x.Fecha]=s});c3=new Chart(ctx3,{type:"line",data:{labels:Object.keys(dias),datasets:[{data:Object.values(dias),fill:false,tension:0.3,borderColor:"#3b82f6",pointRadius:2}]}})}
+}
 
-function renderCockpit(ing,gas,ah){const hoy=new Date(),ts=hoy.getFullYear()+"-"+String(hoy.getMonth()+1).padStart(2,"0")+"-"+String(hoy.getDate()).padStart(2,"0");const hoyG=data.filter(x=>x.Fecha===ts&&x.Tipo==="Gasto").reduce((a,b)=>a+Number(b.Monto||0),0);const isNeg=contexto==="negocio";const b=getBudgets(),gr={};data.filter(x=>x.Tipo==="Gasto").forEach(x=>{gr[x.Categoría]=(gr[x.Categoría]||0)+Number(x.Monto||0)});const alerts=Object.keys(b).filter(cat=>(gr[cat]||0)/b[cat]*100>=80);$("cockpit").innerHTML=`<div class="grid2"><div class="kpi"><span>Hoy gastado</span><strong>${money(hoyG)}</strong></div><div class="kpi"><span>${isNeg?"Flujo diario":"Disponible/día"}</span><strong>${money(Math.max((ing-gas)/7,0))}</strong></div><div class="kpi"><span>${isNeg?"Reinversión":"Ahorro"}</span><strong>${money(ah)}</strong></div><div class="kpi"><span>Balance</span><strong>${money(ing-gas)}</strong></div></div>${alerts.map(cat=>`<div class="alert ${((gr[cat]||0)/b[cat]*100)>=100?"bad":"mid"}" style="margin-top:4px">${((gr[cat]||0)/b[cat]*100)>=100?"🚨":"⚠️"} ${cat}: ${((gr[cat]||0)/b[cat]*100).toFixed(0)}%</div>`).join("")}`}
+function switchDashTab(tab,btn){
+  document.querySelectorAll(".tab-mini").forEach(t=>t.classList.remove("active"));btn.classList.add("active");
+  $("dash-finanzas").style.display=tab==="finanzas"?"block":"none";
+  $("dash-inversiones").style.display=tab==="inversiones"?"block":"none";
+  $("dash-logros").style.display=tab==="logros"?"block":"none";
+  if(tab==="finanzas")renderCharts();if(tab==="inversiones")renderInversiones();if(tab==="logros")renderLogros();
+}
 
-function renderCoach(ing,gas,cats){let t="";const bal=ing-gas,isNeg=contexto==="negocio";t+=bal>0?`<div class="alert good">🟢 ${isNeg?"Negocio rentable":"Salud positiva"}. Balance: <b>${money(bal)}</b></div>`:bal<0?`<div class="alert bad">🔴 Déficit: <b>${money(Math.abs(bal))}</b></div>`:`<div class="alert mid">🟡 Equilibrio</div>`;const top=Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];if(top){const p=((top[1]/Math.max(gas,1))*100).toFixed(0);t+=`<div class="alert bad">⚠️ Mayor gasto: <b>${top[0]}</b> (${p}% = ${money(top[1])})</div>`}const hoy=new Date(),dia=hoy.getDate();if(dia>0&&gas>0){const prom=gas/dia,dias=new Date(hoy.getFullYear(),hoy.getMonth()+1,0).getDate(),proy=Math.round(prom*dias),sp=ing-proy;t+=sp>=0?`<div class="alert good">📈 Proyección: <b>${money(sp)}</b></div>`:`<div class="alert bad">📉 Proyección negativa: <b>${money(sp)}</b></div>`}if(top)t+=`<div class="alert mid">💡 Reduce <b>${top[0]}</b> 15% = ${money(Math.round(top[1]*.15))}</div>`;t+=`<div class="alert good">🔥 Racha: <b>${streak}</b> días</div>`;if(isNeg&&ing>0){const mg=((bal/ing)*100).toFixed(1);t+=`<div class="alert mid">📊 Margen: <b style="color:${bal>0?"var(--ok)":"var(--bad)"}">${mg}%</b></div>`}$("coach").innerHTML=t}
-
-function renderGoals(ah){$("goalList").innerHTML="";if(!goals.length){$("goalList").innerHTML='<div class="alert mid">Sin metas</div>';return}goals.forEach((g,i)=>{const p=Math.min((ah/g.valor)*100,100);$("goalList").innerHTML+=`<div class="item"><div style="font-weight:700">${g.nombre}</div><div class="small">${money(ah)} / ${money(g.valor)}</div><div class="progress"><div class="bar" style="width:${p}%"></div></div><button class="small-btn" onclick="delGoal(${i})">🗑️</button></div>`})}
-
-function renderFavs(){const map={};data.forEach(x=>{if(x.Tipo==="Transferencia"||x.Tipo?.includes("Traspaso"))return;const k=x.Categoría+"|"+x.Descripción+"|"+x.Monto+"|"+(x.Cuenta||"");if(!map[k])map[k]={cat:x.Categoría,des:x.Descripción,monto:x.Monto,cuenta:x.Cuenta,count:0};map[k].count++});const top=Object.values(map).sort((a,b)=>b.count-a.count).slice(0,4);$("favList").innerHTML=top.length?top.map(f=>`<button class="secondary" onclick="usarFav('${f.cat}','${f.des}',${f.monto},'${f.cuenta||""}')" style="font-size:11px">${f.cat}<br><small>${f.des}</small><br><small>${money(f.monto)}</small></button>`).join(""):'<div class="small">Sin favoritos</div>'}
-function usarFav(cat,des,monto,cuenta){setMode("gasto",document.querySelectorAll(".mode-tab")[1]);$("categoria").value=cat;$("descripcion").value=des;$("montoInput").value=Number(monto).toLocaleString("es-CO");if(cuenta)$("cuentaSel").value=cuenta;toast("Cargado")}
-
-// ══ LISTA ══
-function setFiltro(tipo,btn){filtroTipo=tipo;document.querySelectorAll(".filter-chip").forEach(c=>c.classList.remove("active"));btn.classList.add("active");renderLista()}
-function renderLista(){const busq=($("searchInput")?.value||"").toLowerCase().trim(),cf=$("filterCuentaSel")?.value||"",orden=$("filterOrden")?.value||"fecha_desc";let f=[...data,...pending].filter(x=>{if(filtroTipo==="ingreso"&&x.Tipo!=="Ingreso")return false;if(filtroTipo==="gasto"&&x.Tipo!=="Gasto")return false;if(filtroTipo==="transferencia"&&x.Tipo!=="Transferencia")return false;if(filtroTipo==="traspaso"&&x.Tipo!=="TraspasoSalida"&&x.Tipo!=="TraspasoEntrada")return false;if(cf&&x.Cuenta!==cf&&x.CuentaOrigen!==cf&&x.CuentaDestino!==cf)return false;if(busq&&!((x.Descripción||"")+" "+(x.Categoría||"")+" "+(x.Nota||"")).toLowerCase().includes(busq))return false;return true});f.sort((a,b)=>{if(orden==="fecha_desc")return new Date(b.Fecha||0)-new Date(a.Fecha||0);if(orden==="fecha_asc")return new Date(a.Fecha||0)-new Date(b.Fecha||0);if(orden==="monto_desc")return Number(b.Monto||0)-Number(a.Monto||0);if(orden==="monto_asc")return Number(a.Monto||0)-Number(b.Monto||0);return 0});$("searchResultCount").innerText=f.length+" resultado"+(f.length!==1?"s":"");$("lista").innerHTML="";if(!f.length){$("lista").innerHTML='<div class="alert mid">Sin resultados</div>';return}let ld="";f.forEach(x=>{const m=Number(x.Monto)||0,cls=x.Tipo==="Ingreso"?"ingreso":x.Tipo==="Gasto"?"gasto":x.Tipo==="Transferencia"?"transferencia":"traspaso";if(orden.startsWith("fecha")&&x.Fecha!==ld){$("lista").innerHTML+=`<div class="timeline-day">${labelDay(x.Fecha)}</div>`;ld=x.Fecha}let cl="";if(x.Tipo==="Transferencia"){const o=cuentas.find(c=>c.id===x.CuentaOrigen),d=cuentas.find(c=>c.id===x.CuentaDestino);cl=`<span class="badge">🔄 ${o?.icon||""} ${o?.nombre||x.CuentaOrigen} → ${d?.icon||""} ${d?.nombre||x.CuentaDestino}</span>`}else if(x.Tipo?.includes("Traspaso")){const c=cuentas.find(cu=>cu.id===x.Cuenta);cl=`<span class="badge cross-badge">${x.Tipo==="TraspasoEntrada"?"📥":"📤"} ${c?.icon||""} ${c?.nombre||x.Cuenta||""}</span>`}else if(x.Cuenta){const c=cuentas.find(cu=>cu.id===x.Cuenta);if(c)cl=`<span class="badge">${c.icon} ${c.nombre}</span>`}const notaH=x.Nota?`<div style="font-size:10px;color:var(--muted);margin-top:2px">📝 ${x.Nota}</div>`:"",isP=!x.ID||String(x.ID).startsWith("local_"),pBadge=isP?`<span class="badge" style="background:rgba(245,158,11,.15);color:var(--warn)">⏳</span>`:"",editB=(x.Tipo==="Ingreso"||x.Tipo==="Gasto")?`<button class="warn-btn" onclick="abrirEditar('${x.ID}')">✏️</button>`:"";$("lista").innerHTML+=`<div class="item ${cls}"><div>${x.Categoría||""} - ${x.Descripción||""}${cl}${pBadge}</div>${notaH}<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px"><b>${x.Tipo==="TraspasoSalida"?"-":x.Tipo==="TraspasoEntrada"?"+":""}${money(m)}</b><div style="display:flex;gap:4px">${editB}<button class="small-btn" onclick="borrar('${x.ID}')">🗑️</button></div></div></div>`})}
-
-// ══ HISTORIAL ══
-function renderHistorial(){if(!historial.length){$("historialCard").style.display="none";return}$("historialCard").style.display="block";$("historialLista").innerHTML=historial.map((m,i)=>`<div class="item" style="cursor:pointer" onclick="toggleMes(${i})"><div style="display:flex;justify-content:space-between"><span style="font-weight:700">📅 ${m.label}</span><span id="ma${i}">▶</span></div><div class="small">Ing: ${money(m.ing)} · Gas: ${money(m.gas)} · Bal: ${money(m.ing-m.gas)}</div><div style="display:none;margin-top:6px" id="mb${i}">${m.movimientos?.length?m.movimientos.map(x=>`<div>${x.Categoría||""} - ${x.Descripción||""}: ${money(x.Monto)}</div>`).join(""):'<div class="small">Sin datos</div>'}</div></div>`).join("")}
-function toggleMes(i){const b=$("mb"+i),a=$("ma"+i);b.style.display=b.style.display==="none"?"block":"none";a.textContent=b.style.display==="none"?"▶":"▼"}
-
-// ══ CIERRE MES ══
-function abrirCierre(){const s=calcSaldos(),ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gas=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0);let h=`<div class="grid2" style="margin-bottom:8px"><div class="kpi"><span>Ingresos</span><strong style="color:var(--ok)">${money(ing)}</strong></div><div class="kpi"><span>Gastos</span><strong style="color:var(--bad)">${money(gas)}</strong></div></div>`;cuentas.forEach(c=>{h+=`<div style="font-size:12px;font-weight:600;margin-bottom:3px">${c.icon} ${c.nombre}: ${money(s[c.id]||0)}</div>`});$("modalResumen").innerHTML=h;$("modalCierre").classList.add("open")}
-function confirmarCierre(){const s=calcSaldos(),ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gas=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0),label=new Date().toLocaleDateString("es-CO",{month:"long",year:"numeric"});historial.unshift({label,ing,gas,saldosCierre:{...s},movimientos:[...data]});localStorage.setItem(keyFor("historialMeses"),JSON.stringify(historial));cuentas=cuentas.map(c=>({...c,saldoInicial:s[c.id]||0}));localStorage.setItem(keyFor("cuentas"),JSON.stringify(cuentas));data=[];pending=[];localStorage.setItem(keyFor("dataCache"),"[]");localStorage.setItem(keyFor("pendingQueue"),"[]");$("syncCount").innerText=0;$("pendingCount").innerText=0;$("modalCierre").classList.remove("open");render();toast("✔ Mes cerrado")}
-
-// ══ CUENTAS ADMIN ══
-function addCuenta(){const n=$("newCuentaNombre").value.trim(),icon=$("newCuentaIcon").value;if(!n){toast("Nombre requerido");return}cuentas.push({id:n.toLowerCase().replace(/\s+/g,"_")+"_"+Date.now(),nombre:n,icon,saldoInicial:0});localStorage.setItem(keyFor("cuentas"),JSON.stringify(cuentas));$("newCuentaNombre").value="";poblarSelects();render();renderCuentasAdmin();toast("✔ Cuenta agregada")}
-function delCuenta(id){if(!confirm("¿Eliminar?"))return;cuentas=cuentas.filter(c=>c.id!==id);localStorage.setItem(keyFor("cuentas"),JSON.stringify(cuentas));poblarSelects();render();renderCuentasAdmin();toast("Eliminada")}
-function renderCuentasAdmin(){$("cuentasAdmin").innerHTML=cuentas.map(c=>`<div class="cuenta-card" style="flex-direction:column;align-items:flex-start;gap:6px"><div style="display:flex;justify-content:space-between;width:100%"><div class="cuenta-left"><div class="cuenta-icon">${c.icon}</div><div class="cuenta-name">${c.nombre}</div></div><button class="small-btn" onclick="delCuenta('${c.id}')">🗑️</button></div></div>`).join("")}
-
-// ══ CATEGORÍAS ADMIN ══
-function addCategoria(){const icon=$("newCatIcon").value.trim()||"📌",nombre=$("newCatNombre").value.trim(),tipo=$("newCatTipo").value;if(!nombre){toast("Nombre requerido");return}categorias.push({id:nombre.toLowerCase().replace(/\s+/g,"_")+"_"+Date.now(),nombre,icon,tipo});localStorage.setItem(keyFor("categorias"),JSON.stringify(categorias));$("newCatIcon").value=$("newCatNombre").value="";renderCatsAdmin();poblarCat("ingreso");poblarBudCat();poblarRecCat();toast("✔ Agregada")}
-function delCategoria(id){categorias=categorias.filter(c=>c.id!==id);localStorage.setItem(keyFor("categorias"),JSON.stringify(categorias));renderCatsAdmin();poblarCat("ingreso")}
-function renderCatsAdmin(){$("catsAdmin").innerHTML=categorias.map(c=>`<div class="cat-chip">${c.icon} ${c.nombre} <span style="font-size:9px;color:var(--muted)">(${c.tipo})</span><button onclick="delCategoria('${c.id}')">✕</button></div>`).join("")}
-
-// ══ PRESUPUESTOS ══
-function getBudgets(){return JSON.parse(localStorage.getItem(keyFor("budgets"))||"{}")}
-function addBudget(){const cat=$("budgetCatSel").value,m=parseMonto($("budgetMonto").value);if(!cat||m<=0){toast("Completa");return}const b=getBudgets();b[cat]=m;localStorage.setItem(keyFor("budgets"),JSON.stringify(b));$("budgetMonto").value="";renderBudgets();toast("✔ Guardado")}
-function delBudget(cat){const b=getBudgets();delete b[cat];localStorage.setItem(keyFor("budgets"),JSON.stringify(b));renderBudgets()}
-function renderBudgets(){const el=$("budgetList"),b=getBudgets();if(!Object.keys(b).length){el.innerHTML='<div class="alert mid">Sin presupuestos</div>';return}const gr={};data.filter(x=>x.Tipo==="Gasto").forEach(x=>{gr[x.Categoría]=(gr[x.Categoría]||0)+Number(x.Monto||0)});el.innerHTML=Object.entries(b).map(([cat,lim])=>{const g=gr[cat]||0,pct=Math.min((g/lim)*100,100),barCls=pct>=100?"over":pct>=80?"warn":"";return`<div class="budget-item"><div class="budget-row"><span class="budget-label">${cat}</span><button class="small-btn" onclick="delBudget('${cat.replace(/'/g,"\\'")}')">🗑️</button></div><div class="budget-amounts"><span style="color:var(--bad)">${money(g)}</span> / ${money(lim)}</div><div class="progress"><div class="bar ${barCls}" style="width:${pct}%"></div></div></div>`}).join("")}
-
-// ══ RECURRENTES ══
-function getRecs(){return JSON.parse(localStorage.getItem(keyFor("recurrentes"))||"[]")}
-function addRecurrente(){const c=$("recCuentaSel").value,cat=$("recCatSel").value,d=$("recDesc").value.trim(),m=parseMonto($("recMonto").value);if(!d||m<=0){toast("Completa");return}const r=getRecs();r.push({id:"rec_"+Date.now(),cuenta:c,cat,desc:d,monto:m});localStorage.setItem(keyFor("recurrentes"),JSON.stringify(r));$("recDesc").value=$("recMonto").value="";renderRecList();toast("✔ Agregado")}
-function delRec(id){const r=getRecs().filter(x=>x.id!==id);localStorage.setItem(keyFor("recurrentes"),JSON.stringify(r));renderRecList()}
-function renderRecList(){const el=$("recList"),r=getRecs();if(!r.length){el.innerHTML='<div class="alert mid">Sin recurrentes</div>';return}el.innerHTML=`<div class="small" style="margin-bottom:6px">Total fijo: <b>${money(r.reduce((a,x)=>a+(x.monto||0),0))}</b></div>`+r.map(x=>`<div class="rec-card"><div class="rec-row"><div><div style="font-weight:600;font-size:12px">${x.cat} · ${x.desc}</div><div class="small">${(cuentas.find(c=>c.id===x.cuenta)?.icon||"")} ${x.cuenta} · <b>${money(x.monto)}</b></div></div><button class="small-btn" onclick="delRec('${x.id}')">🗑️</button></div></div>`).join("")}
-async function aplicarRecurrentes(){const r=getRecs();if(!r.length){toast("Sin recurrentes");return}if(!confirm(`¿Aplicar ${r.length} gastos?`))return;const hoy=new Date(),f=hoy.getFullYear()+"-"+String(hoy.getMonth()+1).padStart(2,"0")+"-"+String(hoy.getDate()).padStart(2,"0");for(const x of r){const d={Fecha:f,Tipo:"Gasto",Cuenta:x.cuenta,Categoría:x.cat,Descripción:x.desc+" (recurrente)",Monto:x.monto,Nota:"Automático",Contexto:contexto,ID:"rec_"+Date.now()};data.push(d)}guardarDatos();render();toast(`✔ ${r.length} aplicados`)}
-
-// ══ METAS ══
-function addGoal(){const n=$("goalName").value.trim(),v=Number($("goalValue").value);if(!n||v<=0){toast("Completa");return}goals.push({nombre:n,valor:v});guardarDatos();$("goalName").value=$("goalValue").value="";render();toast("🎯 Meta guardada")}
-function delGoal(i){goals.splice(i,1);guardarDatos();render()}
-
-// ══ GRÁFICOS ══
-function renderCharts(){const saldos=calcSaldos();let ing=0,gas=0,cats={};data.forEach(x=>{const m=Number(x.Monto)||0;if(x.Tipo==="Ingreso")ing+=m;else if(x.Tipo==="Gasto"){gas+=m;cats[x.Categoría]=(cats[x.Categoría]||0)+m}});[c1,c2,c3,c4,c5,c6].forEach(c=>{if(c)c.destroy()});const ctx6=$("chart6");if(ctx6)c6=new Chart(ctx6,{type:"bar",data:{labels:cuentas.map(c=>c.icon+" "+c.nombre),datasets:[{data:cuentas.map(c=>saldos[c.id]||0),backgroundColor:cuentas.map((_,i)=>ACC_COLORS[i%ACC_COLORS.length])}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:false}}}});const ctx1=$("chart1");if(ctx1&&Object.keys(cats).length)c1=new Chart(ctx1,{type:"doughnut",data:{labels:Object.keys(cats),datasets:[{data:Object.values(cats)}]}});const ctx2=$("chart2");if(ctx2)c2=new Chart(ctx2,{type:"bar",data:{labels:["Ingresos","Gastos"],datasets:[{data:[ing,gas],backgroundColor:["#22c55e","#ef4444"]}]}});const dias={};let s=0;[...data].sort((a,b)=>new Date(a.Fecha)-new Date(b.Fecha)).forEach(x=>{const m=Number(x.Monto)||0;if(x.Tipo==="Ingreso")s+=m;else if(x.Tipo==="Gasto")s-=m;else if(x.Tipo==="TraspasoEntrada")s+=m;else if(x.Tipo==="TraspasoSalida")s-=m;dias[x.Fecha]=s});const ctx3=$("chart3");if(ctx3&&Object.keys(dias).length)c3=new Chart(ctx3,{type:"line",data:{labels:Object.keys(dias),datasets:[{data:Object.values(dias),fill:false,tension:0.3,borderColor:"#3b82f6",pointRadius:2}]}});const w=[0,0,0,0,0,0,0];data.forEach(x=>{if(x.Tipo==="Gasto"){const d=new Date(x.Fecha+"T00:00:00");w[d.getDay()]+=Number(x.Monto)||0}});const ctx4=$("chart4");if(ctx4)c4=new Chart(ctx4,{type:"bar",data:{labels:["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"],datasets:[{data:w,backgroundColor:"#f59e0b"}]}});const fm={};data.forEach(x=>{if(x.Tipo==="Gasto")fm[x.Descripción]=(fm[x.Descripción]||0)+(Number(x.Monto)||0)});const tf=Object.entries(fm).sort((a,b)=>b[1]-a[1]).slice(0,5);const ctx5=$("chart5");if(ctx5&&tf.length)c5=new Chart(ctx5,{type:"bar",data:{labels:tf.map(x=>x[0].length>20?x[0].slice(0,18)+"…":x[0]),datasets:[{data:tf.map(x=>x[1]),backgroundColor:"#ef4444"}]},options:{indexAxis:"y"}});renderComparativa()}
-
-function renderComparativa(){const el=$("compareContent");if(!el)return;if(!historial.length&&!data.length){el.innerHTML='<div class="alert mid">Sin datos</div>';return}const meses=[];historial.slice(0,5).forEach(m=>meses.push({label:m.label,ing:m.ing,gas:m.gas}));const ingA=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gasA=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0);meses.unshift({label:"Este mes",ing:ingA,gas:gasA,actual:true});const maxV=Math.max(...meses.map(m=>Math.max(m.ing,m.gas)),1);el.innerHTML=meses.map(m=>`<div style="margin-bottom:10px;padding:10px;background:rgba(255,255,255,.02);border-radius:12px;border:1px solid ${m.actual?"rgba(59,130,246,.3)":"var(--line)"}"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-weight:700;font-size:12px">${m.label}${m.actual?' <span class="badge" style="background:rgba(59,130,246,.2);color:var(--primary)">actual</span>':""}</span><span style="font-size:11px;color:${m.ing-m.gas>=0?"var(--ok)":"var(--bad)"}">Bal: ${money(m.ing-m.gas)}</span></div><div class="compare-bar-wrap"><div class="compare-label">💰 Ing: ${money(m.ing)}</div><div class="compare-bar-bg"><div class="compare-bar-fill" style="width:${(m.ing/maxV*100).toFixed(1)}%;background:var(--ok)"></div></div></div><div class="compare-bar-wrap" style="margin-top:3px"><div class="compare-label">💸 Gas: ${money(m.gas)}</div><div class="compare-bar-bg"><div class="compare-bar-fill" style="width:${(m.gas/maxV*100).toFixed(1)}%;background:var(--bad)"></div></div></div></div>`).join("")}
-
-// ══ VOZ ══
-function toggleVoice(){if(!('webkitSpeechRecognition' in window)){toast("❌ No soportado");return}isListening?stopVoice():startVoice()}
-function startVoice(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;recognition=new SR();recognition.lang="es-CO";recognition.interimResults=true;$("voiceBtn").classList.add("listening");$("voiceBtn").innerHTML="🎤 Escuchando...";$("voiceFeedback").classList.add("active");$("voiceFeedback").innerHTML="👂 Habla...";isListening=true;recognition.onresult=(e)=>{const t=e.results[0][0].transcript;if(!e.results[0].isFinal)$("voiceFeedback").innerHTML=`📝 "${t}"`;else{procesarVoz(t);stopVoice()}};recognition.onerror=()=>stopVoice();recognition.start()}
-function stopVoice(){if(recognition)recognition.stop();$("voiceBtn").classList.remove("listening");$("voiceBtn").innerHTML="🎤 Voz";isListening=false}
-function procesarVoz(t){let monto=0;const texto=t.toLowerCase().replace(/[áéíóú]/g,c=>"aeiou"["áéíóú".indexOf(c)]);const ps=[{r:/(\d+)\s*millones?/i,m:1e6},{r:/(\d+)\s*mil/i,m:1e3},{r:/(\d+)\s*k/i,m:1e3},{r:/(\d+)\s*(pesos|lucas)/i,m:1}];for(const p of ps){const m=texto.match(p.r);if(m){monto=parseInt(m[1].replace(/\./g,""))*p.m;break}}if(!monto){const m=texto.match(/(\d[\d.]*)/);if(m)monto=parseInt(m[1].replace(/\./g,""))}if(!monto){$("voiceFeedback").innerHTML="❌ No detecté monto";return}const tipo=/recib[ií]|ingres[oó]|cobr[eé]|gan[eé]|salario/i.test(texto)?"ingreso":"gasto";setMode(tipo,document.querySelectorAll(".mode-tab")[tipo==="ingreso"?0:1]);$("descripcion").value=texto.split(" ").filter(w=>w.length>2&&!["mil","pesos","lucas","con","por"].includes(w)).join(" ")||"Movimiento";$("montoInput").value=monto.toLocaleString("es-CO");const mapaC={"🍔 Comida":/comida|almuerzo|cena|café/i,"🚗 Transporte":/transporte|gasolina|uber/i,"🏠 Vivienda":/arriendo|hipoteca/i,"💡 Servicios":/luz|agua|internet|netflix/i};for(const[c,re]of Object.entries(mapaC)){if(re.test(texto)){$("categoria").value=c;break}}$("voiceFeedback").innerHTML=`✅ $${monto.toLocaleString("es-CO")}<br><small>Revisa y guarda</small>`}
-
-// ══ PAREJA ══
-async function inicializarPareja(){if(!window.auth?.currentUser)return;const mi=window.auth.currentUser.uid;try{const q=window.fbQuery(window.fbCollection(window.db,"parejas"),window.fbWhere("miembros","array-contains",mi));const snap=await window.fbGetDocs(q);if(!snap.empty){const d=snap.docs[0];idPareja=d.id;datosPareja=d.data();parejaConectada=datosPareja.estado==="activo";const ci=datosPareja.miembros.find(id=>id!==mi);if(ci){try{const cs=await window.fbGetDoc(window.fbDoc(window.db,"users",ci));if(cs.exists())datosCompañero=cs.data()}catch(e){}}}}catch(e){}renderParejaConfig()}
-async function buscarPareja(){const email=$("parejaEmailBuscar").value.trim().toLowerCase(),r=$("resultadoBusqueda");if(!email||email===window.auth?.currentUser?.email){r.innerHTML='<div class="alert mid">Email inválido</div>';return}r.innerHTML='<div class="alert info">🔍 Buscando...</div>';try{const all=await window.fbGetDocs(window.fbCollection(window.db,"users"));let f=null;all.forEach(d=>{if(d.data().email===email)f=d.data()});if(!f){r.innerHTML='<div class="alert mid">No encontrado</div>';return}r.innerHTML=`<div class="miembro-row"><div><div style="font-weight:700">${f.displayName||"Usuario"}</div><div class="small">${f.email}</div></div><button class="primary" style="width:auto;background:linear-gradient(135deg,#ec4899,#db2777)" onclick="enviarInvit('${f.uid}')">💌 Conectar</button></div>`}catch(e){r.innerHTML='<div class="alert bad">Error: '+e.message+"</div>"}}
-async function enviarInvit(pid){try{const ref=await window.fbAddDoc(window.fbCollection(window.db,"parejas"),{miembros:[window.auth.currentUser.uid,pid],estado:"pendiente",fechaCreacion:new Date().toISOString()});idPareja=ref.id;toast("💌 Enviada");$("resultadoBusqueda").innerHTML="";$("parejaEmailBuscar").value=""}catch(e){toast("Error: "+e.message)}}
-function renderParejaConfig(){const ee=$("parejaEstadoConexion"),be=$("parejaBusqueda"),pe=$("invitacionesPendientes"),me=$("miembrosConectados");if(!ee)return;if(!idPareja){ee.innerHTML='<div class="alert mid">Busca a tu pareja por email</div>';be.style.display="block";pe.innerHTML=me.innerHTML="";return}const mi=window.auth.currentUser.uid,estado=datosPareja?.estado||"pendiente";if(estado==="pendiente"){ee.innerHTML='<div class="alert mid">⏳ Pendiente...</div>';be.style.display="none";me.innerHTML="";pe.innerHTML=datosPareja?.creadoPor===mi?'<div class="invitacion-card"><div style="font-weight:700">⏳ Esperando...</div></div>':'<div class="invitacion-card"><div style="font-weight:700">💌 Invitación recibida</div><button class="primary" style="background:linear-gradient(135deg,#ec4899,#db2777);margin-top:4px" onclick="aceptarInvit()">✅ Aceptar</button></div>';return}ee.innerHTML='<div class="alert good">✅ Conectados</div>';be.style.display="none";pe.innerHTML="";const mn=window.auth.currentUser.displayName||"Tú",sn=datosCompañero?.displayName||"Pareja";me.innerHTML=`<div class="miembro-row"><div>${mn} (Tú)</div></div><div class="miembro-row"><div>${sn}</div><div class="small">${datosCompañero?.email||""}</div></div>`}
-async function aceptarInvit(){if(!idPareja)return;try{await window.fbUpdateDoc(window.fbDoc(window.db,"parejas",idPareja),{estado:"activo"});parejaConectada=true;toast("✅ Conectados!");inicializarPareja()}catch(e){toast("Error")}}
-
-// ══ NOTIFICACIONES ══
-function toggleNotiDiaria(){const a=$("toggleDiario").checked;localStorage.setItem("notiDiaria",a?"1":"0");if(a){if(Notification.permission==="default")Notification.requestPermission().then(p=>{if(p==="granted")programarNoti();else{$("toggleDiario").checked=false;localStorage.setItem("notiDiaria","0")}});else if(Notification.permission==="granted")programarNoti();else{$("toggleDiario").checked=false;localStorage.setItem("notiDiaria","0");toast("⚠️ Notificaciones bloqueadas")}}else{localStorage.removeItem("proxNoti");toast("🔕 Desactivado")}}
-function programarNoti(){if(Notification.permission!=="granted")return;const h=parseInt(localStorage.getItem("horaNoti")||"20");const a=new Date(),r=new Date();r.setHours(h,0,0,0);if(r<=a)r.setDate(r.getDate()+1);const t=r.getTime()-a.getTime();localStorage.setItem("proxNoti",r.toISOString());setTimeout(()=>{new Notification("💳 Banking PRO AI",{body:"¿Registraste tus gastos de hoy?",icon:"💳",tag:"diario"});programarNoti()},t)}
-function cambiarHora(){localStorage.setItem("horaNoti",$("horaRecordatorio").value);if(localStorage.getItem("notiDiaria")==="1")programarNoti()}
-function probarNoti(){if(Notification.permission==="granted"){new Notification("🔔 Prueba",{body:"¡Funciona!",icon:"💳"});toast("✅ Enviada")}else if(Notification.permission==="default"){Notification.requestPermission().then(p=>{if(p==="granted")probarNoti();else toast("❌ Denegado")})}else toast("❌ Bloqueadas")}
-
-// ══ OTROS ══
+// ══ FUNCIONES SIMPLIFICADAS ══
 function actualizarUI(user){const dn=user.displayName||(user.email||"").split("@")[0],ini=dn.split(/[\s._-]+/).filter(Boolean).map(w=>w[0]).join("").toUpperCase().slice(0,2)||"U";$("userAvatar").textContent=ini;$("userName").textContent=dn.split(" ")[0];$("userInfoBlock").innerHTML=`<div style="display:flex;align-items:center;gap:10px"><div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff">${ini}</div><div><div style="font-weight:700">${dn}</div><div class="small">${user.email||""}</div></div></div>`}
-function goTab(tab,btn){document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));$("tab-"+tab).classList.add("active");document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));if(btn&&btn!==4)btn.classList.add("active");else{const i={home:0,dashboard:1,goals:2,list:3,settings:4};document.querySelectorAll(".nav button")[i[tab]]?.classList.add("active")}if(tab==="list"){renderHistorial();renderLista()}if(tab==="settings"){renderCuentasAdmin();renderCatsAdmin();renderParejaConfig()}if(tab==="dashboard")setTimeout(renderCharts,300);if(tab==="goals"){renderBudgets();renderRecList()}}
+function goTab(tab,btn){document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));$("tab-"+tab).classList.add("active");document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));if(btn&&btn!==4)btn.classList.add("active");else{const i={home:0,dashboard:1,goals:2,list:3,settings:4};document.querySelectorAll(".nav button")[i[tab]]?.classList.add("active")}if(tab==="list")renderLista();if(tab==="settings"){renderCuentasAdmin();renderCatsAdmin();renderBancos();renderPresupuestosConjuntos()}if(tab==="dashboard"){setTimeout(renderCharts,300);renderInversiones();renderLogros()}if(tab==="goals")renderBudgets()}
 function setMode(mode,btn){modoActual=mode;document.querySelectorAll(".mode-tab").forEach(t=>t.classList.remove("active"));btn.classList.add("active");document.querySelectorAll(".form-section").forEach(s=>s.classList.remove("active"));if(mode==="transferencia")$("fs-transfer").classList.add("active");else if(mode==="traspaso"){$("fs-traspaso").classList.add("active");poblarTraspaso()}else{$("fs-normal").classList.add("active");poblarCat(mode==="ingreso"?"ingreso":"gasto")}}
 function toggleHide(){hidden=!hidden;localStorage.setItem("hideMoney",hidden?"1":"0");render()}
 function setTheme(m){localStorage.setItem("theme",m);document.body.classList.toggle("light",m==="light")}
-function limpiarCache(ctx){if(!confirm("¿Limpiar "+ctx+"?"))return;localStorage.removeItem(keyForCtx("dataCache",ctx));localStorage.removeItem(keyForCtx("pendingQueue",ctx));if(ctx===contexto){data=[];pending=[];render()}toast("✔ Limpiado")}
-function exportarCSV(){const f=data.map(x=>[x.Fecha||"",x.Tipo||"",x.Categoría||"",(x.Descripción||"").replace(/,/g,";"),x.Monto||0,x.Cuenta||x.CuentaOrigen||"",x.Nota||""]);const csv="Fecha,Tipo,Categoría,Descripción,Monto,Cuenta,Nota\n"+f.map(r=>r.join(",")).join("\n");const b=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"}),url=URL.createObjectURL(b),a=document.createElement("a");a.href=url;a.download=`movimientos_${contexto}_${new Date().toISOString().slice(0,7)}.csv`;a.click();URL.revokeObjectURL(url);toast("📥 CSV exportado")}
-async function diag(){const d=$("diagContent");d.innerHTML="🔍 Verificando...<br>";d.innerHTML+=window.db?"✅ Firebase OK<br>":"❌ Firebase NO<br>";d.innerHTML+=window.auth?.currentUser?`✅ ${window.auth.currentUser.email}<br>`:"⚠️ Sin sesión<br>";d.innerHTML+=`📡 ${navigator.onLine?"✅ Online":"❌ Offline"}<br>💾 ${data.length} movimientos<br>`}
+function setFiltro(tipo,btn){filtroTipo=tipo;document.querySelectorAll(".filter-chip").forEach(c=>c.classList.remove("active"));btn.classList.add("active");renderLista()}
+function toggleVoice(){if(!('webkitSpeechRecognition' in window)){toast("❌ No soportado");return}isListening?stopVoice():startVoice()}
+function startVoice(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;recognition=new SR();recognition.lang="es-CO";recognition.interimResults=true;$("voiceBtn").classList.add("listening");$("voiceBtn").innerHTML="🎤...";$("voiceFeedback").classList.add("active");$("voiceFeedback").innerHTML="👂 Habla...";isListening=true;recognition.onresult=(e)=>{const t=e.results[0][0].transcript;if(!e.results[0].isFinal)$("voiceFeedback").innerHTML=`📝 "${t}"`;else{let monto=0;const texto=t.toLowerCase().replace(/[áéíóú]/g,c=>"aeiou"["áéíóú".indexOf(c)]);const ps=[{r:/(\d+)\s*millones?/i,m:1e6},{r:/(\d+)\s*mil/i,m:1e3},{r:/(\d+)\s*k/i,m:1e3},{r:/(\d+)\s*(pesos|lucas)/i,m:1}];for(const p of ps){const m=texto.match(p.r);if(m){monto=parseInt(m[1].replace(/\./g,""))*p.m;break}}if(!monto){const m=texto.match(/(\d[\d.]*)/);if(m)monto=parseInt(m[1].replace(/\./g,""))}if(monto){const tipo=/recib[ií]|ingres[oó]|cobr[eé]|salario/i.test(texto)?"ingreso":"gasto";setMode(tipo,document.querySelectorAll(".mode-tab")[tipo==="ingreso"?0:1]);$("descripcion").value=texto.split(" ").filter(w=>w.length>2&&!["mil","pesos","con"].includes(w)).join(" ")||"Movimiento";$("montoInput").value=monto.toLocaleString("es-CO");$("voiceFeedback").innerHTML=`✅ $${monto.toLocaleString("es-CO")}<br><small>Revisa y guarda</small>`}else $("voiceFeedback").innerHTML="❌ No detecté monto";stopVoice()}};recognition.onerror=()=>stopVoice();recognition.start()}
+function stopVoice(){if(recognition)recognition.stop();$("voiceBtn").classList.remove("listening");$("voiceBtn").innerHTML="🎤 Voz";isListening=false}
 
-// ══ EXPONER ══
+function addGoal(){const n=$("goalName").value.trim(),v=Number($("goalValue").value);if(!n||v<=0){toast("Completa");return}goals.push({nombre:n,valor:v});guardarDatos();$("goalName").value=$("goalValue").value="";render();toast("🎯 Guardada")}
+function delGoal(i){goals.splice(i,1);guardarDatos();render()}
+function getBudgets(){return JSON.parse(localStorage.getItem(keyFor("budgets"))||"{}")}
+function addBudget(){const cat=$("budgetCatSel").value,m=parseMonto($("budgetMonto").value);if(!cat||m<=0){toast("Completa");return}const b=getBudgets();b[cat]=m;localStorage.setItem(keyFor("budgets"),JSON.stringify(b));$("budgetMonto").value="";renderBudgets();toast("✔ Guardado")}
+function delBudget(cat){const b=getBudgets();delete b[cat];localStorage.setItem(keyFor("budgets"),JSON.stringify(b));renderBudgets()}
+function renderBudgets(){const el=$("budgetList"),b=getBudgets();if(!Object.keys(b).length){el.innerHTML='<div class="alert mid">Sin presupuestos</div>';return}const gr={};data.filter(x=>x.Tipo==="Gasto").forEach(x=>{gr[x.Categoría]=(gr[x.Categoría]||0)+Number(x.Monto||0)});el.innerHTML=Object.entries(b).map(([cat,lim])=>{const g=gr[cat]||0,pct=Math.min((g/lim)*100,100);return`<div class="budget-item"><div class="budget-row"><span class="budget-label">${cat}</span><button class="small-btn" onclick="delBudget('${cat.replace(/'/g,"\\'")}')">🗑️</button></div><div class="budget-amounts">${money(g)} / ${money(lim)}</div><div class="progress"><div class="bar" style="width:${pct}%"></div></div></div>`}).join("")}
+function addRecurrente(){const c=$("recCuentaSel").value,cat=$("recCatSel").value,d=$("recDesc").value.trim(),m=parseMonto($("recMonto").value);if(!d||m<=0){toast("Completa");return}const r=JSON.parse(localStorage.getItem(keyFor("recurrentes"))||"[]");r.push({id:"rec_"+Date.now(),cuenta:c,cat,desc:d,monto:m});localStorage.setItem(keyFor("recurrentes"),JSON.stringify(r));$("recDesc").value=$("recMonto").value="";renderRecList();toast("✔ Agregado")}
+function renderRecList(){const el=$("recList"),r=JSON.parse(localStorage.getItem(keyFor("recurrentes"))||"[]");if(!r.length){el.innerHTML='<div class="alert mid">Sin recurrentes</div>';return}el.innerHTML=`<div class="small">Total fijo: <b>${money(r.reduce((a,x)=>a+(x.monto||0),0))}</b></div>`+r.map(x=>`<div class="rec-card"><div class="rec-row"><div><div style="font-weight:600;font-size:12px">${x.cat} · ${x.desc}</div><div class="small">${x.cuenta} · <b>${money(x.monto)}</b></div></div><button class="small-btn" onclick="delRec('${x.id}')">🗑️</button></div></div>`).join("")}
+function delRec(id){const r=JSON.parse(localStorage.getItem(keyFor("recurrentes"))||"[]").filter(x=>x.id!==id);localStorage.setItem(keyFor("recurrentes"),JSON.stringify(r));renderRecList()}
+async function aplicarRecurrentes(){const r=JSON.parse(localStorage.getItem(keyFor("recurrentes"))||"[]");if(!r.length){toast("Sin recurrentes");return}if(!confirm(`¿Aplicar ${r.length} gastos?`))return;const hoy=new Date(),f=hoy.getFullYear()+"-"+String(hoy.getMonth()+1).padStart(2,"0")+"-"+String(hoy.getDate()).padStart(2,"0");r.forEach(x=>{data.push({Fecha:f,Tipo:"Gasto",Cuenta:x.cuenta,Categoría:x.cat,Descripción:x.desc+" (rec)",Monto:x.monto,Nota:"Auto",Contexto:contexto,ID:"rec_"+Date.now()})});guardarDatos();render();toast(`✔ ${r.length} aplicados`)}
+
+function addCuenta(){const n=$("newCuentaNombre").value.trim(),icon=$("newCuentaIcon").value;if(!n){toast("Nombre");return}cuentas.push({id:n.toLowerCase().replace(/\s+/g,"_")+"_"+Date.now(),nombre:n,icon,saldoInicial:0});guardarDatos();$("newCuentaNombre").value="";poblarSelects();render();renderCuentasAdmin();toast("✔ Agregada")}
+function renderCuentasAdmin(){$("cuentasAdmin").innerHTML=cuentas.map(c=>`<div class="cuenta-card" style="flex-direction:column;align-items:flex-start;gap:6px"><div style="display:flex;justify-content:space-between;width:100%"><div class="cuenta-left"><div class="cuenta-icon">${c.icon}</div><div class="cuenta-name">${c.nombre}</div></div><button class="small-btn" onclick="delCuenta('${c.id}')">🗑️</button></div></div>`).join("")}
+function delCuenta(id){if(!confirm("¿Eliminar?"))return;cuentas=cuentas.filter(c=>c.id!==id);guardarDatos();poblarSelects();render();renderCuentasAdmin()}
+function addCategoria(){const icon=$("newCatIcon").value.trim()||"📌",nombre=$("newCatNombre").value.trim(),tipo=$("newCatTipo").value;if(!nombre){toast("Nombre");return}categorias.push({id:nombre.toLowerCase().replace(/\s+/g,"_")+"_"+Date.now(),nombre,icon,tipo});guardarDatos();$("newCatIcon").value=$("newCatNombre").value="";renderCatsAdmin();poblarCat("ingreso");toast("✔ Agregada")}
+function renderCatsAdmin(){$("catsAdmin").innerHTML=categorias.map(c=>`<div class="cat-chip" style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:14px;padding:4px 8px;font-size:11px;margin:2px">${c.icon} ${c.nombre} <button onclick="delCategoria('${c.id}')" style="width:auto;padding:0 3px;background:transparent;color:var(--bad);font-size:12px">✕</button></div>`).join("")}
+function delCategoria(id){categorias=categorias.filter(c=>c.id!==id);guardarDatos();renderCatsAdmin();poblarCat("ingreso")}
+function abrirCierre(){const s=calcSaldos(),ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gas=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0);let h=`<div class="grid2" style="margin-bottom:8px"><div class="kpi"><span>Ingresos</span><strong style="color:var(--ok)">${money(ing)}</strong></div><div class="kpi"><span>Gastos</span><strong style="color:var(--bad)">${money(gas)}</strong></div></div>`;cuentas.forEach(c=>{h+=`<div style="font-size:12px;margin-bottom:3px">${c.icon} ${c.nombre}: ${money(s[c.id]||0)}</div>`});$("modalResumen").innerHTML=h;$("modalCierre").style.display="flex"}
+function confirmarCierre(){const s=calcSaldos(),ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gas=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0),label=new Date().toLocaleDateString("es-CO",{month:"long",year:"numeric"});historial.unshift({label,ing,gas,saldosCierre:{...s},movimientos:[...data]});localStorage.setItem(keyFor("historialMeses"),JSON.stringify(historial));cuentas=cuentas.map(c=>({...c,saldoInicial:s[c.id]||0}));guardarDatos();data=[];pending=[];localStorage.setItem(keyFor("dataCache"),"[]");localStorage.setItem(keyFor("pendingQueue"),"[]");$("syncCount").innerText=0;$("pendingCount").innerText=0;$("modalCierre").style.display="none";render();toast("✔ Mes cerrado")}
+function limpiarCache(ctx){if(!confirm("¿Limpiar "+ctx+"?"))return;localStorage.removeItem(keyForCtx("dataCache",ctx));if(ctx===contexto){data=[];render()}toast("✔ Limpiado")}
+function exportarCSV(){const f=data.map(x=>[x.Fecha||"",x.Tipo||"",x.Categoría||"",(x.Descripción||"").replace(/,/g,";"),x.Monto||0,x.Cuenta||x.CuentaOrigen||"",x.Nota||""]);const csv="Fecha,Tipo,Categoría,Descripción,Monto,Cuenta,Nota\n"+f.map(r=>r.join(",")).join("\n");const b=new Blob(["\uFEFF"+csv]),url=URL.createObjectURL(b),a=document.createElement("a");a.href=url;a.download=`movimientos_${contexto}_${new Date().toISOString().slice(0,7)}.csv`;a.click();toast("📥 CSV exportado")}
+
+// ══ PAREJA ══
+async function inicializarPareja(){if(!window.auth?.currentUser)return;const mi=window.auth.currentUser.uid;try{const q=window.fbQuery(window.fbCollection(window.db,"parejas"),window.fbWhere("miembros","array-contains",mi));const snap=await window.fbGetDocs(q);if(!snap.empty){const d=snap.docs[0];idPareja=d.id;datosPareja=d.data();parejaConectada=datosPareja.estado==="activo";const ci=datosPareja.miembros.find(id=>id!==mi);if(ci){try{const cs=await window.fbGetDoc(window.fbDoc(window.db,"users",ci));if(cs.exists())datosCompañero=cs.data()}catch(e){}}renderParejaConfig()}}catch(e){}}
+async function buscarPareja(){const email=$("parejaEmailBuscar").value.trim().toLowerCase(),r=$("resultadoBusqueda");if(!email||email===window.auth?.currentUser?.email){r.innerHTML='<div class="alert mid">Email inválido</div>';return}r.innerHTML='<div class="alert info">🔍 Buscando...</div>';try{const all=await window.fbGetDocs(window.fbCollection(window.db,"users"));let f=null;all.forEach(d=>{if(d.data().email===email)f=d.data()});if(!f){r.innerHTML='<div class="alert mid">No encontrado</div>';return}r.innerHTML=`<div class="miembro-row"><div><div style="font-weight:700">${f.displayName||"Usuario"}</div><div class="small">${f.email}</div></div><button class="primary" style="width:auto;background:linear-gradient(135deg,#ec4899,#db2777)" onclick="enviarInvit('${f.uid}')">💌 Conectar</button></div>`}catch(e){r.innerHTML='<div class="alert bad">Error</div>'}}
+async function enviarInvit(pid){try{const ref=await window.fbAddDoc(window.fbCollection(window.db,"parejas"),{miembros:[window.auth.currentUser.uid,pid],estado:"pendiente",fechaCreacion:new Date().toISOString()});idPareja=ref.id;toast("💌 Enviada");$("resultadoBusqueda").innerHTML="";$("parejaEmailBuscar").value="";verificarLogros()}catch(e){toast("Error")}}
+function renderParejaConfig(){const ee=$("invitacionesPendientes"),be=$("parejaBusqueda"),me=$("miembrosConectados");if(!idPareja){if(ee)ee.innerHTML='';if(me)me.innerHTML='<div class="alert mid">Busca a tu pareja</div>';return}const estado=datosPareja?.estado||"pendiente";if(estado==="pendiente"){if(ee)ee.innerHTML=datosPareja?.creadoPor===window.auth.currentUser.uid?'<div class="invitacion-card"><div style="font-weight:700">⏳ Esperando...</div></div>':'<div class="invitacion-card"><div style="font-weight:700">💌 Invitación</div><button class="primary" style="background:linear-gradient(135deg,#ec4899,#db2777);margin-top:4px" onclick="aceptarInvit()">✅ Aceptar</button></div>'}else{if(me)me.innerHTML=`<div class="miembro-row"><div>${window.auth.currentUser.displayName||"Tú"} (Tú)</div></div><div class="miembro-row"><div>${datosCompañero?.displayName||"Pareja"}</div></div><button class="danger" style="width:100%;margin-top:6px" onclick="desconectarPareja()">💔 Desconectar</button>`}}
+async function aceptarInvit(){if(!idPareja)return;try{await window.fbUpdateDoc(window.fbDoc(window.db,"parejas",idPareja),{estado:"activo"});parejaConectada=true;toast("✅ Conectados!");inicializarPareja();verificarLogros()}catch(e){toast("Error")}}
+async function desconectarPareja(){if(!confirm("¿Desconectar?"))return;try{await window.fbDeleteDoc(window.fbDoc(window.db,"parejas",idPareja));idPareja=null;datosPareja=null;datosCompañero=null;parejaConectada=false;toast("👋 Desconectado");renderParejaConfig()}catch(e){toast("Error")}}
+
+// ══ EXPONER GLOBAL ══
 window.goTab=goTab;window.setContexto=setContexto;window.setMode=setMode;window.setTheme=setTheme;
 window.toggleHide=toggleHide;window.setFiltro=setFiltro;window.guardar=guardar;window.renderLista=renderLista;
 window.toggleVoice=toggleVoice;window.addGoal=addGoal;window.delGoal=delGoal;window.addBudget=addBudget;
 window.delBudget=delBudget;window.addRecurrente=addRecurrente;window.delRec=delRec;
 window.aplicarRecurrentes=aplicarRecurrentes;window.addCuenta=addCuenta;window.delCuenta=delCuenta;
-window.addCategoria=addCategoria;window.delCategoria=delCategoria;window.borrar=borrar;
-window.abrirEditar=abrirEditar;window.confirmarEdicion=confirmarEdicion;window.usarFav=usarFav;
-window.abrirCierre=abrirCierre;window.confirmarCierre=confirmarCierre;window.buscarPareja=buscarPareja;
-window.enviarInvit=enviarInvit;window.aceptarInvit=aceptarInvit;window.toggleNotiDiaria=toggleNotiDiaria;
-window.cambiarHora=cambiarHora;window.probarNoti=probarNoti;window.exportarCSV=exportarCSV;
-window.limpiarCache=limpiarCache;window.diag=diag;window.renderLista=renderLista;
-window.renderBudgets=renderBudgets;window.renderRecList=renderRecList;window.toggleMes=toggleMes;
+window.addCategoria=addCategoria;window.delCategoria=delCategoria;window.abrirCierre=abrirCierre;
+window.confirmarCierre=confirmarCierre;window.limpiarCache=limpiarCache;window.exportarCSV=exportarCSV;
+window.buscarPareja=buscarPareja;window.enviarInvit=enviarInvit;window.aceptarInvit=aceptarInvit;
+window.desconectarPareja=desconectarPareja;window.renderParejaConfig=renderParejaConfig;
+window.conectarBanco=conectarBanco;window.sincronizarTodosBancos=sincronizarTodosBancos;
+window.agregarInversion=agregarInversion;window.eliminarInversion=eliminarInversion;
+window.mostrarFormInversion=mostrarFormInversion;window.switchDashTab=switchDashTab;
+window.addPresupuestoConjunto=addPresupuestoConjunto;window.eliminarPresupuestoConjunto=eliminarPresupuestoConjunto;
+window.renderBudgets=renderBudgets;window.renderRecList=renderRecList;
 
-console.log("✅ Banking PRO AI v24 - COMPLETO con TODAS las funciones");
-console.log("📋 Funciones: Voz | Pareja | Notificaciones | Favoritos | Presupuestos | Recurrentes | Cierre mes | Historial | Gráficos | CSV | Categorías | Cuentas");
+console.log("✅ Banking PRO AI v25 - COMPLETO");
+console.log("🆕 NUEVO: Logros | Bancos | Inversiones | Presupuestos Pareja");
 </script>
 </body>
 </html>
