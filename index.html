@@ -10,14 +10,16 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <!-- ══════════════════════════════════
-       FIREBASE SDK COMPLETO
+       FIREBASE SDK CON DIAGNÓSTICO
   ══════════════════════════════════ -->
   <script type="module">
+    console.log("🚀 Iniciando Firebase...");
+
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
     import {
       getFirestore, collection, addDoc, getDocs, getDoc,
       deleteDoc, doc, updateDoc, query, where,
-      onSnapshot, arrayUnion, arrayRemove
+      onSnapshot
     } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
     import {
       getAuth, onAuthStateChanged,
@@ -26,46 +28,68 @@
     } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
     const firebaseConfig = {
-      apiKey:            "AIzaSyABzhwIZkis5OykXxDHXVKCaP0k1qKTZcY",
-      authDomain:        "banking-pro-8c1a3.firebaseapp.com",
-      projectId:         "banking-pro-8c1a3",
-      storageBucket:     "banking-pro-8c1a3.firebasestorage.app",
+      apiKey: "AIzaSyABzhwIZkis5OykXxDHXVKCaP0k1qKTZcY",
+      authDomain: "banking-pro-8c1a3.firebaseapp.com",
+      projectId: "banking-pro-8c1a3",
+      storageBucket: "banking-pro-8c1a3.firebasestorage.app",
       messagingSenderId: "480815819152",
-      appId:             "1:480815819152:web:80a270dc86504fee1dab15",
-      measurementId:     "G-W68XVXTQW1"
+      appId: "1:480815819152:web:80a270dc86504fee1dab15",
+      measurementId: "G-W68XVXTQW1"
     };
 
-    const app  = initializeApp(firebaseConfig);
-    const db   = getFirestore(app);
-    const auth = getAuth(app);
+    try {
+      const app = initializeApp(firebaseConfig);
+      console.log("✅ Firebase App inicializada");
+      
+      const db = getFirestore(app);
+      console.log("📦 Firestore inicializado");
+      
+      const auth = getAuth(app);
+      console.log("🔐 Auth inicializado");
 
-    // Exponer globalmente
-    window.db           = db;
-    window.auth         = auth;
-    window.fbCollection = collection;
-    window.fbAddDoc     = addDoc;
-    window.fbGetDocs    = getDocs;
-    window.fbGetDoc     = getDoc;
-    window.fbDeleteDoc  = deleteDoc;
-    window.fbDoc        = doc;
-    window.fbUpdateDoc  = updateDoc;
-    window.fbQuery      = query;
-    window.fbWhere      = where;
-    window.fbOnSnapshot = onSnapshot;
-    window.fbArrayUnion = arrayUnion;
-    window.fbArrayRemove= arrayRemove;
-    
-    window.fbRegister   = (email, pass) => createUserWithEmailAndPassword(auth, email, pass);
-    window.fbLogin      = (email, pass) => signInWithEmailAndPassword(auth, email, pass);
-    window.fbLogout     = ()            => signOut(auth);
-    window.fbUpdateProfile = (u, data)  => updateProfile(u, data);
+      // Exponer globalmente
+      window.db = db;
+      window.auth = auth;
+      window.fbCollection = collection;
+      window.fbAddDoc = addDoc;
+      window.fbGetDocs = getDocs;
+      window.fbGetDoc = getDoc;
+      window.fbDeleteDoc = deleteDoc;
+      window.fbDoc = doc;
+      window.fbUpdateDoc = updateDoc;
+      window.fbQuery = query;
+      window.fbWhere = where;
+      window.fbOnSnapshot = onSnapshot;
+      
+      window.fbRegister = (email, pass) => {
+        console.log("📝 Registrando:", email);
+        return createUserWithEmailAndPassword(auth, email, pass);
+      };
+      
+      window.fbLogin = (email, pass) => {
+        console.log("🔑 Iniciando sesión:", email);
+        return signInWithEmailAndPassword(auth, email, pass);
+      };
+      
+      window.fbLogout = () => {
+        console.log("🚪 Cerrando sesión");
+        return signOut(auth);
+      };
+      
+      window.fbUpdateProfile = (u, data) => updateProfile(u, data);
 
-    onAuthStateChanged(auth, (user) => {
-      window.currentUser = user;
-      window.dispatchEvent(new CustomEvent("authChanged", { detail: user }));
-    });
+      onAuthStateChanged(auth, (user) => {
+        console.log("👤 Auth:", user ? user.email : "Sin usuario");
+        window.currentUser = user;
+        window.dispatchEvent(new CustomEvent("authChanged", { detail: user }));
+      });
 
-    window.dispatchEvent(new Event("firebaseReady"));
+      console.log("✅ Firebase listo");
+      window.dispatchEvent(new Event("firebaseReady"));
+
+    } catch (error) {
+      console.error("❌ Error Firebase:", error);
+    }
   </script>
 
   <style>
@@ -76,9 +100,8 @@
       --text:#fff; --muted:#94a3b8;
       --input:#1e293b; --inputText:#fff;
       --primary:#2563eb; --primary2:#1d4ed8;
-      --ok:#22c55e; --bad:#ef4444; --warn:#f59e0b; --transfer:#a78bfa;
+      --ok:#22c55e; --bad:#ef4444; --warn:#f59e0b;
       --biz:#f59e0b; --biz2:#d97706;
-      --cross:#22d3ee; --cross2:#0891b2;
       --pareja:#ec4899; --pareja2:#db2777;
     }
     body.light {
@@ -86,69 +109,38 @@
       --text:#111827; --muted:#64748b; --input:#f1f5f9; --inputText:#111827;
     }
     body.modo-negocio { --primary:var(--biz); --primary2:var(--biz2); }
-    body.modo-negocio .header { border-bottom:2px solid rgba(245,158,11,.3); }
     body.modo-pareja { --primary:var(--pareja); --primary2:var(--pareja2); }
-    body.modo-pareja .header { border-bottom:2px solid rgba(236,72,153,.3); }
 
     *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
     body{
       font-family:Inter,sans-serif;
       background:linear-gradient(180deg,var(--bg1),var(--bg2));
       color:var(--text); padding:14px 14px 108px; max-width:820px; margin:auto;
-      transition: filter 0.3s;
     }
     
-    /* ══ OFFLINE BADGE ══ */
     body.offline::before {
-      content: "📴 Sin conexión - Cambios se guardan localmente";
+      content: "📴 Sin conexión - Cambios locales";
       position: fixed; top: 0; left: 0; right: 0;
-      background: linear-gradient(90deg, #ef4444, #dc2626);
-      color: white; text-align: center; padding: 6px 16px;
-      font-size: 12px; font-weight: 700; z-index: 10000;
-      animation: offlinePulse 2s infinite;
+      background: #ef4444; color: white; text-align: center;
+      padding: 6px; font-size: 12px; font-weight: 700; z-index: 10000;
     }
-    @keyframes offlinePulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.8; }
-    }
-    body.offline .header { margin-top: 20px; }
 
-    /* ══ VOICE BUTTON ══ */
     .voice-btn {
       background: linear-gradient(135deg, #ec4899, #8b5cf6);
       color: white; width: 100%; padding: 14px; font-weight: 800;
       border-radius: 14px; display: flex; align-items: center;
       justify-content: center; gap: 10px; cursor: pointer;
-      transition: all 0.3s; border: none; margin-top: 8px;
-      animation: voiceGlow 2s infinite;
+      border: none; margin-top: 8px;
     }
-    @keyframes voiceGlow {
-      0%, 100% { box-shadow: 0 0 20px rgba(236, 72, 153, 0.3); }
-      50% { box-shadow: 0 0 30px rgba(139, 92, 246, 0.5); }
-    }
-    .voice-btn.listening {
-      background: linear-gradient(135deg, #ef4444, #dc2626);
-      animation: voiceListen 1s infinite;
-    }
-    @keyframes voiceListen {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-    }
+    .voice-btn.listening { background: linear-gradient(135deg, #ef4444, #dc2626); }
     .voice-feedback {
       background: rgba(236, 72, 153, 0.1);
       border: 1px solid rgba(236, 72, 153, 0.3);
       border-radius: 12px; padding: 12px; margin-top: 8px;
       font-size: 13px; display: none;
     }
-    .voice-feedback.active {
-      display: block; animation: voiceFadeIn 0.3s;
-    }
-    @keyframes voiceFadeIn {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    .voice-feedback.active { display: block; }
 
-    /* ══ PAREJA MODE ══ */
     .pareja-card {
       background: rgba(236, 72, 153, 0.08);
       border: 1px solid rgba(236, 72, 153, 0.25);
@@ -157,9 +149,7 @@
     .pareja-badge {
       display: inline-flex; align-items: center; gap: 6px;
       background: rgba(236, 72, 153, 0.2); color: var(--pareja);
-      border: 1px solid rgba(236, 72, 153, 0.3);
-      border-radius: 20px; padding: 4px 12px;
-      font-size: 11px; font-weight: 800;
+      border-radius: 20px; padding: 4px 12px; font-size: 11px; font-weight: 800;
     }
     .miembro-row {
       display: flex; align-items: center; justify-content: space-between;
@@ -170,28 +160,6 @@
       background: rgba(245, 158, 11, 0.08);
       border: 1px solid rgba(245, 158, 11, 0.2);
       border-radius: 14px; padding: 12px; margin-bottom: 8px;
-    }
-    .modo-selector {
-      display: grid; grid-template-columns: 1fr 1fr 1fr;
-      gap: 6px; margin-bottom: 12px;
-    }
-    .modo-chip {
-      padding: 10px 6px; font-size: 12px; font-weight: 700;
-      background: rgba(255,255,255,.06); color: var(--muted);
-      border-radius: 12px; cursor: pointer; border: 1px solid transparent;
-      text-align: center; transition: 0.2s;
-    }
-    .modo-chip.active {
-      background: rgba(236, 72, 153, .2); color: var(--pareja);
-      border-color: var(--pareja);
-    }
-    .modo-chip.personal-active {
-      background: rgba(37, 99, 235, .2); color: var(--primary);
-      border-color: var(--primary);
-    }
-    .modo-chip.negocio-active {
-      background: rgba(245, 158, 11, .2); color: var(--biz);
-      border-color: var(--biz);
     }
 
     .card,.header{
@@ -211,26 +179,22 @@
     button{padding:14px;font-weight:800;cursor:pointer}
     .primary{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff}
     .secondary{background:rgba(255,255,255,.08);color:var(--text)}
-    .danger{background:rgba(239,68,68,.18);color:var(--bad);}
-    .cross-btn{background:linear-gradient(135deg,var(--cross),var(--cross2));color:#fff}
+    .danger{background:rgba(239,68,68,.18);color:var(--bad)}
     .pareja-btn{background:linear-gradient(135deg,var(--pareja),var(--pareja2));color:#fff}
     .small-btn{padding:8px 12px;font-size:12px;width:auto;background:rgba(255,255,255,.08);color:var(--text);margin-top:8px}
-    .warn-btn{background:rgba(245,158,11,.18);color:var(--warn);padding:8px 12px;font-size:12px;width:auto;margin-top:8px}
 
-    /* ══ LOGIN ══ */
     #loginScreen {
-      display:none; position:fixed; inset:0; z-index:2000;
-      background:linear-gradient(135deg,#07111f 0%,#0f172a 50%,#0c1a30 100%);
-      overflow-y:auto;
+      display:flex; position:fixed; inset:0; z-index:2000;
+      background:linear-gradient(135deg,#07111f,#0f172a,#0c1a30);
+      align-items:center; justify-content:center; padding:20px;
     }
-    #loginScreen.visible { display:flex; align-items:center; justify-content:center; padding:20px; }
+    #loginScreen.hidden { display:none; }
     .login-box {
       width:100%; max-width:400px;
       background:rgba(255,255,255,.05);
       border:1px solid rgba(255,255,255,.1);
       border-radius:28px; padding:32px 28px;
       backdrop-filter:blur(20px);
-      box-shadow:0 40px 80px rgba(0,0,0,.6);
     }
     .login-logo { text-align:center; margin-bottom:28px; }
     .login-logo .logo-icon { font-size:48px; display:block; margin-bottom:8px; }
@@ -262,7 +226,6 @@
     .mode-tabs{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:12px}
     .mode-tab{padding:10px 6px;font-size:12px;font-weight:700;background:rgba(255,255,255,.06);color:var(--muted);border-radius:12px;cursor:pointer;border:1px solid transparent;text-align:center;}
     .mode-tab.active{background:rgba(37,99,235,.2);color:var(--primary);border-color:var(--primary)}
-    .mode-tab.cross-active{background:rgba(34,211,238,.2);color:var(--cross);border-color:var(--cross)}
     .form-section{display:none}
     .form-section.active{display:block}
     .cuenta-card{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:16px;padding:14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
@@ -280,11 +243,9 @@
     .tab{display:none}
     .tab.active{display:block}
     .list{display:grid;gap:10px}
-    .item{background:rgba(255,255,255,.04);padding:12px;border-radius:14px;border-left:4px solid transparent}
+    .item{background:rgba(255,255,255,.04);padding:12px;border-radius:14px;border-left:4px solid transparent;margin-bottom:8px;}
     .ingreso{border-left-color:var(--ok)}
     .gasto{border-left-color:var(--bad)}
-    .transferencia{border-left-color:var(--transfer)}
-    .traspaso{border-left-color:var(--cross)}
     .alert{padding:10px;border-radius:12px;font-size:13px;margin-top:8px}
     .good{background:rgba(34,197,94,.14);color:var(--ok)}
     .bad{background:rgba(239,68,68,.14);color:var(--bad)}
@@ -295,11 +256,7 @@
     .nav{position:fixed;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:10px 12px;background:rgba(5,10,20,.94);backdrop-filter:blur(16px);border-top:1px solid var(--line);max-width:820px;margin:auto;}
     .nav button{padding:8px 4px;font-size:24px;background:transparent;color:#cbd5e1}
     .nav button.active{background:rgba(255,255,255,.08);color:#fff;border-radius:14px}
-    .toast{position:fixed;left:50%;bottom:120px;transform:translateX(-50%);background:#111827;color:#fff;padding:12px 16px;border-radius:14px;font-size:13px;font-weight:700;display:none;z-index:999;white-space:nowrap;max-width:90vw;text-align:center;}
-    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;align-items:center;justify-content:center;padding:20px;}
-    .modal-overlay.open{display:flex}
-    .modal{background:#0f172a;border:1px solid var(--line);border-radius:22px;padding:22px;max-width:400px;width:100%;max-height:90vh;overflow-y:auto;}
-    .modal h3{font-size:18px;font-weight:800;margin-bottom:8px}
+    .toast{position:fixed;left:50%;bottom:120px;transform:translateX(-50%);background:#111827;color:#fff;padding:12px 16px;border-radius:14px;font-size:13px;font-weight:700;display:none;z-index:999;}
     .user-chip {
       display:flex; align-items:center; gap:6px;
       background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1);
@@ -311,13 +268,17 @@
       display:flex; align-items:center; justify-content:center;
       font-size:11px; font-weight:800; color:#fff;
     }
-    .user-chip-name { font-size:12px; font-weight:700; max-width:90px; overflow:hidden; }
+    .user-chip-name { font-size:12px; font-weight:700; }
+    .filter-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+    .filter-chip{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;background:rgba(255,255,255,.06);color:var(--muted);border:1px solid transparent;cursor:pointer;}
+    .filter-chip.active{background:rgba(37,99,235,.2);color:var(--primary);border-color:var(--primary)}
+    canvas{margin-top:10px;background:rgba(255,255,255,.03);padding:8px;border-radius:14px}
   </style>
 </head>
 <body>
 
 <!-- LOGIN -->
-<div id="loginScreen" class="visible">
+<div id="loginScreen">
   <div class="login-box">
     <div class="login-logo">
       <span class="logo-icon">💳</span>
@@ -348,7 +309,7 @@
   <div class="header">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
       <div>
-        <div class="small">Banking PRO AI v20 <span id="fbStatus">⏳</span></div>
+        <div class="small">Banking PRO AI v20 <span id="fbStatus" style="color:var(--ok)">✅</span></div>
         <div class="small" id="today"></div>
       </div>
       <div id="userChip" class="user-chip" onclick="goTab('settings', document.querySelectorAll('.nav button')[4])">
@@ -363,10 +324,10 @@
     </div>
     <div class="small" style="margin-top:4px" id="ctxSaldoLabel">Saldo total disponible</div>
     <div class="big" id="saldoTop">$0</div>
-    <div class="eye" onclick="toggleHide()">👁 Mostrar / ocultar</div>
+    <div class="eye" onclick="toggleHide()" style="font-size:12px;margin-top:10px;cursor:pointer;color:var(--muted)">👁 Mostrar / ocultar</div>
     <div class="grid3" style="margin-top:12px">
+      <div class="kpi"><span>Movimientos</span><strong id="syncCount">0</strong></div>
       <div class="kpi"><span>Pendientes</span><strong id="pendingCount">0</strong></div>
-      <div class="kpi"><span>Sincronizados</span><strong id="syncCount">0</strong></div>
       <div class="kpi"><span>Racha</span><strong id="streakBox">0</strong></div>
     </div>
   </div>
@@ -377,19 +338,12 @@
     <div class="pareja-card" id="parejaCard" style="display:none">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
         <div class="title" style="margin-bottom:0">💑 Finanzas en pareja</div>
-        <span class="pareja-badge" id="parejaStatus">Conectado</span>
+        <span class="pareja-badge" id="parejaStatus">🔗</span>
       </div>
       <div id="parejaResumen"></div>
-      <button class="small-btn" onclick="goTab('settings', document.querySelectorAll('.nav button')[4]); setTimeout(()=>{document.getElementById('tab-settings-pareja').scrollIntoView()},100)" style="width:100%;margin-top:8px">⚙️ Gestionar pareja</button>
+      <button class="small-btn" onclick="goTab('settings', document.querySelectorAll('.nav button')[4]); setTimeout(()=>document.getElementById('tab-settings-pareja').scrollIntoView(),100)" style="width:100%;margin-top:8px">⚙️ Gestionar pareja</button>
     </div>
     
-    <div class="consolidado-card" id="crossCard" style="display:none">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <div class="title" style="margin-bottom:0">📊 Resumen consolidado</div>
-        <button class="small-btn" onclick="refreshConsolidado()" style="font-size:11px">🔄 Actualizar</button>
-      </div>
-      <div id="crossSummary"></div>
-    </div>
     <div class="card">
       <div class="title" id="cuentasTitle">🏦 Mis cuentas</div>
       <div id="cuentasResumen"></div>
@@ -401,7 +355,7 @@
       <div id="cockpit"></div>
     </div>
     <div class="card">
-      <div class="title">➕ Nuevo movimiento <span class="ctx-label" id="movCtxLabel">Personal</span></div>
+      <div class="title">➕ Nuevo movimiento <span class="ctx-label personal" id="movCtxLabel">Personal</span></div>
       <div class="mode-tabs">
         <div class="mode-tab active" onclick="setMode('ingreso',this)">💰 Ingreso</div>
         <div class="mode-tab" onclick="setMode('gasto',this)">💸 Gasto</div>
@@ -418,7 +372,7 @@
       </div>
       <div class="form-section" id="fs-transfer">
         <label>Cuenta origen</label><select id="cuentaOrigen"></select>
-        <div>⬇️</div>
+        <div style="text-align:center;margin:4px 0">⬇️</div>
         <label>Cuenta destino</label><select id="cuentaDestino"></select>
         <input type="text" id="montoTransfer" placeholder="Monto ej: 50.000">
         <input type="text" id="descTransfer" placeholder="Descripción">
@@ -427,8 +381,7 @@
       <button class="voice-btn" id="voiceBtn" onclick="toggleVoiceInput()">🎤 Registrar por voz</button>
       <div class="voice-feedback" id="voiceFeedback"></div>
     </div>
-    <div class="card"><div class="title">⭐ Favoritos</div><div class="fav-grid" id="favList"></div></div>
-    <div class="card"><div class="title">🧠 Coach</div><div id="coach"></div></div>
+    <div class="card"><div class="title">🧠 Coach Financiero</div><div id="coach"></div></div>
   </section>
 
   <!-- DASHBOARD -->
@@ -441,7 +394,7 @@
 
   <!-- GOALS -->
   <section class="tab" id="tab-goals">
-    <div class="card"><div class="title">🎯 Meta <span class="ctx-label" id="goalCtxLabel">Personal</span></div>
+    <div class="card"><div class="title">🎯 Meta <span class="ctx-label personal" id="goalCtxLabel">Personal</span></div>
       <input type="text" id="goalName" placeholder="Ej: Viaje"><input type="number" id="goalValue" placeholder="Monto"><button class="primary" onclick="addGoal()">Guardar</button>
     </div>
     <div class="card"><div class="title">🚀 Metas</div><div id="goalList"></div></div>
@@ -473,18 +426,11 @@
       <button class="danger" style="width:100%" onclick="doLogout()">🚪 Cerrar sesión</button>
     </div>
 
-    <!-- ════════════════════════════════════
-         NUEVA SECCIÓN: MODO PAREJA
-    ════════════════════════════════════ -->
+    <!-- PAREJA -->
     <div class="card" id="tab-settings-pareja">
       <div class="title">💑 Conexión en pareja</div>
       <div class="alert info" style="margin-bottom:12px">Conecta con tu pareja para ver y gestionar finanzas juntos en tiempo real.</div>
-      <div id="parejaConfig"></div>
-      
-      <!-- ESTADO DE CONEXIÓN -->
       <div id="parejaEstadoConexion" style="margin-bottom:12px"></div>
-      
-      <!-- BUSCAR PAREJA -->
       <div id="parejaBusqueda" style="margin-bottom:12px">
         <label>Email de tu pareja</label>
         <div style="display:flex;gap:8px">
@@ -493,11 +439,7 @@
         </div>
         <div id="resultadoBusqueda" style="margin-top:8px"></div>
       </div>
-
-      <!-- INVITACIONES PENDIENTES -->
       <div id="invitacionesPendientes" style="margin-bottom:12px"></div>
-
-      <!-- MIEMBROS CONECTADOS -->
       <div id="miembrosConectados"></div>
     </div>
 
@@ -505,9 +447,10 @@
       <button id="btnThemeDark" class="secondary" onclick="setTheme('dark')" style="margin-bottom:10px">🌙 Oscuro</button>
       <button id="btnThemeLight" class="secondary" onclick="setTheme('light')">☀️ Claro</button>
     </div>
-    <div class="card"><div class="title">🧹 Limpiar</div>
-      <button class="secondary" onclick="limpiarCache('personal')" style="margin-bottom:8px">🗑️ Personal</button>
-      <button class="secondary" onclick="limpiarCache('negocio')">🗑️ Negocio</button>
+    <div class="card">
+      <div class="title">🔧 Diagnóstico</div>
+      <div id="diagContent" style="font-size:12px;line-height:1.6"></div>
+      <button class="secondary" onclick="ejecutarDiagnostico()" style="margin-top:8px">🔍 Ejecutar diagnóstico</button>
     </div>
   </section>
 
@@ -522,237 +465,204 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- ══════════════════════════════════════
-     LÓGICA PRINCIPAL
-══════════════════════════════════════ -->
 <script>
   /* ════════════════════════════════════
-     CONFIG
+     CONFIGURACIÓN Y VARIABLES GLOBALES
   ════════════════════════════════════ */
   const ACC_COLORS = ["#2563eb","#22c55e","#f59e0b","#ec4899","#a78bfa","#14b8a6"];
   
-  const CATS_DEFAULT_PERSONAL = [
-    {id:"ingreso",nombre:"Ingreso",icon:"💰",tipo:"ingreso"},
-    {id:"comida",nombre:"Comida",icon:"🍔",tipo:"gasto"},
-    {id:"vivienda",nombre:"Vivienda",icon:"🏠",tipo:"gasto"},
-    {id:"transporte",nombre:"Transporte",icon:"🚗",tipo:"gasto"},
-    {id:"servicios",nombre:"Servicios",icon:"💡",tipo:"gasto"},
-    {id:"entretenimiento",nombre:"Entretenimiento",icon:"🎮",tipo:"gasto"},
-  ];
-  const CATS_DEFAULT_NEGOCIO = [
-    {id:"ventas",nombre:"Ventas",icon:"💰",tipo:"ingreso"},
-    {id:"inventario",nombre:"Inventario",icon:"📦",tipo:"gasto"},
-    {id:"nomina",nombre:"Nómina",icon:"👷",tipo:"gasto"},
-    {id:"servicios_pub",nombre:"Servicios",icon:"💡",tipo:"gasto"},
-  ];
-  const CATS_DEFAULT_PAREJA = [
-    {id:"ingreso_conjunto",nombre:"Ingreso conjunto",icon:"💰",tipo:"ingreso"},
-    {id:"comida",nombre:"Comida",icon:"🍔",tipo:"gasto"},
-    {id:"vivienda",nombre:"Vivienda",icon:"🏠",tipo:"gasto"},
-    {id:"transporte",nombre:"Transporte",icon:"🚗",tipo:"gasto"},
-    {id:"servicios",nombre:"Servicios",icon:"💡",tipo:"gasto"},
-    {id:"entretenimiento",nombre:"Entretenimiento",icon:"🎮",tipo:"gasto"},
-    {id:"citas",nombre:"Citas",icon:"💕",tipo:"gasto"},
-    {id:"viajes",nombre:"Viajes",icon:"✈️",tipo:"gasto"},
-    {id:"ahorro_conjunto",nombre:"Ahorro conjunto",icon:"🐷",tipo:"ambos"},
-  ];
+  const CATS_DEFAULT = {
+    personal: [
+      {id:"ingreso",nombre:"Ingreso",icon:"💰",tipo:"ingreso"},
+      {id:"comida",nombre:"Comida",icon:"🍔",tipo:"gasto"},
+      {id:"vivienda",nombre:"Vivienda",icon:"🏠",tipo:"gasto"},
+      {id:"transporte",nombre:"Transporte",icon:"🚗",tipo:"gasto"},
+      {id:"servicios",nombre:"Servicios",icon:"💡",tipo:"gasto"},
+      {id:"entretenimiento",nombre:"Entretenimiento",icon:"🎮",tipo:"gasto"},
+    ],
+    negocio: [
+      {id:"ventas",nombre:"Ventas",icon:"💰",tipo:"ingreso"},
+      {id:"inventario",nombre:"Inventario",icon:"📦",tipo:"gasto"},
+      {id:"nomina",nombre:"Nómina",icon:"👷",tipo:"gasto"},
+      {id:"servicios_pub",nombre:"Servicios",icon:"💡",tipo:"gasto"},
+    ],
+    pareja: [
+      {id:"ingreso_conjunto",nombre:"Ingreso conjunto",icon:"💰",tipo:"ingreso"},
+      {id:"comida",nombre:"Comida",icon:"🍔",tipo:"gasto"},
+      {id:"vivienda",nombre:"Vivienda",icon:"🏠",tipo:"gasto"},
+      {id:"transporte",nombre:"Transporte",icon:"🚗",tipo:"gasto"},
+      {id:"servicios",nombre:"Servicios",icon:"💡",tipo:"gasto"},
+      {id:"citas",nombre:"Citas",icon:"💕",tipo:"gasto"},
+      {id:"viajes",nombre:"Viajes",icon:"✈️",tipo:"gasto"},
+      {id:"ahorro_conjunto",nombre:"Ahorro conjunto",icon:"🐷",tipo:"ambos"},
+    ]
+  };
 
-  const $ = id => document.getElementById(id);
-  
-  let contexto     = localStorage.getItem("contexto") || "personal";
-  let data         = [];
-  let pending      = [];
-  let hidden       = localStorage.getItem("hideMoney") === "1";
-  let goals        = [];
-  let streak       = Number(localStorage.getItem("streak") || 0);
-  let modoActual   = "ingreso";
-  let cuentas      = [];
-  let categorias   = [];
+  const CUENTAS_DEFAULT = {
+    personal: [{id:"nequi",nombre:"Nequi",icon:"📱"},{id:"davivienda",nombre:"Davivienda",icon:"🏦"},{id:"efectivo",nombre:"Efectivo",icon:"💵"}],
+    negocio:  [{id:"caja_neg",nombre:"Caja",icon:"🏪"},{id:"banco_neg",nombre:"Banco Neg.",icon:"🏦"}],
+    pareja:   [{id:"cuenta_conjunta",nombre:"Cuenta conjunta",icon:"💑"},{id:"efectivo_conjunto",nombre:"Efectivo",icon:"💵"}]
+  };
+
+  // Variables de estado
+  let contexto    = localStorage.getItem("contexto") || "personal";
+  let data        = [];
+  let pending     = [];
+  let hidden      = localStorage.getItem("hideMoney") === "1";
+  let goals       = [];
+  let streak      = Number(localStorage.getItem("streak") || 0);
+  let modoActual  = "ingreso";
+  let cuentas     = [];
+  let categorias  = [];
   let c1,c2,c3,c6;
-  let filtroTipo   = "todos";
-  let fbListo      = false;
-  let appIniciada  = false;
+  let filtroTipo  = "todos";
+  let fbListo     = false;
+  let appIniciada = false;
   
-  // ══ NUEVAS VARIABLES PAREJA ══
-  let parejaConectada = false;
-  let idPareja        = null;    // ID del documento en /parejas que te contiene
-  let datosPareja     = null;    // Datos del doc pareja  
-  let datosCompañero  = null;    // Datos del user compañero
-  let unsubscribePareja = null;  // Listener Firestore
-  let movimientosPareja = [];    // Datos del compañero en modo pareja
+  // Variables pareja
+  let parejaConectada   = false;
+  let idPareja          = null;
+  let datosPareja       = null;
+  let datosCompañero    = null;
+  let unsubscribePareja = null;
+  let movimientosPareja = [];
 
-  /* ════════════════════════════════════
-     FIREBASE HELPERS
-  ════════════════════════════════════ */
-  function colName(ctx) {
-    if (!window.currentUser) throw new Error("Sin usuario");
-    const map = {
-      personal: "movimientos_personal",
-      negocio:  "movimientos_negocio",
-      pareja:   "movimientos_pareja"
-    };
-    return window.fbCollection(window.db, "users", window.currentUser.uid, map[ctx] || "movimientos_personal");
-  }
-
-  /* ════════════════════════════════════
-     SISTEMA DE VOZ (CORREGIDO)
-  ════════════════════════════════════ */
+  // Voz
   let recognition = null;
   let isListening = false;
 
-  function toggleVoiceInput() {
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      toast('❌ Voz no soportada'); return;
-    }
-    isListening ? stopListening() : startListening();
+  // Referencias DOM (inicializadas después de que el DOM esté listo)
+  let elFecha, elDescripcion, elMontoInput, elCategoria, elCuentaSel;
+  let elSaldoTop, elToday, elSyncCount, elPendingCount, elStreakBox;
+  let elCockpit, elCoach, elGoalList, elLista;
+  let elCuentasResumen, elDistBar, elDistLegend;
+  let elSaveBtn, elToast;
+
+  function initDomRefs() {
+    elFecha = document.getElementById("fecha");
+    elDescripcion = document.getElementById("descripcion");
+    elMontoInput = document.getElementById("montoInput");
+    elCategoria = document.getElementById("categoria");
+    elCuentaSel = document.getElementById("cuentaSel");
+    elSaldoTop = document.getElementById("saldoTop");
+    elToday = document.getElementById("today");
+    elSyncCount = document.getElementById("syncCount");
+    elPendingCount = document.getElementById("pendingCount");
+    elStreakBox = document.getElementById("streakBox");
+    elCockpit = document.getElementById("cockpit");
+    elCoach = document.getElementById("coach");
+    elGoalList = document.getElementById("goalList");
+    elLista = document.getElementById("lista");
+    elCuentasResumen = document.getElementById("cuentasResumen");
+    elDistBar = document.getElementById("distBar");
+    elDistLegend = document.getElementById("distLegend");
+    elSaveBtn = document.getElementById("saveBtn");
+    elToast = document.getElementById("toast");
   }
 
-  function startListening() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    recognition = new SpeechRecognition();
-    recognition.lang = 'es-CO';
-    recognition.interimResults = true;
-    
-    $('voiceBtn').classList.add('listening');
-    $('voiceBtn').innerHTML = '🎤 Escuchando...';
-    $('voiceFeedback').classList.add('active');
-    $('voiceFeedback').innerHTML = '👂 Habla ahora...';
-    isListening = true;
-
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      if (!event.results[0].isFinal) {
-        $('voiceFeedback').innerHTML = `📝 "${transcript}"`;
-      } else {
-        procesarComandoVoz(transcript);
-        stopListening();
-      }
-    };
-
-    recognition.onerror = (e) => {
-      $('voiceFeedback').innerHTML = '⚠️ Error: ' + e.error;
-      stopListening();
-    };
-    recognition.start();
+  /* ════════════════════════════════════
+     HELPERS
+  ════════════════════════════════════ */
+  function toast(msg) {
+    if (!elToast) elToast = document.getElementById("toast");
+    elToast.innerText = msg;
+    elToast.style.display = "block";
+    setTimeout(() => { elToast.style.display = "none"; }, 2400);
   }
 
-  function stopListening() {
-    if (recognition) recognition.stop();
-    $('voiceBtn').classList.remove('listening');
-    $('voiceBtn').innerHTML = '🎤 Registrar por voz';
-    isListening = false;
+  function money(n) {
+    if (hidden) return "••••••";
+    return "$" + Number(n).toLocaleString("es-CO");
   }
 
-  function procesarComandoVoz(transcript) {
-    let monto = 0;
-    const texto = transcript.toLowerCase()
-      .replace(/á/g,'a').replace(/é/g,'e').replace(/í/g,'i')
-      .replace(/ó/g,'o').replace(/ú/g,'u');
+  function parseMonto(str) {
+    return Number(String(str).replace(/\./g, "").replace(",", ".")) || 0;
+  }
 
-    // ═══ EXTRACCIÓN DE MONTO CORREGIDA ═══
-    const patrones = [
-      { regex: /(\d+)\s*millones?\b/i,    mult: 1000000 },
-      { regex: /(\d+[.,]\d+)\s*m\b/i,     mult: 1000000 },
-      { regex: /(\d+)\s*mil\b/i,           mult: 1000 },
-      { regex: /(\d+)\s*k\b/i,             mult: 1000 },
-      { regex: /(\d+)\s*(?:pesos|lucas|barras|varos)\b/i, mult: 1 },
-      { regex: /(\d[\d.,]*)\s*$/,          mult: 1 }
-    ];
+  function uid() {
+    return window.currentUser ? window.currentUser.uid : "guest";
+  }
 
-    for (const p of patrones) {
-      const match = texto.match(p.regex);
-      if (match) {
-        let num = match[1].replace(/\.(?=\d{3})/g, '').replace(',', '.');
-        monto = parseFloat(num) * p.mult;
-        break;
-      }
-    }
+  function keyFor(base) {
+    const sufijo = contexto === "negocio" ? "Negocio" : contexto === "pareja" ? "Pareja" : "";
+    return uid() + "_" + sufijo + base;
+  }
 
-    if (!monto) {
-      $('voiceFeedback').innerHTML = '❌ No detecté el monto. Di "200 mil" o "50 lucas"';
-      return;
-    }
-
-    // Detectar tipo
-    let tipo = 'gasto';
-    if (/recib[ií]|ingres[oó]|cobr[eé]|gan[eé]|vend[ií]|pago|salario/i.test(texto)) tipo = 'ingreso';
-
-    // Detectar categoría
-    const mapaCat = {
-      '🍔 Comida': /comida|almuerzo|cena|restaurante|supermercado|mercado|café|pan/i,
-      '🚗 Transporte': /transporte|gasolina|uber|taxi|bus|metro/i,
-      '🏠 Vivienda': /arriendo|hipoteca|cuota/i,
-      '💡 Servicios': /luz|agua|gas|internet|teléfono|netflix|spotify/i,
-      '🎮 Entretenimiento': /cine|teatro|fiesta|bar|juego|viaje/i,
-      '💕 Citas': /cita|restaurante|regalo|flores|aniversario/i
+  function getColName(ctx) {
+    if (!window.currentUser) return null;
+    const map = {
+      personal: "movimientos_personal",
+      negocio: "movimientos_negocio",
+      pareja: "movimientos_pareja"
     };
-    let categoria = null;
-    for (const [cat, re] of Object.entries(mapaCat)) {
-      if (re.test(texto)) { categoria = cat; break; }
-    }
-
-    // Descripción
-    const palabrasFiltro = ['mil','pesos','lucas','barras','con','por','del','las','los','gasté','gaste','pagué'];
-    const desc = texto.split(' ').filter(w => !palabrasFiltro.includes(w) && w.length > 2).join(' ') || 'Movimiento';
-
-    setMode(tipo, document.querySelectorAll('.mode-tab')[tipo==='ingreso'?0:1]);
-    $('descripcion').value = desc;
-    $('montoInput').value = monto.toLocaleString('es-CO');
-    if (categoria) $('categoria').value = categoria;
-    
-    $('voiceFeedback').innerHTML = `✅ ${tipo.toUpperCase()}: $${monto.toLocaleString('es-CO')} · ${desc}${categoria?' · '+categoria:''}<br><small>Revisa y presiona Guardar</small>`;
+    const colName = map[ctx] || "movimientos_personal";
+    return window.fbCollection(window.db, "users", window.currentUser.uid, colName);
   }
 
   /* ════════════════════════════════════
      AUTH
   ════════════════════════════════════ */
   function showLoginForm(m) {
-    $('formLogin').style.display = m==='login'?'block':'none';
-    $('formRegister').style.display = m==='register'?'block':'none';
-    $('tabLoginBtn').classList.toggle('active', m==='login');
-    $('tabRegisterBtn').classList.toggle('active', m==='register');
+    document.getElementById("formLogin").style.display = m === "login" ? "block" : "none";
+    document.getElementById("formRegister").style.display = m === "register" ? "block" : "none";
+    document.getElementById("tabLoginBtn").classList.toggle("active", m === "login");
+    document.getElementById("tabRegisterBtn").classList.toggle("active", m === "register");
+    document.getElementById("loginError").classList.remove("visible");
   }
 
-  function showLoginError(msg) { $('loginError').textContent=msg; $('loginError').classList.add('visible'); }
-  function hideLoginError() { $('loginError').classList.remove('visible'); }
+  function showLoginError(msg) {
+    const el = document.getElementById("loginError");
+    el.textContent = msg;
+    el.classList.add("visible");
+  }
 
   async function doLogin() {
-    const email=$('loginEmail').value.trim(), pass=$('loginPass').value;
-    if(!email||!pass){showLoginError('Completa los campos');return}
-    hideLoginError();
-    try { await window.fbLogin(email,pass); }
-    catch(e) { showLoginError(translateError(e.code)); }
+    const email = document.getElementById("loginEmail").value.trim();
+    const pass = document.getElementById("loginPass").value;
+    if (!email || !pass) { showLoginError("Completa todos los campos"); return; }
+    document.getElementById("loginError").classList.remove("visible");
+    try {
+      await window.fbLogin(email, pass);
+    } catch (e) {
+      const msgs = {
+        "auth/user-not-found": "No existe una cuenta con ese correo",
+        "auth/wrong-password": "Contraseña incorrecta",
+        "auth/invalid-credential": "Credenciales inválidas",
+        "auth/too-many-requests": "Demasiados intentos. Espera un momento"
+      };
+      showLoginError(msgs[e.code] || "Error: " + e.code);
+    }
   }
 
   async function doRegister() {
-    const name=$('regName').value.trim(), email=$('regEmail').value.trim(), pass=$('regPass').value;
-    if(!name||!email||!pass||pass.length<6){showLoginError('Completa todos los campos (contraseña mín 6)');return}
-    hideLoginError();
+    const name = document.getElementById("regName").value.trim();
+    const email = document.getElementById("regEmail").value.trim();
+    const pass = document.getElementById("regPass").value;
+    if (!name || !email || !pass || pass.length < 6) {
+      showLoginError("Completa todos los campos (contraseña mín. 6 caracteres)");
+      return;
+    }
+    document.getElementById("loginError").classList.remove("visible");
     try {
-      const cred = await window.fbRegister(email,pass);
-      await window.fbUpdateProfile(cred.user, {displayName:name});
+      const cred = await window.fbRegister(email, pass);
+      await window.fbUpdateProfile(cred.user, { displayName: name });
       window.currentUser = cred.user;
       window.currentUser.displayName = name;
-    } catch(e) { showLoginError(translateError(e.code)); }
+    } catch (e) {
+      const msgs = {
+        "auth/email-already-in-use": "Este correo ya está registrado",
+        "auth/weak-password": "Contraseña muy débil (mín. 6 caracteres)",
+        "auth/invalid-email": "Correo electrónico inválido"
+      };
+      showLoginError(msgs[e.code] || "Error: " + e.code);
+    }
   }
 
   async function doLogout() {
-    if(!confirm('¿Cerrar sesión?')) return;
+    if (!confirm("¿Cerrar sesión?")) return;
     if (unsubscribePareja) unsubscribePareja();
     await window.fbLogout();
-    toast('👋 Sesión cerrada');
-  }
-
-  function translateError(code) {
-    const m = {
-      'auth/email-already-in-use':'Correo ya registrado',
-      'auth/invalid-email':'Correo inválido',
-      'auth/weak-password':'Contraseña débil',
-      'auth/user-not-found':'No existe esa cuenta',
-      'auth/wrong-password':'Contraseña incorrecta',
-      'auth/too-many-requests':'Demasiados intentos'
-    };
-    return m[code] || 'Error: '+code;
+    toast("👋 Sesión cerrada");
   }
 
   /* ════════════════════════════════════
@@ -761,46 +671,57 @@
   window.addEventListener("authChanged", (e) => {
     const user = e.detail;
     if (user) {
-      $('loginScreen').classList.remove('visible');
-      $('appContent').classList.add('visible');
+      document.getElementById("loginScreen").classList.add("hidden");
+      document.getElementById("appContent").classList.add("visible");
       updateUserUI(user);
-      if (!appIniciada) { appIniciada=true; initApp(); }
-      else { if (fbListo) load(); }
+      if (!appIniciada) {
+        appIniciada = true;
+        initDomRefs();
+        initApp();
+      } else {
+        if (fbListo) load();
+      }
       inicializarPareja();
     } else {
-      $('loginScreen').classList.add('visible');
-      $('appContent').classList.remove('visible');
-      appIniciada=false;
+      document.getElementById("loginScreen").classList.remove("hidden");
+      document.getElementById("appContent").classList.remove("visible");
+      appIniciada = false;
     }
   });
 
   function updateUserUI(user) {
-    const dn = user.displayName || (user.email?user.email.split('@')[0]:'Usuario');
+    const dn = user.displayName || (user.email ? user.email.split("@")[0] : "Usuario");
     const parts = dn.split(/[\s._-]+/).filter(Boolean);
-    $('userAvatar').textContent = parts.map(w=>w[0]).join('').toUpperCase().slice(0,2)||'U';
-    $('userName').textContent = parts[0] || dn;
-    $('userInfoBlock').innerHTML = `
+    const initials = parts.map(w => w[0]).join("").toUpperCase().slice(0, 2) || "U";
+
+    document.getElementById("userAvatar").textContent = initials;
+    document.getElementById("userName").textContent = parts[0] || dn;
+
+    document.getElementById("userInfoBlock").innerHTML = `
       <div style="display:flex;align-items:center;gap:12px">
-        <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff">
-          ${$('userAvatar').textContent}
-        </div>
-        <div><div style="font-weight:700;font-size:15px">${dn}</div><div class="small">${user.email||''}</div></div>
+        <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff">${initials}</div>
+        <div><div style="font-weight:700;font-size:15px">${dn}</div><div class="small">${user.email||""}</div></div>
       </div>`;
   }
 
   /* ════════════════════════════════════
-     INIT
+     INIT APP
   ════════════════════════════════════ */
   function initApp() {
-    aplicarTemaGuardado();
     elFecha.valueAsDate = new Date();
-    elToday.innerText = new Date().toLocaleDateString("es-CO",{weekday:"long",day:"numeric",month:"long"});
+    elToday.innerText = new Date().toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long" });
     elStreakBox.innerText = streak;
-    cargarCuentas(); cargarCategorias(); cargarDatos();
-    poblarSelectsCuentas(); poblarSelectCategoria("ingreso");
-    aplicarEstiloContexto(); actualizarLabelsContexto();
+
+    cargarCuentas();
+    cargarCategorias();
+    cargarDatos();
+    poblarSelectsCuentas();
+    poblarSelectCategoria("ingreso");
+    aplicarEstiloContexto();
+    actualizarLabelsContexto();
     poblarPresupuestoCatSel();
-    render(); renderCrossCard();
+
+    render();
     if (fbListo) load();
   }
 
@@ -808,116 +729,119 @@
      CONTEXTO
   ════════════════════════════════════ */
   function cargarCuentas() {
-    const def = {
-      personal: [{id:"nequi",nombre:"Nequi",icon:"📱"},{id:"davivienda",nombre:"Davivienda",icon:"🏦"},{id:"efectivo",nombre:"Efectivo",icon:"💵"}],
-      negocio:  [{id:"caja_neg",nombre:"Caja",icon:"🏪"},{id:"banco_neg",nombre:"Banco Neg.",icon:"🏦"}],
-      pareja:   [{id:"cuenta_conjunta",nombre:"Cuenta conjunta",icon:"💑"},{id:"efectivo_conjunto",nombre:"Efectivo",icon:"💵"}]
-    };
-    cuentas = JSON.parse(localStorage.getItem(keyFor("cuentas")) || JSON.stringify(def[contexto]||def.personal));
+    const def = CUENTAS_DEFAULT[contexto] || CUENTAS_DEFAULT.personal;
+    const stored = localStorage.getItem(keyFor("cuentas"));
+    cuentas = stored ? JSON.parse(stored) : JSON.parse(JSON.stringify(def));
+    cuentas = cuentas.map(c => ({ saldoInicial: 0, ...c }));
   }
+
   function cargarCategorias() {
-    const def = { personal:CATS_DEFAULT_PERSONAL, negocio:CATS_DEFAULT_NEGOCIO, pareja:CATS_DEFAULT_PAREJA };
-    categorias = JSON.parse(localStorage.getItem(keyFor("categorias")) || JSON.stringify(def[contexto]||def.personal));
+    const def = CATS_DEFAULT[contexto] || CATS_DEFAULT.personal;
+    const stored = localStorage.getItem(keyFor("categorias"));
+    categorias = stored ? JSON.parse(stored) : JSON.parse(JSON.stringify(def));
   }
+
   function cargarDatos() {
-    data      = JSON.parse(localStorage.getItem(keyFor("dataCache")) || "[]");
-    pending   = JSON.parse(localStorage.getItem(keyFor("pendingQueue")) || "[]");
-    goals     = JSON.parse(localStorage.getItem(keyFor("goals")) || "[]");
-    $('syncCount').innerText = data.length;
-    $('pendingCount').innerText = pending.length;
+    data = JSON.parse(localStorage.getItem(keyFor("dataCache")) || "[]");
+    pending = JSON.parse(localStorage.getItem(keyFor("pendingQueue")) || "[]");
+    goals = JSON.parse(localStorage.getItem(keyFor("goals")) || "[]");
+    elSyncCount.innerText = data.length;
+    elPendingCount.innerText = pending.length;
   }
 
   function setContexto(ctx) {
     contexto = ctx;
     localStorage.setItem("contexto", ctx);
     aplicarEstiloContexto();
-    cargarCuentas(); cargarCategorias(); cargarDatos();
-    poblarSelectsCuentas(); poblarSelectCategoria("ingreso");
-    actualizarLabelsContexto(); poblarPresupuestoCatSel();
-    render(); renderCrossCard(); renderParejaCard();
+    cargarCuentas();
+    cargarCategorias();
+    cargarDatos();
+    poblarSelectsCuentas();
+    poblarSelectCategoria("ingreso");
+    actualizarLabelsContexto();
+    poblarPresupuestoCatSel();
+    render();
+    renderParejaCard();
     if (fbListo) load();
-    if (ctx === 'pareja') cargarMovimientosPareja();
-    toast(ctx==="negocio"?"🏪 Negocio":ctx==="pareja"?"💑 Modo Pareja":"👤 Personal");
+    if (ctx === "pareja") cargarMovimientosPareja();
+    toast(ctx === "negocio" ? "🏪 Modo Negocio" : ctx === "pareja" ? "💑 Modo Pareja" : "👤 Modo Personal");
   }
 
   function aplicarEstiloContexto() {
-    document.body.classList.toggle("modo-negocio", contexto==="negocio");
-    document.body.classList.toggle("modo-pareja", contexto==="pareja");
-    $("ctxPersonal").classList.toggle("ctx-active", contexto==="personal");
-    $("ctxNegocio").classList.toggle("ctx-active",  contexto==="negocio");
-    $("ctxPareja").classList.toggle("ctx-active",   contexto==="pareja");
+    document.body.classList.toggle("modo-negocio", contexto === "negocio");
+    document.body.classList.toggle("modo-pareja", contexto === "pareja");
+    document.getElementById("ctxPersonal").classList.toggle("ctx-active", contexto === "personal");
+    document.getElementById("ctxNegocio").classList.toggle("ctx-active", contexto === "negocio");
+    document.getElementById("ctxPareja").classList.toggle("ctx-active", contexto === "pareja");
   }
 
   function actualizarLabelsContexto() {
-    const labels = {personal:{cls:'personal',txt:'Personal'},negocio:{cls:'negocio',txt:'Negocio'},pareja:{cls:'pareja',txt:'Pareja'}};
-    const l = labels[contexto]||labels.personal;
-    ['movCtxLabel','goalCtxLabel'].forEach(id=>{
-      const el=$(id); if(!el)return;
-      el.className='ctx-label '+l.cls; el.innerText=l.txt;
-    });
-    $("cuentasTitle").innerHTML = (contexto==="pareja"?"💑":"🏦")+" Mis cuentas";
-    $("ctxSaldoLabel").innerText = contexto==="pareja"?"Saldo conjunto disponible":"Saldo total disponible";
-    if ($("parejaCard")) $("parejaCard").style.display = contexto==="pareja"?"block":"none";
-  }
-
-  /* ════════════════════════════════════
-     KEYS
-  ════════════════════════════════════ */
-  function uid() { return window.currentUser?window.currentUser.uid:"guest"; }
-  function keyFor(base) { return `${uid()}_${contexto==="negocio"?"Negocio":contexto==="pareja"?"Pareja":""}${base}`; }
-  function keyForCtx(base, ctx) {
-    return `${uid()}_${ctx==="negocio"?"Negocio":ctx==="pareja"?"Pareja":""}${base}`;
-  }
-
-  /* ════════════════════════════════════
-     GUARDAR
-  ════════════════════════════════════ */
-  async function guardar() {
-    if (modoActual==="transferencia") { await guardarTransferencia(); return; }
-    const m = parseMonto($("montoInput").value);
-    if (!$("descripcion").value.trim()||m<=0) { toast("Completa los datos"); return; }
-    
-    const saldos = calcSaldosCuentas();
-    if (modoActual==="gasto") {
-      const sc = saldos[$("cuentaSel").value]||0;
-      if (m>sc) { toast(`❌ Saldo insuficiente. Disponible: ${money(sc)}`); return; }
-    }
-
-    const datos = {
-      Fecha: elFecha.value,
-      Tipo: modoActual==="ingreso"?"Ingreso":"Gasto",
-      Cuenta: $("cuentaSel").value,
-      Categoría: $("categoria").value,
-      Descripción: $("descripcion").value.trim(),
-      Monto: m,
-      Nota: $("notaInput").value.trim(),
-      Contexto: contexto,
-      CreadoPor: window.currentUser?.uid,
-      CreadoPorNombre: window.currentUser?.displayName || "Usuario"
+    const labels = {
+      personal: { cls: "personal", txt: "Personal" },
+      negocio: { cls: "negocio", txt: "Negocio" },
+      pareja: { cls: "pareja", txt: "Pareja" }
     };
-
-    try {
-      if (fbListo && window.currentUser) {
-        const newId = await window.fbAddDoc(colName(contexto), datos);
-        datos.ID = newId;
-      } else {
-        datos.ID = "local_"+Date.now();
-        pending.push({...datos, _tempId: datos.ID});
-        localStorage.setItem(keyFor("pendingQueue"), JSON.stringify(pending));
-      }
-      data.push(datos);
-      localStorage.setItem(keyFor("dataCache"), JSON.stringify(data));
-      $('syncCount').innerText = data.length;
-      render(); doneSave(); toast("✔ Guardado");
-    } catch(e) {
-      toast("☁ Guardado offline");
-    }
+    const l = labels[contexto] || labels.personal;
+    ["movCtxLabel", "goalCtxLabel"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.className = "ctx-label " + l.cls; el.innerText = l.txt; }
+    });
+    document.getElementById("cuentasTitle").innerHTML = (contexto === "pareja" ? "💑 " : "🏦 ") + "Mis cuentas";
+    document.getElementById("ctxSaldoLabel").innerText = contexto === "pareja" ? "Saldo conjunto disponible" : "Saldo total disponible";
+    const pc = document.getElementById("parejaCard");
+    if (pc) pc.style.display = contexto === "pareja" ? "block" : "none";
   }
 
-  function doneSave() {
-    $("descripcion").value=$("montoInput").value=$("notaInput").value="";
-    updateStreak();
-    $('voiceFeedback').classList.remove('active');
+  /* ════════════════════════════════════
+     SELECTS
+  ════════════════════════════════════ */
+  function poblarSelectsCuentas() {
+    [document.getElementById("cuentaSel"), document.getElementById("cuentaOrigen"), document.getElementById("cuentaDestino")].forEach(sel => {
+      if (!sel) return;
+      sel.innerHTML = "";
+      cuentas.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c.id;
+        opt.textContent = c.icon + " " + c.nombre;
+        sel.appendChild(opt);
+      });
+    });
+  }
+
+  function poblarSelectCategoria(modo) {
+    const sel = elCategoria;
+    sel.innerHTML = "";
+    categorias.filter(c => c.tipo === "ambos" || c.tipo === modo).forEach(c => {
+      const opt = document.createElement("option");
+      opt.value = c.icon + " " + c.nombre;
+      opt.textContent = c.icon + " " + c.nombre;
+      sel.appendChild(opt);
+    });
+  }
+
+  function poblarPresupuestoCatSel() {
+    const sel = document.getElementById("budgetCatSel");
+    if (!sel) return;
+    sel.innerHTML = "";
+    categorias.filter(c => c.tipo === "gasto" || c.tipo === "ambos").forEach(c => {
+      const opt = document.createElement("option");
+      opt.value = c.icon + " " + c.nombre;
+      opt.textContent = c.icon + " " + c.nombre;
+      sel.appendChild(opt);
+    });
+  }
+
+  function setMode(mode, btn) {
+    modoActual = mode;
+    document.querySelectorAll(".mode-tab").forEach(t => t.classList.remove("active"));
+    btn.classList.add("active");
+    document.querySelectorAll(".form-section").forEach(s => s.classList.remove("active"));
+    if (mode === "transferencia") {
+      document.getElementById("fs-transfer").classList.add("active");
+    } else {
+      document.getElementById("fs-normal").classList.add("active");
+      poblarSelectCategoria(mode === "ingreso" ? "ingreso" : "gasto");
+    }
   }
 
   /* ════════════════════════════════════
@@ -925,149 +849,253 @@
   ════════════════════════════════════ */
   function calcSaldosCuentas() {
     const saldos = {};
-    cuentas.forEach(c => { saldos[c.id] = Number(c.saldoInicial)||0; });
+    cuentas.forEach(c => { saldos[c.id] = Number(c.saldoInicial) || 0; });
     data.forEach(x => {
-      const m = Number(x.Monto)||0;
-      const cid = x.Cuenta||'';
-      if (x.Tipo==="Ingreso") saldos[cid] = (saldos[cid]||0) + m;
-      else saldos[cid] = (saldos[cid]||0) - m;
+      const m = Number(x.Monto) || 0;
+      const cid = x.Cuenta || "";
+      if (saldos[cid] === undefined) saldos[cid] = 0;
+      if (x.Tipo === "Ingreso") saldos[cid] += m;
+      else if (x.Tipo === "Gasto") saldos[cid] -= m;
     });
     return saldos;
+  }
+
+  /* ════════════════════════════════════
+     GUARDAR
+  ════════════════════════════════════ */
+  async function guardar() {
+    if (modoActual === "transferencia") {
+      await guardarTransferencia();
+      return;
+    }
+
+    const m = parseMonto(elMontoInput.value);
+    if (!elDescripcion.value.trim() || m <= 0) {
+      toast("Completa todos los datos");
+      return;
+    }
+
+    const saldos = calcSaldosCuentas();
+    if (modoActual === "gasto") {
+      const sc = saldos[elCuentaSel.value] || 0;
+      if (m > sc) {
+        toast("❌ Saldo insuficiente. Disponible: " + money(sc));
+        return;
+      }
+    }
+
+    const datos = {
+      Fecha: elFecha.value,
+      Tipo: modoActual === "ingreso" ? "Ingreso" : "Gasto",
+      Cuenta: elCuentaSel.value,
+      Categoría: elCategoria.value,
+      Descripción: elDescripcion.value.trim(),
+      Monto: m,
+      Nota: document.getElementById("notaInput").value.trim(),
+      Contexto: contexto,
+      CreadoPor: window.currentUser?.uid || "guest",
+      CreadoPorNombre: window.currentUser?.displayName || "Usuario"
+    };
+
+    try {
+      if (fbListo && window.currentUser) {
+        const col = getColName(contexto);
+        if (col) {
+          const docRef = await window.fbAddDoc(col, datos);
+          datos.ID = docRef.id;
+        } else {
+          datos.ID = "local_" + Date.now();
+        }
+      } else {
+        datos.ID = "local_" + Date.now();
+        pending.push({ ...datos, _tempId: datos.ID });
+        localStorage.setItem(keyFor("pendingQueue"), JSON.stringify(pending));
+        elPendingCount.innerText = pending.length;
+      }
+
+      data.push(datos);
+      localStorage.setItem(keyFor("dataCache"), JSON.stringify(data));
+      elSyncCount.innerText = data.length;
+      render();
+      doneSave();
+      toast("✔ Guardado exitosamente");
+    } catch (e) {
+      console.error("Error guardando:", e);
+      datos.ID = "local_" + Date.now();
+      data.push(datos);
+      pending.push({ ...datos, _tempId: datos.ID });
+      localStorage.setItem(keyFor("dataCache"), JSON.stringify(data));
+      localStorage.setItem(keyFor("pendingQueue"), JSON.stringify(pending));
+      elSyncCount.innerText = data.length;
+      elPendingCount.innerText = pending.length;
+      render();
+      doneSave();
+      toast("☁ Guardado offline - se sincronizará después");
+    }
+  }
+
+  async function guardarTransferencia() {
+    const m = parseMonto(document.getElementById("montoTransfer").value);
+    const origen = document.getElementById("cuentaOrigen").value;
+    const destino = document.getElementById("cuentaDestino").value;
+    const desc = document.getElementById("descTransfer").value.trim() || "Transferencia";
+
+    if (m <= 0 || origen === destino) {
+      toast("Verifica los datos de la transferencia");
+      return;
+    }
+
+    const datos = {
+      Fecha: elFecha.value,
+      Tipo: "Transferencia",
+      CuentaOrigen: origen,
+      CuentaDestino: destino,
+      Descripción: desc,
+      Monto: m,
+      Contexto: contexto,
+      CreadoPor: window.currentUser?.uid || "guest"
+    };
+
+    try {
+      if (fbListo && window.currentUser) {
+        const col = getColName(contexto);
+        if (col) {
+          const docRef = await window.fbAddDoc(col, datos);
+          datos.ID = docRef.id;
+        } else {
+          datos.ID = "local_" + Date.now();
+        }
+      } else {
+        datos.ID = "local_" + Date.now();
+      }
+
+      data.push(datos);
+      localStorage.setItem(keyFor("dataCache"), JSON.stringify(data));
+      elSyncCount.innerText = data.length;
+      render();
+      document.getElementById("montoTransfer").value = "";
+      document.getElementById("descTransfer").value = "";
+      toast("✔ Transferencia registrada");
+    } catch (e) {
+      console.error("Error en transferencia:", e);
+      toast("☁ Guardada offline");
+    }
+  }
+
+  function doneSave() {
+    elDescripcion.value = elMontoInput.value = "";
+    const ni = document.getElementById("notaInput");
+    if (ni) ni.value = "";
+    elSaveBtn.disabled = false;
+    elSaveBtn.innerText = "💾 Guardar";
+    updateStreak();
+    const vf = document.getElementById("voiceFeedback");
+    if (vf) vf.classList.remove("active");
   }
 
   /* ════════════════════════════════════
      RENDER
   ════════════════════════════════════ */
   function render() {
-    let ing=0, gas=0, cats={};
+    let ing = 0, gas = 0;
     data.forEach(x => {
-      const m = Number(x.Monto)||0;
-      if (x.Tipo==="Ingreso") ing+=m; else gas+=m;
-      if (x.Tipo==="Gasto") cats[x.Categoría] = (cats[x.Categoría]||0) + m;
+      const m = Number(x.Monto) || 0;
+      if (x.Tipo === "Ingreso") ing += m;
+      else if (x.Tipo === "Gasto") gas += m;
     });
+
     const saldos = calcSaldosCuentas();
-    const total = Object.values(saldos).reduce((a,b)=>a+b,0);
-    $("saldoTop").innerText = money(total);
+    const total = Object.values(saldos).reduce((a, b) => a + b, 0);
+    elSaldoTop.innerText = money(total);
+
     renderCuentas(saldos);
-    renderCockpit(ing,gas);
-    $("coach").innerHTML = ing-gas>0?'<div class="alert good">🟢 Salud financiera positiva</div>':'<div class="alert bad">🔴 Gastas más de lo que ingresas</div>';
+    renderCockpit(ing, gas);
+    elCoach.innerHTML = ing - gas > 0
+      ? '<div class="alert good">🟢 Salud financiera positiva. ¡Sigue así!</div>'
+      : '<div class="alert bad">🔴 Gastas más de lo que ingresas. Revisa tus gastos.</div>';
   }
 
   function renderCuentas(saldos) {
-    $("cuentasResumen").innerHTML = $("distBar").innerHTML = $("distLegend").innerHTML = "";
-    const totalPos = cuentas.reduce((a,c)=>a+Math.max(saldos[c.id]||0,0),0)||1;
-    cuentas.forEach((c,i) => {
-      const s = saldos[c.id]||0, color = ACC_COLORS[i%ACC_COLORS.length];
-      $("cuentasResumen").innerHTML += `<div class="cuenta-card"><div class="cuenta-left"><div class="cuenta-icon">${c.icon}</div><div class="cuenta-name">${c.nombre}</div></div><div class="cuenta-saldo ${s>=0?'positive':'negative'}">${money(s)}</div></div>`;
-      $("distBar").innerHTML += `<div class="dist-seg" style="width:${Math.max(s,0)/totalPos*100}%;background:${color}"></div>`;
-      $("distLegend").innerHTML += `<div class="dist-item"><div class="dist-dot" style="background:${color}"></div>${c.icon} ${c.nombre}</div>`;
+    elCuentasResumen.innerHTML = elDistBar.innerHTML = elDistLegend.innerHTML = "";
+    const totalPos = cuentas.reduce((a, c) => a + Math.max(saldos[c.id] || 0, 0), 0) || 1;
+
+    cuentas.forEach((c, i) => {
+      const s = saldos[c.id] || 0;
+      const color = ACC_COLORS[i % ACC_COLORS.length];
+      const pct = Math.max(s, 0) / totalPos * 100;
+
+      elCuentasResumen.innerHTML += `
+        <div class="cuenta-card">
+          <div class="cuenta-left">
+            <div class="cuenta-icon">${c.icon}</div>
+            <div class="cuenta-name">${c.nombre}</div>
+          </div>
+          <div class="cuenta-saldo ${s >= 0 ? 'positive' : 'negative'}">${money(s)}</div>
+        </div>`;
+      elDistBar.innerHTML += `<div class="dist-seg" style="width:${pct}%;background:${color}"></div>`;
+      elDistLegend.innerHTML += `<div class="dist-item"><div class="dist-dot" style="background:${color}"></div>${c.icon} ${c.nombre}</div>`;
     });
   }
 
   function renderCockpit(ing, gas) {
-    $("cockpit").innerHTML = `
+    const balance = ing - gas;
+    elCockpit.innerHTML = `
       <div class="grid2">
         <div class="kpi"><span>Ingresos</span><strong style="color:var(--ok)">${money(ing)}</strong></div>
         <div class="kpi"><span>Gastos</span><strong style="color:var(--bad)">${money(gas)}</strong></div>
-        <div class="kpi"><span>Balance</span><strong>${money(ing-gas)}</strong></div>
-        <div class="kpi"><span>Diario disponible</span><strong>${money(Math.max((ing-gas)/7,0))}</strong></div>
+        <div class="kpi"><span>Balance</span><strong>${money(balance)}</strong></div>
+        <div class="kpi"><span>Diario disponible</span><strong>${money(Math.max(balance / 7, 0))}</strong></div>
       </div>`;
   }
 
   /* ════════════════════════════════════
-     PAREJA CARD EN HOME
-  ════════════════════════════════════ */
-  async function renderParejaCard() {
-    if (!$("parejaCard")) return;
-    if (contexto !== "pareja") { $("parejaCard").style.display = "none"; return; }
-    $("parejaCard").style.display = "block";
-
-    const miId = window.currentUser?.uid;
-    if (!miId || !idPareja) {
-      $("parejaResumen").innerHTML = `<div class="alert mid">Conecta con tu pareja en ⚙️ Ajustes</div>`;
-      return;
-    }
-
-    try {
-      const parejaSnap = await window.fbGetDoc(window.fbDoc(window.db, "parejas", idPareja));
-      if (!parejaSnap.exists()) return;
-      const pData = parejaSnap.data();
-      const compaId = pData.miembros.find(id => id !== miId);
-      if (!compaId) return;
-
-      const compaSnap = await window.fbGetDoc(window.fbDoc(window.db, "users", compaId));
-      const compaData = compaSnap.data();
-
-      const misMovs = data.filter(x => x.Contexto === "pareja");
-      const compaMovs = movimientosPareja;
-
-      const miIng = misMovs.filter(x => x.Tipo === "Ingreso").reduce((a,x) => a + (Number(x.Monto)||0), 0);
-      const miGas = misMovs.filter(x => x.Tipo === "Gasto").reduce((a,x) => a + (Number(x.Monto)||0), 0);
-      const suIng = compaMovs.filter(x => x.Tipo === "Ingreso").reduce((a,x) => a + (Number(x.Monto)||0), 0);
-      const suGas = compaMovs.filter(x => x.Tipo === "Gasto").reduce((a,x) => a + (Number(x.Monto)||0), 0);
-
-      $("parejaResumen").innerHTML = `
-        <div class="grid2" style="margin-bottom:10px">
-          <div class="kpi"><span>Tú</span><strong style="color:${miIng-miGas>=0?'var(--ok)':'var(--bad)'}">${money(miIng-miGas)}</strong></div>
-          <div class="kpi"><span>${compaData?.displayName || 'Pareja'}</span><strong style="color:${suIng-suGas>=0?'var(--ok)':'var(--bad)'}">${money(suIng-suGas)}</strong></div>
-        </div>
-        <div class="kpi" style="border:1px solid rgba(236,72,153,.3);background:rgba(236,72,153,.07)">
-          <span>💑 Balance conjunto</span>
-          <strong>${money(miIng-miGas+suIng-suGas)}</strong>
-        </div>`;
-      $("parejaStatus").textContent = "Conectado ✅";
-    } catch(e) {
-      console.error("Error renderParejaCard:", e);
-    }
-  }
-
-  /* ════════════════════════════════════
-     SISTEMA PAREJA - CONFIGURACIÓN
+     PAREJA
   ════════════════════════════════════ */
   async function inicializarPareja() {
     if (!window.currentUser) return;
     const miId = window.currentUser.uid;
-    
+
     try {
       const q = window.fbQuery(
         window.fbCollection(window.db, "parejas"),
         window.fbWhere("miembros", "array-contains", miId)
       );
       const snap = await window.fbGetDocs(q);
-      
+
       if (!snap.empty) {
         const docP = snap.docs[0];
         idPareja = docP.id;
         datosPareja = docP.data();
-        parejaConectada = true;
+        parejaConectada = datosPareja.estado === "activo";
 
         const compaId = datosPareja.miembros.find(id => id !== miId);
         if (compaId) {
-          const compaSnap = await window.fbGetDoc(window.fbDoc(window.db, "users", compaId));
-          datosCompañero = compaSnap.data();
+          try {
+            const compaSnap = await window.fbGetDoc(window.fbDoc(window.db, "users", compaId));
+            if (compaSnap.exists()) datosCompañero = compaSnap.data();
+          } catch (e) { /* silencioso */ }
         }
 
-        // Escuchar cambios en tiempo real
         if (unsubscribePareja) unsubscribePareja();
         unsubscribePareja = window.fbOnSnapshot(
           window.fbDoc(window.db, "parejas", idPareja),
           (docSnap) => {
             if (docSnap.exists()) {
               datosPareja = docSnap.data();
+              parejaConectada = datosPareja.estado === "activo";
               if (contexto === "pareja") renderParejaCard();
               renderParejaConfig();
             }
           }
         );
 
-        cargarMovimientosPareja();
+        await cargarMovimientosPareja();
       }
 
       renderParejaConfig();
       if (contexto === "pareja") renderParejaCard();
-    } catch(e) {
+    } catch (e) {
       console.error("Error inicializarPareja:", e);
-      parejaConectada = false;
     }
   }
 
@@ -1078,77 +1106,133 @@
     if (!compaId) return;
 
     try {
-      const snap = await window.fbGetDocs(window.fbCollection(window.db, "users", compaId, "movimientos_pareja"));
+      const snap = await window.fbGetDocs(
+        window.fbCollection(window.db, "users", compaId, "movimientos_pareja")
+      );
       movimientosPareja = [];
-      snap.forEach(d => movimientosPareja.push({...d.data(), ID: d.id}));
+      snap.forEach(d => movimientosPareja.push({ ...d.data(), ID: d.id }));
       if (contexto === "pareja") renderParejaCard();
-    } catch(e) {
+    } catch (e) {
       console.error("Error cargando movimientos de pareja:", e);
     }
   }
 
+  async function renderParejaCard() {
+    const pc = document.getElementById("parejaCard");
+    const pr = document.getElementById("parejaResumen");
+    const ps = document.getElementById("parejaStatus");
+    if (!pc || !pr) return;
+
+    if (contexto !== "pareja" || !parejaConectada) {
+      pc.style.display = "none";
+      return;
+    }
+
+    pc.style.display = "block";
+    const miId = window.currentUser?.uid;
+    if (!miId || !idPareja) {
+      pr.innerHTML = '<div class="alert mid">Conecta con tu pareja en ⚙️ Ajustes</div>';
+      return;
+    }
+
+    try {
+      const misMovs = data.filter(x => x.Contexto === "pareja");
+      const compaMovs = movimientosPareja;
+
+      const miIng = misMovs.filter(x => x.Tipo === "Ingreso").reduce((a, x) => a + (Number(x.Monto) || 0), 0);
+      const miGas = misMovs.filter(x => x.Tipo === "Gasto").reduce((a, x) => a + (Number(x.Monto) || 0), 0);
+      const suIng = compaMovs.filter(x => x.Tipo === "Ingreso").reduce((a, x) => a + (Number(x.Monto) || 0), 0);
+      const suGas = compaMovs.filter(x => x.Tipo === "Gasto").reduce((a, x) => a + (Number(x.Monto) || 0), 0);
+
+      const miBal = miIng - miGas;
+      const suBal = suIng - suGas;
+      const totalBal = miBal + suBal;
+
+      pr.innerHTML = `
+        <div class="grid2" style="margin-bottom:10px">
+          <div class="kpi"><span>Tú</span><strong style="color:${miBal >= 0 ? 'var(--ok)' : 'var(--bad)'}">${money(miBal)}</strong></div>
+          <div class="kpi"><span>${datosCompañero?.displayName || 'Pareja'}</span><strong style="color:${suBal >= 0 ? 'var(--ok)' : 'var(--bad)'}">${money(suBal)}</strong></div>
+        </div>
+        <div class="kpi" style="border:1px solid rgba(236,72,153,.3);background:rgba(236,72,153,.07)">
+          <span>💑 Balance conjunto</span>
+          <strong>${money(totalBal)}</strong>
+        </div>`;
+      ps.textContent = "Conectado ✅";
+    } catch (e) {
+      console.error("Error renderParejaCard:", e);
+    }
+  }
+
   async function buscarPareja() {
-    const email = $("parejaEmailBuscar").value.trim().toLowerCase();
+    const email = document.getElementById("parejaEmailBuscar").value.trim().toLowerCase();
+    const resultado = document.getElementById("resultadoBusqueda");
+
     if (!email) { toast("Ingresa un email"); return; }
     if (email === window.currentUser?.email) { toast("❌ No puedes conectarte contigo mismo"); return; }
 
     try {
-      const q = window.fbQuery(window.fbCollection(window.db, "users"), window.fbWhere("email", "==", email));
+      const q = window.fbQuery(
+        window.fbCollection(window.db, "users"),
+        window.fbWhere("email", "==", email)
+      );
       const snap = await window.fbGetDocs(q);
-      const resultado = $("resultadoBusqueda");
 
       if (snap.empty) {
-        resultado.innerHTML = `<div class="alert mid">No se encontró usuario. Pídele que se registre primero.</div>`;
+        resultado.innerHTML = '<div class="alert mid">Usuario no encontrado. Pídele que se registre primero.</div>';
         return;
       }
 
       const userDoc = snap.docs[0];
       const userData = userDoc.data();
 
-      // Verificar que no esté ya en una pareja
-      const q2 = window.fbQuery(window.fbCollection(window.db, "parejas"), window.fbWhere("miembros", "array-contains", userDoc.id));
+      const q2 = window.fbQuery(
+        window.fbCollection(window.db, "parejas"),
+        window.fbWhere("miembros", "array-contains", userDoc.id)
+      );
       const snap2 = await window.fbGetDocs(q2);
       if (!snap2.empty) {
-        resultado.innerHTML = `<div class="alert mid">⚠️ ${userData.displayName||'Este usuario'} ya está en una pareja.</div>`;
+        resultado.innerHTML = `<div class="alert mid">⚠️ ${userData.displayName || 'Ese usuario'} ya está en una pareja.</div>`;
         return;
       }
 
       resultado.innerHTML = `
         <div class="miembro-row">
           <div>
-            <div style="font-weight:700">${userData.displayName||'Usuario'}</div>
+            <div style="font-weight:700">${userData.displayName || 'Usuario'}</div>
             <div class="small">${userData.email}</div>
           </div>
           <button class="pareja-btn" style="width:auto" onclick="enviarInvitacion('${userDoc.id}')">💌 Invitar</button>
         </div>`;
-    } catch(e) {
+    } catch (e) {
       toast("Error buscando usuario");
+      console.error(e);
     }
   }
 
   async function enviarInvitacion(partnerId) {
     const miId = window.currentUser.uid;
     const miNombre = window.currentUser.displayName || "Usuario";
-    
+
     try {
       const docRef = await window.fbAddDoc(window.fbCollection(window.db, "parejas"), {
         miembros: [miId, partnerId],
         creadoPor: miId,
         creadoPorNombre: miNombre,
-        estado: "pendiente",  // pendiente, activo
+        estado: "pendiente",
         aceptadoPor: null,
         fechaCreacion: new Date().toISOString(),
         presupuestoConjunto: {}
       });
 
       idPareja = docRef.id;
-      parejaConectada = false;
       datosPareja = { miembros: [miId, partnerId], estado: "pendiente" };
+      parejaConectada = false;
 
-      toast("💌 Invitación enviada. Pídele que acepte en Ajustes > Pareja");
+      toast("💌 Invitación enviada");
       renderParejaConfig();
-    } catch(e) {
+    } catch (e) {
       toast("Error enviando invitación");
+      console.error(e);
     }
   }
 
@@ -1161,43 +1245,41 @@
         fechaAceptacion: new Date().toISOString()
       });
       parejaConectada = true;
-      toast("✅ ¡Conectados! Ya pueden ver sus finanzas juntos");
+      toast("✅ ¡Conectados!");
       inicializarPareja();
-    } catch(e) {
+    } catch (e) {
       toast("Error aceptando invitación");
     }
   }
 
   async function desconectarPareja() {
-    if (!confirm("¿Desconectar pareja? Se eliminará la conexión para ambos.")) return;
+    if (!confirm("¿Desconectar pareja?")) return;
     try {
       if (unsubscribePareja) { unsubscribePareja(); unsubscribePareja = null; }
       await window.fbDeleteDoc(window.fbDoc(window.db, "parejas", idPareja));
-      idPareja = null; datosPareja = null; datosCompañero = null; parejaConectada = false;
-      movimientosPareja = [];
+      idPareja = null; datosPareja = null; datosCompañero = null;
+      parejaConectada = false; movimientosPareja = [];
       toast("👋 Pareja desconectada");
       renderParejaConfig();
-    } catch(e) {
+      if (contexto === "pareja") renderParejaCard();
+    } catch (e) {
       toast("Error al desconectar");
     }
   }
 
   function renderParejaConfig() {
-    const cfg = $("parejaConfig");
-    const estadoEl = $("parejaEstadoConexion");
-    const busquedaEl = $("parejaBusqueda");
-    const pendientesEl = $("invitacionesPendientes");
-    const miembrosEl = $("miembrosConectados");
+    const estadoEl = document.getElementById("parejaEstadoConexion");
+    const busquedaEl = document.getElementById("parejaBusqueda");
+    const pendientesEl = document.getElementById("invitacionesPendientes");
+    const miembrosEl = document.getElementById("miembrosConectados");
 
-    if (!cfg || !estadoEl || !busquedaEl || !pendientesEl || !miembrosEl) return;
+    if (!estadoEl || !busquedaEl || !pendientesEl || !miembrosEl) return;
 
-    // Si no hay pareja
     if (!idPareja) {
-      estadoEl.innerHTML = `<div class="alert mid">No estás conectado con nadie. Busca a tu pareja por su email.</div>`;
+      estadoEl.innerHTML = '<div class="alert mid">No estás conectado. Busca a tu pareja por email.</div>';
       busquedaEl.style.display = "block";
       pendientesEl.innerHTML = "";
       miembrosEl.innerHTML = "";
-      cfg.style.display = "block";
       return;
     }
 
@@ -1205,208 +1287,401 @@
     const estado = datosPareja?.estado || "pendiente";
     const soyCreador = datosPareja?.creadoPor === miId;
 
-    // ESTADO
     if (estado === "pendiente") {
-      estadoEl.innerHTML = `<div class="alert mid">⏳ Invitación pendiente...</div>`;
-      pendientesEl.innerHTML = "";
-      
+      estadoEl.innerHTML = '<div class="alert mid">⏳ Invitación pendiente...</div>';
+      busquedaEl.style.display = "none";
+      miembrosEl.innerHTML = "";
+
       if (!soyCreador) {
         pendientesEl.innerHTML = `
           <div class="invitacion-card">
-            <div style="font-weight:700;margin-bottom:6px">💌 Tienes una invitación de ${datosPareja?.creadoPorNombre||'alguien'}</div>
+            <div style="font-weight:700;margin-bottom:6px">💌 Invitación de ${datosPareja?.creadoPorNombre || 'alguien'}</div>
             <button class="pareja-btn" onclick="aceptarInvitacion()">✅ Aceptar</button>
             <button class="small-btn" style="width:100%;margin-top:6px" onclick="desconectarPareja()">❌ Rechazar</button>
           </div>`;
       } else {
         pendientesEl.innerHTML = `
           <div class="invitacion-card">
-            <div style="font-weight:700;margin-bottom:6px">⏳ Esperando que tu pareja acepte la invitación...</div>
-            <button class="small-btn" style="width:100%" onclick="desconectarPareja()">Cancelar invitación</button>
+            <div style="font-weight:700;margin-bottom:6px">⏳ Esperando aceptación...</div>
+            <button class="small-btn" style="width:100%" onclick="desconectarPareja()">Cancelar</button>
           </div>`;
       }
-      
-      busquedaEl.style.display = "none";
-      miembrosEl.innerHTML = "";
       return;
     }
 
-    // CONECTADO
-    estadoEl.innerHTML = `<div class="alert good">✅ Conectados en pareja</div>`;
+    // Conectado
+    estadoEl.innerHTML = '<div class="alert good">✅ Conectados</div>';
     busquedaEl.style.display = "none";
     pendientesEl.innerHTML = "";
 
-    // Miembros
-    const compaId = datosPareja?.miembros?.find(id => id !== miId);
     const miNombre = window.currentUser?.displayName || "Tú";
     const suNombre = datosCompañero?.displayName || "Pareja";
 
     miembrosEl.innerHTML = `
       <div class="miembro-row">
         <div style="display:flex;align-items:center;gap:10px">
-          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px">${miNombre[0]}</div>
+          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800">${miNombre[0]}</div>
           <div><div style="font-weight:700">${miNombre}</div><div class="small">Tú</div></div>
         </div>
       </div>
       <div class="miembro-row">
         <div style="display:flex;align-items:center;gap:10px">
-          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#ec4899,#f59e0b);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px">${suNombre[0]}</div>
-          <div><div style="font-weight:700">${suNombre}</div><div class="small">${datosCompañero?.email||''}</div></div>
+          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#ec4899,#f59e0b);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800">${suNombre[0]}</div>
+          <div><div style="font-weight:700">${suNombre}</div><div class="small">${datosCompañero?.email || ''}</div></div>
         </div>
       </div>
-      <button class="danger" style="width:100%;margin-top:10px" onclick="desconectarPareja()">💔 Desconectar pareja</button>`;
+      <button class="danger" style="width:100%;margin-top:10px" onclick="desconectarPareja()">💔 Desconectar</button>`;
   }
 
   /* ════════════════════════════════════
-     HELPERS
+     VOZ
   ════════════════════════════════════ */
-  function toast(msg) { $("toast").innerText=msg; $("toast").style.display="block"; setTimeout(()=>{$("toast").style.display="none"},2400); }
-  function goTab(tab,btn) {
-    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
-    $("tab-"+tab).classList.add("active");
-    document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));
-    btn.classList.add("active");
-    if (tab==="settings") renderParejaConfig();
-    if (tab==="dashboard") { setTimeout(()=>{ if (c1)c1.destroy(); if(c2)c2.destroy(); if(c3)c3.destroy(); if(c6)c6.destroy(); charts(); },300); }
+  function toggleVoiceInput() {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      toast("❌ Voz no soportada en este navegador");
+      return;
+    }
+    isListening ? stopListening() : startListening();
   }
-  function money(n) { if(hidden) return "••••••"; return "$"+Number(n).toLocaleString("es-CO"); }
-  function toggleHide() { hidden=!hidden; localStorage.setItem("hideMoney",hidden?"1":"0"); render(); }
-  function parseMonto(str) { return Number(String(str).replace(/\./g,"").replace(",","."))||0; }
-  function applyTheme(m) { localStorage.setItem("theme",m); document.body.classList.toggle("light",m==="light"); }
-  function aplicarTemaGuardado() { document.body.classList.toggle("light",(localStorage.getItem("theme")||"dark")==="light"); }
+
+  function startListening() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.lang = "es-CO";
+    recognition.interimResults = true;
+
+    const vb = document.getElementById("voiceBtn");
+    const vf = document.getElementById("voiceFeedback");
+    vb.classList.add("listening");
+    vb.innerHTML = "🎤 Escuchando...";
+    vf.classList.add("active");
+    vf.innerHTML = "👂 Habla ahora...";
+    isListening = true;
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      if (!event.results[0].isFinal) {
+        vf.innerHTML = `📝 "${transcript}"`;
+      } else {
+        procesarComandoVoz(transcript);
+        stopListening();
+      }
+    };
+
+    recognition.onerror = (e) => {
+      vf.innerHTML = "⚠️ Error: " + e.error;
+      stopListening();
+    };
+
+    recognition.start();
+  }
+
+  function stopListening() {
+    if (recognition) recognition.stop();
+    const vb = document.getElementById("voiceBtn");
+    vb.classList.remove("listening");
+    vb.innerHTML = "🎤 Registrar por voz";
+    isListening = false;
+  }
+
+  function procesarComandoVoz(transcript) {
+    let monto = 0;
+    const texto = transcript.toLowerCase()
+      .replace(/á/g, "a").replace(/é/g, "e").replace(/í/g, "i")
+      .replace(/ó/g, "o").replace(/ú/g, "u");
+
+    const patrones = [
+      { regex: /(\d+)\s*millones?\b/i, mult: 1000000 },
+      { regex: /(\d+[.,]\d+)\s*m\b/i, mult: 1000000 },
+      { regex: /(\d+)\s*mil\b/i, mult: 1000 },
+      { regex: /(\d+)\s*k\b/i, mult: 1000 },
+      { regex: /(\d+)\s*(?:pesos|lucas|barras|varos)\b/i, mult: 1 },
+      { regex: /(\d[\d.,]*)\s*$/, mult: 1 }
+    ];
+
+    for (const p of patrones) {
+      const match = texto.match(p.regex);
+      if (match) {
+        let num = match[1].replace(/\.(?=\d{3})/g, "").replace(",", ".");
+        monto = parseFloat(num) * p.mult;
+        break;
+      }
+    }
+
+    const vf = document.getElementById("voiceFeedback");
+    if (!monto) {
+      vf.innerHTML = '❌ No detecté el monto. Di "200 mil" o "50 lucas"';
+      return;
+    }
+
+    let tipo = /recib[ií]|ingres[oó]|cobr[eé]|gan[eé]|vend[ií]|pago|salario/i.test(texto) ? "ingreso" : "gasto";
+
+    const mapaCat = {
+      "🍔 Comida": /comida|almuerzo|cena|restaurante|supermercado|café|pan/i,
+      "🚗 Transporte": /transporte|gasolina|uber|taxi|bus|metro/i,
+      "🏠 Vivienda": /arriendo|hipoteca|cuota/i,
+      "💡 Servicios": /luz|agua|gas|internet|teléfono|netflix/i,
+      "🎮 Entretenimiento": /cine|teatro|fiesta|bar|juego/i,
+      "💕 Citas": /cita|regalo|flores|aniversario/i
+    };
+
+    let categoria = null;
+    for (const [cat, re] of Object.entries(mapaCat)) {
+      if (re.test(texto)) { categoria = cat; break; }
+    }
+
+    const filtro = ["mil", "pesos", "lucas", "con", "por", "del", "las", "los", "gasté", "gaste", "pagué"];
+    const desc = texto.split(" ").filter(w => !filtro.includes(w) && w.length > 2).join(" ") || "Movimiento";
+
+    setMode(tipo, document.querySelectorAll(".mode-tab")[tipo === "ingreso" ? 0 : 1]);
+    elDescripcion.value = desc;
+    elMontoInput.value = monto.toLocaleString("es-CO");
+    if (categoria) elCategoria.value = categoria;
+
+    vf.innerHTML = `✅ ${tipo.toUpperCase()}: $${monto.toLocaleString("es-CO")} · ${desc}${categoria ? " · " + categoria : ""}<br><small>Revisa y presiona Guardar</small>`;
+  }
+
+  /* ════════════════════════════════════
+     OTROS
+  ════════════════════════════════════ */
+  function toggleHide() {
+    hidden = !hidden;
+    localStorage.setItem("hideMoney", hidden ? "1" : "0");
+    render();
+    if (contexto === "pareja") renderParejaCard();
+  }
+
   function updateStreak() {
-    const today = new Date().toISOString().slice(0,10);
-    if (localStorage.getItem("lastSave") !== today) {
-      streak++; localStorage.setItem("streak",streak); localStorage.setItem("lastSave",today);
-      $("streakBox").innerText = streak;
+    const today = new Date().toISOString().slice(0, 10);
+    const last = localStorage.getItem("lastSave");
+    if (last !== today) {
+      streak++;
+      localStorage.setItem("streak", streak);
+      localStorage.setItem("lastSave", today);
+      elStreakBox.innerText = streak;
     }
   }
-  function setMode(mode,btn) {
-    modoActual=mode;
-    document.querySelectorAll(".mode-tab").forEach(t=>t.classList.remove("active","cross-active"));
-    btn.classList.add(mode==="traspaso"?"cross-active":"active");
-    document.querySelectorAll(".form-section").forEach(s=>s.classList.remove("active"));
-    if (mode==="transferencia") $("fs-transfer").classList.add("active");
-    else $("fs-normal").classList.add("active");
-    if (mode!=="transferencia") poblarSelectCategoria(mode==="ingreso"?"ingreso":"gasto");
-  }
-  function poblarSelectsCuentas() {
-    [$("cuentaSel"),$("cuentaOrigen"),$("cuentaDestino")].forEach(sel=>{
-      if(!sel)return;
-      sel.innerHTML=""; cuentas.forEach(c=>{sel.innerHTML+=`<option value="${c.id}">${c.icon} ${c.nombre}</option>`});
-    });
-  }
-  function poblarSelectCategoria(modo) {
-    $("categoria").innerHTML="";
-    categorias.filter(c=>c.tipo==="ambos"||c.tipo===modo).forEach(c=>{
-      $("categoria").innerHTML+=`<option value="${c.icon} ${c.nombre}">${c.icon} ${c.nombre}</option>`;
-    });
-  }
-  function poblarPresupuestoCatSel() {
-    const sel=$("budgetCatSel"); if(!sel)return;
-    sel.innerHTML="";
-    categorias.filter(c=>c.tipo==="gasto"||c.tipo==="ambos").forEach(c=>{
-      sel.innerHTML+=`<option value="${c.icon} ${c.nombre}">${c.icon} ${c.nombre}</option>`;
-    });
-  }
-  function getBudgets() { return JSON.parse(localStorage.getItem(keyFor("budgets"))||"{}"); }
-  function addBudget() {
-    const b=getBudgets(), cat=$("budgetCatSel").value, m=parseMonto($("budgetMonto").value);
-    if(!cat||m<=0){toast("Completa los datos");return}
-    b[cat]=m; localStorage.setItem(keyFor("budgets"),JSON.stringify(b));
-    $("budgetMonto").value=""; renderBudgetList(); toast("✔ Presupuesto guardado");
-  }
-  function delBudget(cat) {
-    const b=getBudgets(); delete b[cat]; localStorage.setItem(keyFor("budgets"),JSON.stringify(b));
-    renderBudgetList();
-  }
-  function renderBudgetList() {
-    const el=$("budgetList"); if(!el)return;
-    const b=getBudgets();
-    if(!Object.keys(b).length){el.innerHTML='<div class="alert mid">Sin presupuestos</div>';return}
-    const real={}; data.filter(x=>x.Tipo==="Gasto").forEach(x=>{real[x.Categoría]=(real[x.Categoría]||0)+(Number(x.Monto)||0)});
-    el.innerHTML="";
-    Object.entries(b).forEach(([cat,lim])=>{
-      const g=real[cat]||0, pct=Math.min((g/lim)*100,100);
-      el.innerHTML+=`<div style="margin-bottom:8px;padding:10px;background:rgba(255,255,255,.03);border-radius:12px">
-        <div style="display:flex;justify-content:space-between;font-weight:700;font-size:13px"><span>${cat}</span><button class="small-btn" onclick="delBudget('${cat.replace(/'/g,"\\'")}')">🗑️</button></div>
-        <div style="font-size:11px;color:var(--muted)">${money(g)} / ${money(lim)} (${pct.toFixed(0)}%)</div>
-        <div class="progress"><div class="bar" style="width:${pct}%"></div></div>
-      </div>`;
-    });
-  }
-  function addGoal() {
-    const n=$("goalName").value.trim(), v=Number($("goalValue").value);
-    if(!n||v<=0){toast("Completa la meta");return}
-    goals.push({nombre:n,valor:v}); localStorage.setItem(keyFor("goals"),JSON.stringify(goals));
-    $("goalName").value=$("goalValue").value=""; renderGoals(); toast("🎯 Meta guardada");
-  }
-  function delGoal(i){goals.splice(i,1);localStorage.setItem(keyFor("goals"),JSON.stringify(goals));renderGoals()}
-  function renderGoals() {
-    const el=$("goalList"); if(!el)return;
-    if(!goals.length){el.innerHTML='<div class="alert mid">Sin metas</div>';return}
-    const ahorro=data.filter(x=>x.Categoría?.includes("Ahorro")).reduce((a,x)=>a+(Number(x.Monto)||0),0);
-    el.innerHTML="";
-    goals.forEach((g,i)=>{
-      const p=Math.min((ahorro/g.valor)*100,100);
-      el.innerHTML+=`<div class="item"><div style="font-weight:800">${g.nombre}</div><div class="small">${money(ahorro)} / ${money(g.valor)}</div><div class="progress"><div class="bar" style="width:${p}%"></div></div><button class="small-btn" onclick="delGoal(${i})">🗑️</button></div>`;
-    });
-  }
-  function renderCrossCard() {
-    if (!$("crossCard")) return;
-    $("crossCard").style.display = "block";
-    $("crossSummary").innerHTML = '<div style="text-align:center;padding:10px">📊 Datos consolidados</div>';
-  }
-  function refreshConsolidado() { renderCrossCard(); toast("🔄 Actualizado"); }
 
-  function setFiltro(tipo,btn) {
-    filtroTipo=tipo;
-    document.querySelectorAll(".filter-chip").forEach(c=>c.classList.remove("active"));
-    btn.classList.add("active"); renderListFiltrado();
+  function goTab(tab, btn) {
+    document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+    const tabEl = document.getElementById("tab-" + tab);
+    if (tabEl) tabEl.classList.add("active");
+    document.querySelectorAll(".nav button").forEach(x => x.classList.remove("active"));
+    btn.classList.add("active");
+    if (tab === "settings") renderParejaConfig();
+  }
+
+  function setTheme(m) {
+    localStorage.setItem("theme", m);
+    document.body.classList.toggle("light", m === "light");
+  }
+
+  function setFiltro(tipo, btn) {
+    filtroTipo = tipo;
+    document.querySelectorAll(".filter-chip").forEach(c => c.classList.remove("active"));
+    btn.classList.add("active");
+    renderListFiltrado();
   }
 
   function renderListFiltrado() {
-    const busq=($("searchInput").value||"").toLowerCase().trim();
-    let filtrados=data.filter(x=>{
-      if(filtroTipo==="ingreso"&&x.Tipo!=="Ingreso")return false;
-      if(filtroTipo==="gasto"&&x.Tipo!=="Gasto")return false;
-      if(busq&&!((x.Descripción||"")+" "+(x.Categoría||"")).toLowerCase().includes(busq))return false;
+    const busq = (document.getElementById("searchInput")?.value || "").toLowerCase().trim();
+    let filtrados = data.filter(x => {
+      if (filtroTipo === "ingreso" && x.Tipo !== "Ingreso") return false;
+      if (filtroTipo === "gasto" && x.Tipo !== "Gasto") return false;
+      if (busq && !((x.Descripción || "") + " " + (x.Categoría || "")).toLowerCase().includes(busq)) return false;
       return true;
-    }).sort((a,b)=>new Date(b.Fecha)-new Date(a.Fecha));
+    }).sort((a, b) => new Date(b.Fecha) - new Date(a.Fecha));
 
-    $("lista").innerHTML="";
-    if(!filtrados.length){$("lista").innerHTML='<div class="alert mid">Sin resultados</div>';return}
-    filtrados.forEach(x=>{
-      const cls=x.Tipo==="Ingreso"?"ingreso":"gasto", m=Number(x.Monto)||0;
-      $("lista").innerHTML+=`<div class="item ${cls}"><div>${x.Categoría} - ${x.Descripción}</div><div>${money(m)}</div></div>`;
+    elLista.innerHTML = "";
+    if (!filtrados.length) {
+      elLista.innerHTML = '<div class="alert mid">Sin resultados</div>';
+      return;
+    }
+    filtrados.forEach(x => {
+      const cls = x.Tipo === "Ingreso" ? "ingreso" : "gasto";
+      const m = Number(x.Monto) || 0;
+      elLista.innerHTML += `<div class="item ${cls}"><div>${x.Categoría || ""} - ${x.Descripción || ""}</div><div>${money(m)}</div></div>`;
     });
   }
 
   async function load() {
-    if (!fbListo || !window.db || !window.currentUser) return;
+    if (!fbListo || !window.currentUser) return;
     try {
-      const snap = await window.fbGetDocs(colName(contexto));
+      const col = getColName(contexto);
+      if (!col) return;
+      const snap = await window.fbGetDocs(col);
       let fresh = [];
-      snap.forEach(d => fresh.push({...d.data(), ID: d.id}));
-      fresh.sort((a,b) => new Date(b.Fecha)-new Date(a.Fecha));
+      snap.forEach(d => fresh.push({ ...d.data(), ID: d.id }));
+      fresh.sort((a, b) => new Date(b.Fecha) - new Date(a.Fecha));
       data = fresh;
       localStorage.setItem(keyFor("dataCache"), JSON.stringify(data));
-      $("syncCount").innerText = data.length;
+      elSyncCount.innerText = data.length;
       render();
-    } catch(e) { console.error(e); }
+    } catch (e) {
+      console.error("Error cargando:", e);
+    }
+  }
+
+  function getBudgets() {
+    return JSON.parse(localStorage.getItem(keyFor("budgets")) || "{}");
+  }
+
+  function addBudget() {
+    const b = getBudgets();
+    const cat = document.getElementById("budgetCatSel").value;
+    const m = parseMonto(document.getElementById("budgetMonto").value);
+    if (!cat || m <= 0) { toast("Completa los datos"); return; }
+    b[cat] = m;
+    localStorage.setItem(keyFor("budgets"), JSON.stringify(b));
+    document.getElementById("budgetMonto").value = "";
+    renderBudgetList();
+    toast("✔ Presupuesto guardado");
+  }
+
+  function delBudget(cat) {
+    const b = getBudgets();
+    delete b[cat];
+    localStorage.setItem(keyFor("budgets"), JSON.stringify(b));
+    renderBudgetList();
+  }
+
+  function renderBudgetList() {
+    const el = document.getElementById("budgetList");
+    if (!el) return;
+    const b = getBudgets();
+    if (!Object.keys(b).length) { el.innerHTML = '<div class="alert mid">Sin presupuestos</div>'; return; }
+    const real = {};
+    data.filter(x => x.Tipo === "Gasto").forEach(x => {
+      real[x.Categoría] = (real[x.Categoría] || 0) + (Number(x.Monto) || 0);
+    });
+    el.innerHTML = "";
+    Object.entries(b).forEach(([cat, lim]) => {
+      const g = real[cat] || 0;
+      const pct = Math.min((g / lim) * 100, 100);
+      el.innerHTML += `
+        <div style="margin-bottom:8px;padding:10px;background:rgba(255,255,255,.03);border-radius:12px">
+          <div style="display:flex;justify-content:space-between;font-weight:700;font-size:13px">
+            <span>${cat}</span>
+            <button class="small-btn" onclick="delBudget('${cat.replace(/'/g, "\\'")}')">🗑️</button>
+          </div>
+          <div style="font-size:11px;color:var(--muted)">${money(g)} / ${money(lim)} (${pct.toFixed(0)}%)</div>
+          <div class="progress"><div class="bar" style="width:${pct}%"></div></div>
+        </div>`;
+    });
+  }
+
+  function addGoal() {
+    const n = document.getElementById("goalName").value.trim();
+    const v = Number(document.getElementById("goalValue").value);
+    if (!n || v <= 0) { toast("Completa la meta"); return; }
+    goals.push({ nombre: n, valor: v });
+    localStorage.setItem(keyFor("goals"), JSON.stringify(goals));
+    document.getElementById("goalName").value = document.getElementById("goalValue").value = "";
+    renderGoals();
+    toast("🎯 Meta guardada");
+  }
+
+  function delGoal(i) {
+    goals.splice(i, 1);
+    localStorage.setItem(keyFor("goals"), JSON.stringify(goals));
+    renderGoals();
+  }
+
+  function renderGoals() {
+    const el = elGoalList;
+    if (!el) return;
+    if (!goals.length) { el.innerHTML = '<div class="alert mid">Sin metas</div>'; return; }
+    const ahorro = data.filter(x => x.Categoría?.includes("Ahorro")).reduce((a, x) => a + (Number(x.Monto) || 0), 0);
+    el.innerHTML = "";
+    goals.forEach((g, i) => {
+      const p = Math.min((ahorro / g.valor) * 100, 100);
+      el.innerHTML += `
+        <div class="item">
+          <div style="font-weight:800">${g.nombre}</div>
+          <div class="small">${money(ahorro)} / ${money(g.valor)}</div>
+          <div class="progress"><div class="bar" style="width:${p}%"></div></div>
+          <button class="small-btn" onclick="delGoal(${i})">🗑️</button>
+        </div>`;
+    });
+  }
+
+  async function ejecutarDiagnostico() {
+    const diag = document.getElementById("diagContent");
+    diag.innerHTML = "🔍 Verificando...<br>";
+
+    // Firebase
+    diag.innerHTML += window.db ? "✅ Firebase inicializado<br>" : "❌ Firebase NO inicializado<br>";
+    diag.innerHTML += window.auth ? "✅ Auth disponible<br>" : "❌ Auth NO disponible<br>";
+
+    // Usuario
+    const user = window.currentUser;
+    if (user) {
+      diag.innerHTML += `✅ Usuario: ${user.email}<br>`;
+      diag.innerHTML += `✅ UID: ${user.uid.slice(0, 12)}...<br>`;
+
+      // Probar Firestore
+      try {
+        diag.innerHTML += "🔄 Probando Firestore...<br>";
+        const testCol = window.fbCollection(window.db, "users", user.uid, "_test");
+        const docRef = await window.fbAddDoc(testCol, { test: true, ts: new Date().toISOString() });
+        diag.innerHTML += `✅ Escritura OK (${docRef.id})<br>`;
+        await window.fbDeleteDoc(window.fbDoc(window.db, "users", user.uid, "_test", docRef.id));
+        diag.innerHTML += "✅ Lectura/Borrado OK<br>";
+        diag.innerHTML += '<span style="color:var(--ok)">🎉 ¡Todo funciona!</span><br>';
+      } catch (e) {
+        diag.innerHTML += `❌ Error Firestore: ${e.code}<br>${e.message}<br>`;
+        if (e.code === "permission-denied") {
+          diag.innerHTML += '<br>🔒 <b>ERROR DE PERMISOS</b><br>Ve a Firebase Console > Firestore > Rules<br>';
+        }
+      }
+    } else {
+      diag.innerHTML += "⚠️ No hay usuario autenticado<br>";
+    }
+
+    diag.innerHTML += `<br>📡 Red: ${navigator.onLine ? "✅ Online" : "❌ Offline"}<br>`;
   }
 
   /* ════════════════════════════════════
-     FIREBASE LISTO
+     EVENTOS
   ════════════════════════════════════ */
-  window.addEventListener("firebaseReady", () => { fbListo = true; });
+  window.addEventListener("firebaseReady", () => {
+    fbListo = true;
+    document.getElementById("fbStatus").innerHTML = "✅ Firebase OK";
+    document.getElementById("fbStatus").style.color = "var(--ok)";
+    if (appIniciada && window.currentUser) load();
+  });
 
   /* ════════════════════════════════════
-     INIT
+     INICIO
   ════════════════════════════════════ */
-  aplicarTemaGuardado();
-  $("today").innerText = new Date().toLocaleDateString("es-CO",{weekday:"long",day:"numeric",month:"long"});
-  elFecha.valueAsDate = new Date();
-  $('formLogin').style.display = 'block';
+  // Tema
+  const savedTheme = localStorage.getItem("theme") || "dark";
+  document.body.classList.toggle("light", savedTheme === "light");
+
+  // Fecha inicial
+  const todayEl = document.getElementById("today");
+  if (todayEl) {
+    todayEl.innerText = new Date().toLocaleDateString("es-CO", {
+      weekday: "long", day: "numeric", month: "long"
+    });
+  }
+
+  // Si ya hay usuario al cargar
+  if (window.currentUser) {
+    document.getElementById("loginScreen").classList.add("hidden");
+    document.getElementById("appContent").classList.add("visible");
+    updateUserUI(window.currentUser);
+    if (!appIniciada) {
+      appIniciada = true;
+      initDomRefs();
+      initApp();
+    }
+    inicializarPareja();
+  }
+
+  console.log("✅ Banking PRO AI v20 cargado");
+  console.log("ℹ️ Abre la consola para ver logs de Firebase");
 </script>
+
 </body>
 </html>
