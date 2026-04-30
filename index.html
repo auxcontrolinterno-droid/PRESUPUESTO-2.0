@@ -5,7 +5,7 @@
   <meta name="theme-color" content="#0f172a">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-  <title>Banking PRO AI v18</title>
+  <title>Banking PRO AI v19 - Voice & Notifications</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -86,7 +86,136 @@
       font-family:Inter,sans-serif;
       background:linear-gradient(180deg,var(--bg1),var(--bg2));
       color:var(--text); padding:14px 14px 108px; max-width:820px; margin:auto;
+      transition: filter 0.3s;
     }
+    
+    /* ══ OFFLINE BADGE ══ */
+    body.offline::before {
+      content: "📴 Sin conexión - Cambios se guardan localmente";
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      background: linear-gradient(90deg, #ef4444, #dc2626);
+      color: white;
+      text-align: center;
+      padding: 6px 16px;
+      font-size: 12px;
+      font-weight: 700;
+      z-index: 10000;
+      animation: offlinePulse 2s infinite;
+      backdrop-filter: blur(10px);
+    }
+    
+    @keyframes offlinePulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.8; }
+    }
+    
+    body.offline .header { margin-top: 20px; }
+
+    /* ══ VOICE BUTTON ══ */
+    .voice-btn {
+      background: linear-gradient(135deg, #ec4899, #8b5cf6);
+      color: white;
+      width: 100%;
+      padding: 14px;
+      font-weight: 800;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: none;
+      margin-top: 8px;
+      animation: voiceGlow 2s infinite;
+    }
+    
+    @keyframes voiceGlow {
+      0%, 100% { box-shadow: 0 0 20px rgba(236, 72, 153, 0.3); }
+      50% { box-shadow: 0 0 30px rgba(139, 92, 246, 0.5); }
+    }
+    
+    .voice-btn.listening {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      animation: voiceListen 1s infinite;
+    }
+    
+    @keyframes voiceListen {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    .voice-feedback {
+      background: rgba(236, 72, 153, 0.1);
+      border: 1px solid rgba(236, 72, 153, 0.3);
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 8px;
+      font-size: 13px;
+      display: none;
+    }
+    
+    .voice-feedback.active {
+      display: block;
+      animation: voiceFadeIn 0.3s;
+    }
+    
+    @keyframes voiceFadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ══ SYNC STATUS ══ */
+    .sync-indicator {
+      position: fixed;
+      bottom: 120px;
+      right: 16px;
+      background: rgba(0,0,0,0.8);
+      border-radius: 20px;
+      padding: 8px 16px;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+      z-index: 100;
+      transition: all 0.3s;
+    }
+    
+    .sync-indicator.syncing {
+      background: rgba(245, 158, 11, 0.2);
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+    
+    .sync-indicator.synced {
+      background: rgba(34, 197, 94, 0.2);
+      border-color: rgba(34, 197, 94, 0.3);
+    }
+    
+    .sync-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #94a3b8;
+    }
+    
+    .syncing .sync-dot {
+      background: #f59e0b;
+      animation: syncPulse 1s infinite;
+    }
+    
+    .synced .sync-dot {
+      background: #22c55e;
+    }
+    
+    @keyframes syncPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
     .card,.header{
       background:var(--card); border:1px solid var(--line);
       border-radius:22px; padding:16px; margin-bottom:12px; backdrop-filter:blur(14px);
@@ -234,7 +363,7 @@
     .nav button{padding:8px 4px;font-size:24px;background:transparent;color:#cbd5e1;line-height:1}
     .nav button.active{background:rgba(255,255,255,.08);color:#fff;border-radius:14px}
     canvas{margin-top:10px;background:rgba(255,255,255,.03);padding:8px;border-radius:14px}
-    .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:#111827;color:#fff;padding:12px 16px;border-radius:14px;font-size:13px;font-weight:700;display:none;z-index:999;white-space:nowrap;max-width:90vw;text-align:center;}
+    .toast{position:fixed;left:50%;bottom:140px;transform:translateX(-50%);background:#111827;color:#fff;padding:12px 16px;border-radius:14px;font-size:13px;font-weight:700;display:none;z-index:999;white-space:nowrap;max-width:90vw;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,0.5);}
     .eye{font-size:12px;margin-top:10px;cursor:pointer;color:var(--muted)}
     .fav-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     .timeline-day{font-size:12px;color:var(--muted);font-weight:800;margin:10px 0 4px}
@@ -304,6 +433,67 @@
       font-size:11px; font-weight:800; color:#fff;
     }
     .user-chip-name { font-size:12px; font-weight:700; max-width:90px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+    /* ══ NOTIFICATION TOGGLE ══ */
+    .toggle-switch {
+      position: relative;
+      width: 48px;
+      height: 28px;
+      display: inline-block;
+    }
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      margin: 0;
+    }
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255,255,255,0.1);
+      transition: 0.3s;
+      border-radius: 28px;
+    }
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 3px;
+      bottom: 3px;
+      background: white;
+      transition: 0.3s;
+      border-radius: 50%;
+    }
+    input:checked + .toggle-slider {
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+    }
+    input:checked + .toggle-slider:before {
+      transform: translateX(20px);
+    }
+
+    .notification-settings {
+      background: rgba(255,255,255,0.03);
+      border-radius: 14px;
+      padding: 14px;
+      margin-top: 10px;
+    }
+    
+    .notification-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .notification-row:last-child {
+      border-bottom: none;
+    }
   </style>
 </head>
 <body>
@@ -362,7 +552,7 @@
   <div class="header">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
       <div>
-        <div class="small">Banking PRO AI v18 <span id="fbStatus" class="cargando">⏳ Conectando...</span></div>
+        <div class="small">Banking PRO AI v19 <span id="fbStatus" class="cargando">⏳ Conectando...</span></div>
         <div class="small" id="today"></div>
       </div>
       <div id="userChip" class="user-chip" onclick="goTab('settings', document.querySelectorAll('.nav button')[4])">
@@ -444,6 +634,11 @@
         <input type="text" id="descTrspaso"  placeholder="Concepto del traspaso">
       </div>
       <button class="primary" id="saveBtn" onclick="guardar()">💾 Guardar</button>
+      <!-- ══ NUEVO: BOTÓN DE VOZ ══ -->
+      <button class="voice-btn" id="voiceBtn" onclick="toggleVoiceInput()">
+        🎤 Registrar por voz
+      </button>
+      <div class="voice-feedback" id="voiceFeedback"></div>
     </div>
     <div class="card">
       <div class="title">⭐ Favoritos automáticos</div>
@@ -541,6 +736,48 @@
       <button class="danger" style="width:100%" onclick="doLogout()">🚪 Cerrar sesión</button>
     </div>
 
+    <!-- ══ NUEVO: CONFIGURACIÓN DE NOTIFICACIONES ══ -->
+    <div class="card">
+      <div class="title">🔔 Notificaciones</div>
+      <div class="notification-settings">
+        <div class="notification-row">
+          <div>
+            <div style="font-weight:700;font-size:14px">Recordatorio diario</div>
+            <div style="font-size:12px;color:var(--muted)">Te recordamos registrar tus gastos cada día</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggleDiario" onchange="toggleNotificacionDiaria()">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="notification-row" style="margin-top:8px">
+          <div>
+            <div style="font-weight:700;font-size:14px">Hora del recordatorio</div>
+            <div style="font-size:12px;color:var(--muted)">Selecciona cuándo recibir el aviso</div>
+          </div>
+          <select id="horaRecordatorio" onchange="cambiarHoraRecordatorio()" style="width:auto;padding:8px 12px;font-size:13px;font-weight:600;background:rgba(255,255,255,.07);color:var(--text);border:1px solid rgba(255,255,255,.1);border-radius:10px;margin:0">
+            <option value="8">08:00 AM</option>
+            <option value="12">12:00 PM</option>
+            <option value="17">05:00 PM</option>
+            <option value="20" selected>08:00 PM</option>
+            <option value="21">09:00 PM</option>
+            <option value="22">10:00 PM</option>
+          </select>
+        </div>
+        <div class="notification-row" style="margin-top:8px">
+          <div>
+            <div style="font-weight:700;font-size:14px">Resumen semanal</div>
+            <div style="font-size:12px;color:var(--muted)">Balance cada domingo a las 6 PM</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggleSemanal" onchange="toggleNotificacionSemanal()">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+      <button class="secondary" style="margin-top:12px;width:100%" onclick="probarNotificacion()">🔔 Probar notificación</button>
+    </div>
+
     <div class="card">
       <div class="title">⚙️ Tema</div>
       <button id="btnThemeDark"  class="secondary" onclick="setTheme('dark')"  style="margin-bottom:10px">🌙 Oscuro</button>
@@ -600,6 +837,12 @@
     <button onclick="goTab('list',this)">📋</button>
     <button onclick="goTab('settings',this)">⚙️</button>
   </nav>
+
+  <!-- ══ NUEVO: INDICADOR DE CONEXIÓN FLOTANTE ══ -->
+  <div class="sync-indicator synced" id="syncIndicator">
+    <div class="sync-dot"></div>
+    <span id="syncText">Sincronizado</span>
+  </div>
 
 </div><!-- /#appContent -->
 
@@ -725,6 +968,415 @@
   let appIniciada = false;
 
   /* ════════════════════════════════════
+     SISTEMA DE VOZ
+  ════════════════════════════════════ */
+  let recognition = null;
+  let isListening = false;
+
+  const VOICE_KEYWORDS = {
+    'gasto': ['gasté', 'gaste', 'gasto', 'pagué', 'pague', 'compré', 'compre', 'pago', 'pagar'],
+    'ingreso': ['recibí', 'recibi', 'ingresó', 'ingreso', 'cobré', 'cobre', 'gané', 'gane', 'vendí', 'vendi'],
+    'comida': ['comida', 'restaurante', 'almuerzo', 'cena', 'desayuno', 'supermercado', 'mercado', 'café'],
+    'transporte': ['transporte', 'gasolina', 'uber', 'taxi', 'bus', 'metro'],
+    'servicios': ['servicio', 'luz', 'agua', 'gas', 'internet', 'teléfono'],
+    'entretenimiento': ['cine', 'teatro', 'concierto', 'fiesta', 'bar', 'juego']
+  };
+
+  function toggleVoiceInput() {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      toast('❌ Reconocimiento de voz no soportado en este navegador');
+      return;
+    }
+
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
+  }
+
+  function startListening() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.lang = 'es-CO';
+    recognition.continuous = false;
+    recognition.interimResults = true;
+
+    const voiceBtn = $('voiceBtn');
+    const voiceFeedback = $('voiceFeedback');
+
+    voiceBtn.classList.add('listening');
+    voiceBtn.innerHTML = '🎤 Escuchando...';
+    voiceFeedback.classList.add('active');
+    voiceFeedback.innerHTML = '👂 Escuchando... Habla ahora';
+    isListening = true;
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript.toLowerCase();
+      voiceFeedback.innerHTML = `📝 "${transcript}"`;
+      
+      if (event.results[0].isFinal) {
+        procesarComandoVoz(transcript);
+        stopListening();
+      }
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Error de voz:', event.error);
+      if (event.error === 'no-speech') {
+        voiceFeedback.innerHTML = '⚠️ No se detectó voz. Intenta de nuevo.';
+      } else if (event.error === 'audio-capture') {
+        voiceFeedback.innerHTML = '⚠️ No se encontró micrófono.';
+      } else if (event.error === 'not-allowed') {
+        voiceFeedback.innerHTML = '⚠️ Permiso de micrófono denegado.';
+      } else {
+        voiceFeedback.innerHTML = '⚠️ Error de reconocimiento.';
+      }
+      stopListening();
+    };
+
+    recognition.onend = () => {
+      if (isListening) {
+        stopListening();
+      }
+    };
+
+    recognition.start();
+  }
+
+  function stopListening() {
+    if (recognition) {
+      recognition.stop();
+    }
+    const voiceBtn = $('voiceBtn');
+    voiceBtn.classList.remove('listening');
+    voiceBtn.innerHTML = '🎤 Registrar por voz';
+    isListening = false;
+  }
+
+  function procesarComandoVoz(transcript) {
+    let monto = 0;
+    let tipo = null;
+    let categoria = null;
+    let descripcion = '';
+    let cuenta = $('cuentaSel').value;
+
+    // Extraer monto
+    const montoMatch = transcript.match(/(\d[\d\.]*)\s*(mil|k|pesos)/i);
+    if (montoMatch) {
+      monto = parseFloat(montoMatch[1].replace(/\./g, ''));
+      if (montoMatch[2]) monto *= 1000;
+    } else {
+      const simpleMatch = transcript.match(/(\d[\d\.]*)/);
+      if (simpleMatch) {
+        monto = parseFloat(simpleMatch[1].replace(/\./g, ''));
+      }
+    }
+
+    if (!monto) {
+      toast('❌ No se detectó un monto');
+      return;
+    }
+
+    // Detectar tipo
+    for (const [tipoKey, keywords] of Object.entries(VOICE_KEYWORDS)) {
+      if (tipoKey === 'ingreso' || tipoKey === 'gasto') {
+        if (keywords.some(k => transcript.includes(k))) {
+          tipo = tipoKey;
+          break;
+        }
+      }
+    }
+
+    // Si no detecta tipo, por defecto es gasto
+    if (!tipo) {
+      tipo = 'gasto';
+    }
+
+    // Detectar categoría
+    for (const [catKey, keywords] of Object.entries(VOICE_KEYWORDS)) {
+      if (catKey !== 'ingreso' && catKey !== 'gasto') {
+        if (keywords.some(k => transcript.includes(k))) {
+          categoria = catKey;
+          break;
+        }
+      }
+    }
+
+    // Crear descripción
+    const palabras = transcript.split(' ');
+    const palabrasFiltradas = palabras.filter(w => 
+      w.length > 3 && 
+      !w.match(/^\d/) &&
+      !['gasté', 'gaste', 'pagué', 'pague', 'compré', 'compre', 'recibí', 'recibi']
+        .includes(w.toLowerCase())
+    );
+    descripcion = palabrasFiltradas.join(' ') || tipo.charAt(0).toUpperCase() + tipo.slice(1);
+
+    // Aplicar al formulario
+    if (tipo === 'ingreso') {
+      setMode('ingreso', document.querySelectorAll('.mode-tab')[0]);
+    } else {
+      setMode('gasto', document.querySelectorAll('.mode-tab')[1]);
+    }
+
+    $('descripcion').value = descripcion;
+    $('montoInput').value = monto.toLocaleString('es-CO');
+    
+    if (categoria) {
+      const catOpt = categorias.find(c => c.id === categoria);
+      if (catOpt) {
+        $('categoria').value = catOpt.icon + ' ' + catOpt.nombre;
+      }
+    }
+
+    const voiceFeedback = $('voiceFeedback');
+    voiceFeedback.innerHTML = `
+      ✅ <b>${tipo.toUpperCase()}</b> detectado:
+      <br>💰 $${monto.toLocaleString('es-CO')} · ${descripcion}
+      <br><small>Revisa y presiona Guardar</small>
+    `;
+
+    toast(`✅ ${tipo.toUpperCase()} por $${monto.toLocaleString('es-CO')} registrado por voz`);
+  }
+
+  /* ════════════════════════════════════
+     SISTEMA DE NOTIFICACIONES
+  ════════════════════════════════════ */
+  function inicializarNotificaciones() {
+    // Cargar preferencias
+    const diarioActivo = localStorage.getItem('notificacionDiaria') === '1';
+    const semanalActivo = localStorage.getItem('notificacionSemanal') === '1';
+    const hora = localStorage.getItem('horaRecordatorio') || '20';
+
+    if ($('toggleDiario')) $('toggleDiario').checked = diarioActivo;
+    if ($('toggleSemanal')) $('toggleSemanal').checked = semanalActivo;
+    if ($('horaRecordatorio')) $('horaRecordatorio').value = hora;
+
+    // Solicitar permiso si es necesario
+    if ((diarioActivo || semanalActivo) && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+
+    // Programar recordatorio si está activo
+    if (diarioActivo) {
+      programarRecordatorioDiario(parseInt(hora));
+    }
+
+    // Programar resumen semanal
+    if (semanalActivo) {
+      programarResumenSemanal();
+    }
+  }
+
+  function toggleNotificacionDiaria() {
+    const activo = $('toggleDiario').checked;
+    localStorage.setItem('notificacionDiaria', activo ? '1' : '0');
+
+    if (activo) {
+      if (Notification.permission === 'default') {
+        Notification.requestPermission().then(perm => {
+          if (perm === 'granted') {
+            const hora = parseInt(localStorage.getItem('horaRecordatorio') || '20');
+            programarRecordatorioDiario(hora);
+            toast('✅ Recordatorio diario activado');
+          } else {
+            $('toggleDiario').checked = false;
+            localStorage.setItem('notificacionDiaria', '0');
+            toast('⚠️ Necesitas permitir notificaciones');
+          }
+        });
+      } else if (Notification.permission === 'granted') {
+        const hora = parseInt(localStorage.getItem('horaRecordatorio') || '20');
+        programarRecordatorioDiario(hora);
+        toast('✅ Recordatorio diario activado');
+      } else {
+        $('toggleDiario').checked = false;
+        localStorage.setItem('notificacionDiaria', '0');
+        toast('⚠️ Notificaciones bloqueadas. Configúralo en tu navegador');
+      }
+    } else {
+      localStorage.removeItem('proximoRecordatorio');
+      toast('🔕 Recordatorio diario desactivado');
+    }
+  }
+
+  function programarRecordatorioDiario(hora) {
+    if (Notification.permission !== 'granted') return;
+
+    const ahora = new Date();
+    const recordatorio = new Date();
+    recordatorio.setHours(hora, 0, 0, 0);
+
+    if (recordatorio <= ahora) {
+      recordatorio.setDate(recordatorio.getDate() + 1);
+    }
+
+    const tiempoHasta = recordatorio.getTime() - ahora.getTime();
+    localStorage.setItem('proximoRecordatorio', recordatorio.toISOString());
+
+    // Verificar si ya hay un temporizador
+    if (window.recordatorioTimeout) {
+      clearTimeout(window.recordatorioTimeout);
+    }
+
+    window.recordatorioTimeout = setTimeout(() => {
+      if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          type: 'NOTIFICACION_RECORDATORIO',
+          title: '💳 ¿Registraste tus gastos hoy?',
+          body: 'Toca para abrir Banking PRO AI y registrar tus movimientos del día.',
+          icon: '💳',
+          tag: 'recordatorio-diario',
+          data: { url: '/' }
+        });
+      } else {
+        // Fallback: mostrar notificación directa
+        new Notification('💳 Banking PRO AI', {
+          body: '¿Registraste tus gastos hoy? Abre la app para actualizar tus finanzas.',
+          icon: '💳',
+          tag: 'recordatorio-diario',
+          requireInteraction: true
+        });
+      }
+      programarRecordatorioDiario(hora);
+    }, tiempoHasta);
+  }
+
+  function toggleNotificacionSemanal() {
+    const activo = $('toggleSemanal').checked;
+    localStorage.setItem('notificacionSemanal', activo ? '1' : '0');
+
+    if (activo) {
+      if (Notification.permission === 'default') {
+        Notification.requestPermission().then(perm => {
+          if (perm === 'granted') {
+            programarResumenSemanal();
+            toast('✅ Resumen semanal activado');
+          } else {
+            $('toggleSemanal').checked = false;
+            localStorage.setItem('notificacionSemanal', '0');
+            toast('⚠️ Necesitas permitir notificaciones');
+          }
+        });
+      } else if (Notification.permission === 'granted') {
+        programarResumenSemanal();
+        toast('✅ Resumen semanal activado');
+      } else {
+        $('toggleSemanal').checked = false;
+        localStorage.setItem('notificacionSemanal', '0');
+        toast('⚠️ Notificaciones bloqueadas');
+      }
+    } else {
+      localStorage.removeItem('proximoResumen');
+      toast('🔕 Resumen semanal desactivado');
+    }
+  }
+
+  function programarResumenSemanal() {
+    if (Notification.permission !== 'granted') return;
+
+    const ahora = new Date();
+    const resumen = new Date();
+    
+    // Próximo domingo a las 6 PM
+    resumen.setDate(resumen.getDate() + ((7 - resumen.getDay()) % 7));
+    resumen.setHours(18, 0, 0, 0);
+
+    if (resumen <= ahora) {
+      resumen.setDate(resumen.getDate() + 7);
+    }
+
+    const tiempoHasta = resumen.getTime() - ahora.getTime();
+    localStorage.setItem('proximoResumen', resumen.toISOString());
+
+    if (window.resumenTimeout) {
+      clearTimeout(window.resumenTimeout);
+    }
+
+    window.resumenTimeout = setTimeout(() => {
+      const ing = data.filter(x => x.Tipo === 'Ingreso').reduce((a,x) => a + (Number(x.Monto)||0), 0);
+      const gas = data.filter(x => x.Tipo === 'Gasto').reduce((a,x) => a + (Number(x.Monto)||0), 0);
+      const balance = ing - gas;
+      const emoji = balance >= 0 ? '🟢' : '🔴';
+
+      new Notification(`📊 Resumen semanal - Banking PRO AI`, {
+        body: `${emoji} Balance: $${balance.toLocaleString('es-CO')} | 💰 Ing: $${ing.toLocaleString('es-CO')} | 💸 Gas: $${gas.toLocaleString('es-CO')}`,
+        icon: '💳',
+        tag: 'resumen-semanal',
+        requireInteraction: false
+      });
+      programarResumenSemanal();
+    }, tiempoHasta);
+  }
+
+  function cambiarHoraRecordatorio() {
+    const hora = parseInt($('horaRecordatorio').value);
+    localStorage.setItem('horaRecordatorio', hora.toString());
+    
+    if (localStorage.getItem('notificacionDiaria') === '1') {
+      programarRecordatorioDiario(hora);
+      toast(`🕐 Recordatorio actualizado a las ${hora}:00`);
+    }
+  }
+
+  function probarNotificacion() {
+    if (Notification.permission === 'granted') {
+      new Notification('🔔 Prueba de notificación', {
+        body: '¡Las notificaciones funcionan correctamente!',
+        icon: '💳',
+        tag: 'test-notification'
+      });
+      toast('🔔 Notificación de prueba enviada');
+    } else if (Notification.permission === 'default') {
+      Notification.requestPermission().then(perm => {
+        if (perm === 'granted') {
+          probarNotificacion();
+        } else {
+          toast('❌ Permiso denegado');
+        }
+      });
+    } else {
+      toast('❌ Notificaciones bloqueadas. Configúralo en tu navegador');
+    }
+  }
+
+  /* ════════════════════════════════════
+     SISTEMA OFFLINE MEJORADO
+  ════════════════════════════════════ */
+  function actualizarEstadoConexion(online) {
+    const body = document.body;
+    const indicator = $('syncIndicator');
+    const syncText = $('syncText');
+
+    if (online) {
+      body.classList.remove('offline');
+      indicator.classList.remove('syncing');
+      indicator.classList.add('synced');
+      syncText.textContent = 'En línea';
+      if (pending.length > 0) {
+        syncPending();
+      }
+    } else {
+      body.classList.add('offline');
+      indicator.classList.remove('synced');
+      indicator.classList.add('syncing');
+      syncText.textContent = 'Offline - ' + (pending.length || 0) + ' pendientes';
+      
+      // Guardar cola en localStorage
+      localStorage.setItem(keyFor('pendingQueue'), JSON.stringify(pending));
+    }
+  }
+
+  window.addEventListener('online', () => actualizarEstadoConexion(true));
+  window.addEventListener('offline', () => actualizarEstadoConexion(false));
+
+  // Verificar estado inicial
+  if (!navigator.onLine) {
+    actualizarEstadoConexion(false);
+  }
+
+  /* ════════════════════════════════════
      AUTH
   ════════════════════════════════════ */
   function showLoginForm(mode) {
@@ -757,7 +1409,6 @@
     setLoginLoading("loginBtn", true);
     try {
       await window.fbLogin(email, pass);
-      // authChanged se encarga de actualizar la UI
     } catch(e) {
       showLoginError(translateFirebaseError(e.code));
       setLoginLoading("loginBtn", false);
@@ -774,9 +1425,7 @@
     setLoginLoading("registerBtn", true);
     try {
       let cred = await window.fbRegister(email, pass);
-      // Guardar el nombre de display ANTES de que authChanged lo tome
       await window.fbUpdateProfile(cred.user, { displayName: name });
-      // Forzar actualización manual para que el nombre aparezca de inmediato
       window.currentUser = cred.user;
       window.currentUser.displayName = name;
     } catch(e) {
@@ -837,21 +1486,13 @@
     }
   });
 
-  /* ════════════════════════════════════
-     UPDATE USER UI — CORREGIDO
-     Usa email como fallback cuando no hay displayName
-  ════════════════════════════════════ */
   function updateUserUI(user) {
-    // Nombre a mostrar: displayName si existe, si no la parte antes del @ del email
     let displayName = user.displayName
       ? user.displayName
       : (user.email ? user.email.split("@")[0] : "Usuario");
 
-    // Iniciales: dividir por espacios, puntos, guiones bajos, guiones
     let parts    = displayName.split(/[\s._-]+/).filter(Boolean);
     let initials = parts.map(w => w[0]).join("").toUpperCase().slice(0, 2) || "U";
-
-    // Primer segmento del nombre para el chip del header
     let shortName = parts[0] || displayName;
 
     $("userAvatar").textContent = initials;
@@ -906,6 +1547,7 @@
   ════════════════════════════════════ */
   function initApp() {
     aplicarTemaGuardado();
+    inicializarNotificaciones();
     elFecha.valueAsDate = new Date();
     elToday.innerText = new Date().toLocaleDateString("es-CO",{weekday:"long",day:"numeric",month:"long"});
     elStreakBox.innerText = streak;
@@ -923,6 +1565,7 @@
     renderCrossCard();
     if (fbListo) load();
     syncPending();
+    actualizarEstadoConexion(navigator.onLine);
   }
 
   /* ════════════════════════════════════
@@ -1103,7 +1746,8 @@
 
     elSaveBtn.disabled=true; elSaveBtn.innerText="Guardando...";
 
-    if (!navigator.onLine||!fbListo||!window.currentUser) {
+    // OFFLINE FIRST: Guardar localmente siempre
+    if (!navigator.onLine || !fbListo || !window.currentUser) {
       pending.push({...datos,_tempId:"local_"+Date.now()});
       localStorage.setItem(keyFor("pendingQueue"),JSON.stringify(pending));
       elPendingCount.innerText=pending.length;
@@ -1111,7 +1755,8 @@
       data.push(localEntry);
       localStorage.setItem(keyFor("dataCache"),JSON.stringify(data));
       elSyncCount.innerText=data.length;
-      render();renderCrossCard();doneSave();toast("☁ Guardado offline");return;
+      actualizarEstadoConexion(false);
+      render();renderCrossCard();doneSave();toast("☁ Guardado offline - Se sincronizará al conectar");return;
     }
 
     try {
@@ -1120,6 +1765,7 @@
       data.push(datos);
       localStorage.setItem(keyFor("dataCache"),JSON.stringify(data));
       elSyncCount.innerText=data.length;
+      actualizarEstadoConexion(true);
       render();renderCrossCard();
       toast("✔ Guardado ✅");
       setTimeout(load,2000);
@@ -1128,7 +1774,8 @@
       pending.push({...datos,_tempId:"local_"+Date.now()});
       localStorage.setItem(keyFor("pendingQueue"),JSON.stringify(pending));
       elPendingCount.innerText=pending.length;
-      toast("☁ Guardado offline (Firebase falló)");
+      actualizarEstadoConexion(false);
+      toast("☁ Guardado offline (Error de conexión)");
     }
     doneSave();
   }
@@ -1188,6 +1835,9 @@
     elSaveBtn.disabled=false;
     elSaveBtn.innerText=modoActual==="traspaso"?"🔀 Registrar traspaso":"💾 Guardar";
     updateStreak();
+    // Limpiar feedback de voz
+    $('voiceFeedback').classList.remove('active');
+    $('voiceFeedback').innerHTML = '';
   }
 
   /* ════════════════════════════════════
@@ -1250,6 +1900,12 @@
   window.addEventListener("online", syncPending);
   async function syncPending() {
     if (!navigator.onLine||!fbListo||!window.currentUser||!pending.length) return;
+    
+    const indicator = $('syncIndicator');
+    const syncText = $('syncText');
+    indicator.classList.remove('synced');
+    indicator.classList.add('syncing');
+    
     let sent=0, failedQueue=[];
     for (let datos of pending) {
       try {
@@ -1257,13 +1913,19 @@
         let newId=await fbGuardar(clean);
         data=data.map(d=>String(d.ID)===String(datos._tempId||"")?{...clean,ID:newId}:d);
         sent++;
+        syncText.textContent = `Sincronizando... ${sent}/${pending.length}`;
       } catch(e){failedQueue.push(datos)}
     }
     pending=failedQueue;
     localStorage.setItem(keyFor("pendingQueue"),JSON.stringify(pending));
     localStorage.setItem(keyFor("dataCache"),JSON.stringify(data));
     elPendingCount.innerText=pending.length; elSyncCount.innerText=data.length;
-    if (sent){toast(`✔ ${sent} sincronizados`);render()}
+    
+    indicator.classList.remove('syncing');
+    indicator.classList.add('synced');
+    syncText.textContent = pending.length ? `${pending.length} pendientes` : 'Sincronizado';
+    
+    if (sent){toast(`✔ ${sent} sincronizado${sent>1?'s':''}`);render()}
   }
 
   /* ════════════════════════════════════
@@ -1914,6 +2576,9 @@
   });
 
   $("traspasoDireccion").addEventListener("change", poblarSelectsTraspaso);
+
+  // Verificar estado de conexión al cargar
+  actualizarEstadoConexion(navigator.onLine);
 </script>
 
 <script>
