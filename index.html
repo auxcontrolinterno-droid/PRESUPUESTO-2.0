@@ -261,6 +261,12 @@
       background:rgba(34,197,94,.15);color:var(--ok);border:1px solid rgba(34,197,94,.3);
       cursor:pointer;width:auto;margin-top:8px;
     }
+
+    /* ── TEMA ACTIVO ── */
+    .theme-btn-active{
+      outline:2px solid var(--primary);
+      outline-offset:2px;
+    }
   </style>
 </head>
 <body>
@@ -481,9 +487,9 @@
   <section class="tab" id="tab-settings">
     <div class="card">
       <div class="title">⚙️ Tema</div>
-      <button class="secondary" onclick="setTheme('dark')">🌙 Oscuro</button>
-      <br><br>
-      <button class="secondary" onclick="setTheme('light')">☀️ Claro</button>
+      <!-- ▼▼▼ BOTONES CON ID PARA MARCAR ACTIVO ▼▼▼ -->
+      <button id="btnThemeDark"  class="secondary" onclick="setTheme('dark')" style="margin-bottom:10px">🌙 Oscuro</button>
+      <button id="btnThemeLight" class="secondary" onclick="setTheme('light')">☀️ Claro</button>
     </div>
 
     <div class="card">
@@ -663,6 +669,30 @@
     // Estado búsqueda/filtro
     let filtroTipo   = "todos";
     let editandoId   = null;
+
+    /* ══════════════════════════════════════
+       TEMA PERSISTENTE  ← CORRECCIÓN
+    ══════════════════════════════════════ */
+    function setTheme(mode) {
+      localStorage.setItem("theme", mode);           // ← guardar en localStorage
+      document.body.classList.toggle("light", mode === "light");
+      actualizarBotonesTheme(mode);
+      toast(mode === "light" ? "☀️ Tema claro activado" : "🌙 Tema oscuro activado");
+    }
+
+    function actualizarBotonesTheme(mode) {
+      let btnDark  = $("btnThemeDark");
+      let btnLight = $("btnThemeLight");
+      if (!btnDark || !btnLight) return;
+      btnDark.classList.toggle("theme-btn-active",  mode === "dark");
+      btnLight.classList.toggle("theme-btn-active", mode === "light");
+    }
+
+    function aplicarTemaGuardado() {
+      let savedTheme = localStorage.getItem("theme") || "dark"; // dark por defecto
+      document.body.classList.toggle("light", savedTheme === "light");
+      // Los botones aún no están en el DOM al cargar, se marcarán cuando se abra Settings
+    }
 
     /* ══════════════════════════════════════
        HELPERS DE KEYS
@@ -914,7 +944,6 @@
       });
       if (elCuentaDestino.options.length>1) elCuentaDestino.selectedIndex=1;
 
-      // Filtro por cuenta en listado
       let fs=$("filterCuentaSel");
       if (fs) {
         fs.innerHTML=`<option value="">Todas</option>`;
@@ -1115,7 +1144,12 @@
       document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));
       btn.classList.add("active");
       if (tab==="list")     { renderHistorial(); renderListFiltrado(); }
-      if (tab==="settings") { renderCuentasAdmin(); renderCatsAdmin(); }
+      if (tab==="settings") {
+        renderCuentasAdmin();
+        renderCatsAdmin();
+        // ← Marcar botón del tema activo cuando se abre Settings
+        actualizarBotonesTheme(localStorage.getItem("theme") || "dark");
+      }
       if (tab==="dashboard"){ render(); renderComparativa(); }
       if (tab==="goals")    { renderBudgetList(); renderRecList(); }
     }
@@ -1129,11 +1163,6 @@
       hidden=!hidden;
       localStorage.setItem("hideMoney",hidden?"1":"0");
       render(); renderCrossCard();
-    }
-
-    function setTheme(mode) {
-      document.body.classList.toggle("light",mode==="light");
-      toast("Tema actualizado");
     }
 
     function parseMonto(str) {
@@ -1286,7 +1315,7 @@
     }
 
     /* ══════════════════════════════════════
-       EDITAR MOVIMIENTO ← NUEVO
+       EDITAR MOVIMIENTO
     ══════════════════════════════════════ */
     function abrirEditar(id) {
       let x=data.find(d=>String(d.ID)===String(id));
@@ -1294,8 +1323,6 @@
         toast("Este tipo de movimiento no se puede editar directamente");return;
       }
       editandoId=String(id);
-
-      // Poblar select categoría
       let editCatEl=$("editCategoria"); editCatEl.innerHTML="";
       let modo=x.Tipo==="Ingreso"?"ingreso":"gasto";
       categorias.filter(c=>c.tipo==="ambos"||c.tipo===modo).forEach(c=>{
@@ -1304,8 +1331,6 @@
         if ((c.icon+" "+c.nombre)===x.Categoría) opt.selected=true;
         editCatEl.appendChild(opt);
       });
-
-      // Poblar select cuenta
       let editCuentaEl=$("editCuenta"); editCuentaEl.innerHTML="";
       cuentas.forEach(c=>{
         let opt=document.createElement("option");
@@ -1313,29 +1338,24 @@
         if (c.id===x.Cuenta) opt.selected=true;
         editCuentaEl.appendChild(opt);
       });
-
       $("editFecha").value=x.Fecha||"";
       $("editDescripcion").value=x.Descripción||"";
       $("editMonto").value=Number(x.Monto||0).toLocaleString("es-CO");
       $("editNota").value=x.Nota||"";
-
       $("modalEditar").classList.add("open");
     }
 
     function confirmarEdicion() {
       let x=data.find(d=>String(d.ID)===String(editandoId));
       if (!x){toast("Movimiento no encontrado");cerrarModal("modalEditar");return}
-
       let m=parseMonto($("editMonto").value);
       if (!$("editDescripcion").value.trim()||m<=0){toast("Completa los datos");return}
-
       x.Fecha       = $("editFecha").value;
       x.Categoría   = $("editCategoria").value;
       x.Descripción = $("editDescripcion").value.trim();
       x.Monto       = m;
       x.Cuenta      = $("editCuenta").value;
       x.Nota        = $("editNota").value.trim();
-
       localStorage.setItem(keyFor("dataCache"),JSON.stringify(data));
       cerrarModal("modalEditar");
       render(); renderCrossCard();
@@ -1344,7 +1364,7 @@
     }
 
     /* ══════════════════════════════════════
-       EXPORTAR CSV ← NUEVO
+       EXPORTAR CSV
     ══════════════════════════════════════ */
     function exportarCSV() {
       let filas=data.map(x=>[
@@ -1369,7 +1389,7 @@
     }
 
     /* ══════════════════════════════════════
-       BÚSQUEDA Y FILTROS ← NUEVO
+       BÚSQUEDA Y FILTROS
     ══════════════════════════════════════ */
     function setFiltro(tipo, btn) {
       filtroTipo=tipo;
@@ -1384,14 +1404,11 @@
       let orden=$("filterOrden")?$("filterOrden").value:"fecha_desc";
 
       let filtrados=[...data,...pending].filter(x=>{
-        // Tipo
         if (filtroTipo==="ingreso"&&x.Tipo!=="Ingreso") return false;
         if (filtroTipo==="gasto"&&x.Tipo!=="Gasto") return false;
         if (filtroTipo==="transferencia"&&x.Tipo!=="Transferencia") return false;
         if (filtroTipo==="traspaso"&&x.Tipo!=="TraspasoSalida"&&x.Tipo!=="TraspasoEntrada") return false;
-        // Cuenta
         if (cuentaFiltro&&x.Cuenta!==cuentaFiltro&&x.CuentaOrigen!==cuentaFiltro&&x.CuentaDestino!==cuentaFiltro) return false;
-        // Búsqueda
         if (busqueda) {
           let haystack=((x.Descripción||"")+" "+(x.Categoría||"")+" "+(x.Nota||"")).toLowerCase();
           if (!haystack.includes(busqueda)) return false;
@@ -1399,7 +1416,6 @@
         return true;
       });
 
-      // Ordenar
       filtrados.sort((a,b)=>{
         if (orden==="fecha_desc") return new Date(b.Fecha)-new Date(a.Fecha);
         if (orden==="fecha_asc")  return new Date(a.Fecha)-new Date(b.Fecha);
@@ -1417,24 +1433,19 @@
       filtrados.forEach(x=>{
         let m=Number(x.Monto)||0;
         let claseItem=x.Tipo==="Ingreso"?"ingreso":x.Tipo==="Transferencia"?"transferencia":x.Tipo==="TraspasoSalida"||x.Tipo==="TraspasoEntrada"?"traspaso":"gasto";
-
         if (orden.startsWith("fecha")&&x.Fecha!==lastDay){
           elLista.innerHTML+=`<div class="timeline-day">${labelDay(x.Fecha)}</div>`;
           lastDay=x.Fecha;
         }
-
         let cuentaLabel="";
         if (x.Tipo==="Transferencia"){let ori=cuentas.find(c=>c.id===x.CuentaOrigen),dest=cuentas.find(c=>c.id===x.CuentaDestino);cuentaLabel=`<span class="badge">🔄 ${ori?ori.icon+" "+ori.nombre:x.CuentaOrigen} → ${dest?dest.icon+" "+dest.nombre:x.CuentaDestino}</span>`}
         else if (x.Tipo==="TraspasoSalida"||x.Tipo==="TraspasoEntrada"){let c=cuentas.find(c=>c.id===x.Cuenta),signo=x.Tipo==="TraspasoEntrada"?"📥":"📤";cuentaLabel=`<span class="badge cross-badge">${signo} ${c?c.icon+" "+c.nombre:x.Cuenta||""}</span>`}
         else if (x.Cuenta){let c=cuentas.find(c=>c.id===x.Cuenta);if(c)cuentaLabel=`<span class="badge">${c.icon} ${c.nombre}</span>`}
-
         let notaHTML=x.Nota?`<div style="font-size:11px;color:var(--muted);margin-top:3px">📝 ${x.Nota}</div>`:"";
         let isPending=!x.ID;
         let pBadge=isPending?`<span class="badge" style="background:rgba(245,158,11,.2);color:var(--warn)">⏳</span>`:"";
-
         let editBtn=(x.Tipo==="Ingreso"||x.Tipo==="Gasto")
           ?`<button class="warn-btn" onclick="abrirEditar('${x.ID}')">✏️</button>`:"";
-
         elLista.innerHTML+=`
           <div class="item ${claseItem}">
             <div>${x.Categoría} - ${x.Descripción}${cuentaLabel}${pBadge}</div>
@@ -1516,7 +1527,7 @@
     }
 
     /* ══════════════════════════════════════
-       PRESUPUESTO POR CATEGORÍA ← NUEVO
+       PRESUPUESTO POR CATEGORÍA
     ══════════════════════════════════════ */
     function poblarPresupuestoCatSel() {
       let sel=$("budgetCatSel"); if (!sel) return;
@@ -1552,13 +1563,10 @@
       let b=getBudgets();
       let cats=Object.keys(b);
       if (!cats.length){el.innerHTML=`<div class="alert mid">No hay presupuestos definidos.</div>`;return}
-
-      // Calcular gasto real por categoría
       let gastoReal={};
       data.filter(x=>x.Tipo==="Gasto").forEach(x=>{
         gastoReal[x.Categoría]=(gastoReal[x.Categoría]||0)+Number(x.Monto||0);
       });
-
       el.innerHTML="";
       cats.forEach(cat=>{
         let limite=b[cat], gastado=gastoReal[cat]||0;
@@ -1584,7 +1592,7 @@
     }
 
     /* ══════════════════════════════════════
-       GASTOS RECURRENTES ← NUEVO
+       GASTOS RECURRENTES
     ══════════════════════════════════════ */
     function poblarRecSelects() {
       let recCuenta=$("recCuentaSel"), recCat=$("recCatSel");
@@ -1664,22 +1672,17 @@
     }
 
     /* ══════════════════════════════════════
-       COMPARATIVA DE MESES ← NUEVO
+       COMPARATIVA DE MESES
     ══════════════════════════════════════ */
     function renderComparativa() {
       let el=$("compareContent"); if (!el) return;
       if (!historial.length&&!data.length){el.innerHTML=`<div class="alert mid">Necesitas al menos 1 mes cerrado para comparar.</div>`;return}
-
       let meses=[];
       historial.slice(0,5).forEach(m=>meses.push({label:m.label,ing:m.ing,gas:m.gas}));
-
-      // Mes actual
       let ingActual=data.reduce((a,x)=>x.Tipo==="Ingreso"?a+Number(x.Monto||0):a,0);
       let gasActual=data.reduce((a,x)=>x.Tipo==="Gasto"?a+Number(x.Monto||0):a,0);
       meses.unshift({label:"Este mes",ing:ingActual,gas:gasActual,actual:true});
-
       let maxVal=Math.max(...meses.map(m=>Math.max(m.ing,m.gas)),1);
-
       el.innerHTML="";
       meses.forEach(m=>{
         let pctIng=(m.ing/maxVal*100).toFixed(1);
@@ -1709,7 +1712,6 @@
     function render() {
       let ing=0,gas=0,ah=0,cats={};
       let sorted=[...data].sort((a,b)=>new Date(b.Fecha)-new Date(a.Fecha));
-
       sorted.forEach(x=>{
         let m=Number(x.Monto)||0;
         if (x.Tipo==="Ingreso") ing+=m;
@@ -1718,11 +1720,9 @@
         if (catStr.includes("Ahorro")||catStr.includes("Reinversión")) ah+=m;
         if (x.Tipo==="Gasto") cats[x.Categoría]=(cats[x.Categoría]||0)+m;
       });
-
       let saldos=calcSaldosCuentas();
       let saldoTotal=Object.values(saldos).reduce((a,b)=>a+b,0);
       elSaldoTop.innerText=money(saldoTotal);
-
       renderCuentas(saldos);
       renderCockpit(ing,gas,ah);
       renderCoach(ing,gas,cats);
@@ -1730,8 +1730,6 @@
       renderBudgetList();
       if ($("tab-dashboard").classList.contains("active")) charts(cats,ing,gas,saldos);
       renderFavorites();
-
-      // Si la pestaña list está activa, actualizar también
       if ($("tab-list").classList.contains("active")) renderListFiltrado();
     }
 
@@ -1789,13 +1787,10 @@
       let traspasoSalidas=data.filter(x=>x.Tipo==="TraspasoSalida").reduce((a,x)=>a+Number(x.Monto||0),0);
       let traspasoEntradas=data.filter(x=>x.Tipo==="TraspasoEntrada").reduce((a,x)=>a+Number(x.Monto||0),0);
       let traspasoNeto=traspasoEntradas-traspasoSalidas;
-
-      // Alerta presupuesto
       let b=getBudgets();
       let gastoReal={};
       data.filter(x=>x.Tipo==="Gasto").forEach(x=>{gastoReal[x.Categoría]=(gastoReal[x.Categoría]||0)+Number(x.Monto||0)});
       let alertasBudget=Object.keys(b).filter(cat=>{let pct=(gastoReal[cat]||0)/b[cat]*100;return pct>=80});
-
       elCockpit.innerHTML=`
         <div class="grid2">
           <div class="kpi"><span>Hoy gastado</span><strong>${money(hoyGastado)}</strong></div>
@@ -1878,6 +1873,9 @@
     /* ══════════════════════════════════════
        INIT
     ══════════════════════════════════════ */
+    // ← Aplicar tema guardado ANTES de renderizar
+    aplicarTemaGuardado();
+
     elFecha.valueAsDate=new Date();
     elToday.innerText=new Date().toLocaleDateString("es-CO",{weekday:"long",day:"numeric",month:"long"});
     elStreakBox.innerText=streak;
