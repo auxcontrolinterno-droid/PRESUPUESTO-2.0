@@ -1,6 +1,6 @@
 {
   "name": "Banking PRO AI ",
-  "short_name": "BankingPRO",
+  "short_name": "Banking PRO",
   "start_url": "./index.html",
   "display": "standalone",
   "theme_color": "#0f172a",
