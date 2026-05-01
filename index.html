@@ -27,16 +27,19 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
+    // Exponer funciones de autenticación globalmente
+    window.fbSignIn = (e,p) => signInWithEmailAndPassword(auth,e,p);
+    window.fbSignUp = (e,p) => createUserWithEmailAndPassword(auth,e,p);
+    window.fbSignOut = () => signOut(auth);
+    window.fbUpdateUserProfile = (u,d) => updateProfile(u,d);
+    window.fbAddUserDoc = (data) => addDoc(collection(db,"users"),data);
+
     window.db = db; window.auth = auth;
     window.fbCollection = collection; window.fbAddDoc = addDoc;
     window.fbGetDocs = getDocs; window.fbGetDoc = getDoc;
     window.fbDeleteDoc = deleteDoc; window.fbDoc = doc;
     window.fbUpdateDoc = updateDoc; window.fbQuery = query;
     window.fbWhere = where;
-    window.fbRegister = (e,p) => createUserWithEmailAndPassword(auth,e,p);
-    window.fbLogin = (e,p) => signInWithEmailAndPassword(auth,e,p);
-    window.fbLogout = () => signOut(auth);
-    window.fbUpdateProfile = (u,d) => updateProfile(u,d);
 
     onAuthStateChanged(auth, (user) => {
       window.currentUser = user;
@@ -509,13 +512,8 @@ function money(n){if(hidden)return"••••••";return"$"+Number(n).toLoc
 function parseMonto(s){
   if(!s)return 0;
   let cleaned=String(s).trim();
-  if(cleaned.includes(",")&&cleaned.includes(".")){
-    cleaned=cleaned.replace(/\./g,"").replace(",",".");
-  }else if(cleaned.includes(",")&&!cleaned.includes(".")){
-    const parts=cleaned.split(",");
-    if(parts.length===2&&parts[1].length<=2)cleaned=cleaned.replace(",",".");
-    else cleaned=cleaned.replace(/,/g,"");
-  }
+  if(cleaned.includes(",")&&cleaned.includes(".")){cleaned=cleaned.replace(/\./g,"").replace(",",".");}
+  else if(cleaned.includes(",")&&!cleaned.includes(".")){const parts=cleaned.split(",");if(parts.length===2&&parts[1].length<=2)cleaned=cleaned.replace(",",".");else cleaned=cleaned.replace(/,/g,"");}
   return parseFloat(cleaned)||0;
 }
 
@@ -527,8 +525,8 @@ document.addEventListener("DOMContentLoaded",()=>{
   cargarTemaInicial();
   $("tabLoginBtn").onclick=()=>switchLoginTab("login");
   $("tabRegisterBtn").onclick=()=>switchLoginTab("register");
-  $("loginBtn").onclick=iniciarSesion;
-  $("registerBtn").onclick=registrarUsuario;
+  $("loginBtn").addEventListener("click",iniciarSesion);
+  $("registerBtn").addEventListener("click",registrarUsuario);
   $("traspasoDireccion")?.addEventListener("change",poblarTraspaso);
   $("reglaTipo")?.addEventListener("change",actualizarReglaConfig);
   actualizarReglaConfig();
@@ -539,9 +537,30 @@ document.addEventListener("DOMContentLoaded",()=>{
 function checkFB(){if(window.firebaseReady){window.onUserChanged=onUserChanged;if(window.auth?.currentUser)onUserChanged(window.auth.currentUser)}else setTimeout(checkFB,300)}
 function switchLoginTab(t){$("formLogin").style.display=t==="login"?"block":"none";$("formRegister").style.display=t==="register"?"block":"none";$("tabLoginBtn").classList.toggle("active",t==="login");$("tabRegisterBtn").classList.toggle("active",t==="register");$("loginError").classList.remove("visible")}
 function showError(m){const e=$("loginError");e.textContent=m;e.classList.add("visible")}
-async function iniciarSesion(){const e=$("loginEmail").value.trim(),p=$("loginPass").value;if(!e||!p){showError("Completa todos los campos");return}$("loginError").classList.remove("visible");$("loginBtn").disabled=true;$("loginBtn").textContent="⏳...";try{await window.fbLogin(e,p)}catch(err){$("loginBtn").disabled=false;$("loginBtn").textContent="Entrar →";showError("Error: "+err.message)}}
-async function registrarUsuario(){const n=$("regName").value.trim(),e=$("regEmail").value.trim(),p=$("regPass").value;if(!n||!e||!p||p.length<6){showError("Completa todos los campos (contraseña mín. 6)");return}$("loginError").classList.remove("visible");$("registerBtn").disabled=true;$("registerBtn").textContent="⏳...";try{const cred=await window.fbRegister(e,p);await window.fbUpdateProfile(cred.user,{displayName:n});try{await window.fbAddDoc(window.fbCollection(window.db,"users"),{uid:cred.user.uid,email:e,displayName:n,createdAt:new Date().toISOString()})}catch(ex){}}catch(err){$("registerBtn").disabled=false;$("registerBtn").textContent="Crear cuenta →";showError("Error: "+err.message)}}
-async function cerrarSesion(){if(!confirm("¿Cerrar sesión?"))return;await window.fbLogout()}
+
+// FUNCIONES DE LOGIN CORREGIDAS
+async function iniciarSesion(){
+  const email=$("loginEmail").value.trim(),pass=$("loginPass").value;
+  if(!email||!pass){showError("Completa todos los campos");return}
+  $("loginError").classList.remove("visible");
+  $("loginBtn").disabled=true;$("loginBtn").textContent="⏳...";
+  try{await window.fbSignIn(email,pass);}
+  catch(err){$("loginBtn").disabled=false;$("loginBtn").textContent="Entrar →";showError("Error: "+err.message);}
+}
+
+async function registrarUsuario(){
+  const name=$("regName").value.trim(),email=$("regEmail").value.trim(),pass=$("regPass").value;
+  if(!name||!email||!pass||pass.length<6){showError("Completa todos los campos (contraseña mín. 6)");return}
+  $("loginError").classList.remove("visible");
+  $("registerBtn").disabled=true;$("registerBtn").textContent="⏳...";
+  try{
+    const cred=await window.fbSignUp(email,pass);
+    await window.fbUpdateUserProfile(cred.user,{displayName:name});
+    try{await window.fbAddUserDoc({uid:cred.user.uid,email:email,displayName:name,createdAt:new Date().toISOString()});}catch(ex){}
+  }catch(err){$("registerBtn").disabled=false;$("registerBtn").textContent="Crear cuenta →";showError("Error: "+err.message);}
+}
+
+async function cerrarSesion(){if(!confirm("¿Cerrar sesión?"))return;await window.fbSignOut();}
 
 function onUserChanged(user){
   if(user){$("loginScreen").classList.add("oculto");$("appContent").classList.add("visible");actualizarUI(user);localStorage.setItem("uid",user.uid);
@@ -953,28 +972,11 @@ function confirmarCierre(){const s=calcSaldos(),ing=data.filter(x=>x.Tipo==="Ing
 
 // ══ VOZ ══
 const LETRAS_A_NUMERO={cero:0,un:1,uno:1,dos:2,tres:3,cuatro:4,cinco:5,seis:6,siete:7,ocho:8,nueve:9,diez:10,once:11,doce:12,trece:13,catorce:14,quince:15,veinte:20,veintiun:21,treinta:30,cuarenta:40,cincuenta:50,sesenta:60,setenta:70,ochenta:80,noventa:90,cien:100,ciento:100,doscientos:200,trescientos:300,cuatrocientos:400,quinientos:500,mil:1000,millon:1000000};
-function convertirPalabrasANumero(texto){
-  const md=texto.match(/(\d[\d.]*)/);
-  if(md)return parseMonto(md[1]);
-  const p=texto.toLowerCase().replace(/[áéíóú]/g,c=>'aeiou'['áéíóú'.indexOf(c)]).split(/\s+/);
-  let t=0,a=0;
-  p.forEach(w=>{if(w==='y')return;const v=LETRAS_A_NUMERO[w];if(!v)return;if(v===1000){if(a===0)a=1;t+=a*1000;a=0}else if(v===1000000){if(a===0)a=1;t+=a*1000000;a=0}else if(v>=100)a*=v;else a+=v});
-  return t+a;
-}
+function convertirPalabrasANumero(texto){const md=texto.match(/(\d[\d.]*)/);if(md)return parseMonto(md[1]);const p=texto.toLowerCase().replace(/[áéíóú]/g,c=>'aeiou'['áéíóú'.indexOf(c)]).split(/\s+/);let t=0,a=0;p.forEach(w=>{if(w==='y')return;const v=LETRAS_A_NUMERO[w];if(!v)return;if(v===1000){if(a===0)a=1;t+=a*1000;a=0}else if(v===1000000){if(a===0)a=1;t+=a*1000000;a=0}else if(v>=100)a*=v;else a+=v});return t+a;}
 function toggleVoice(){if(!('webkitSpeechRecognition' in window)){toast("❌ Reconocimiento de voz no soportado");return}isListening?stopVoice():startVoice()}
 function startVoice(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;recognition=new SR();recognition.lang="es-CO";recognition.interimResults=true;$("voiceBtn").classList.add("listening");$("voiceBtn").innerHTML="🎤...";$("voiceFeedback").classList.add("active");$("voiceFeedback").innerHTML="👂 Habla ahora...";isListening=true;recognition.onresult=(e)=>{const t=e.results[0][0].transcript;$("voiceFeedback").innerHTML=`📝 "${t}"`;if(e.results[0].isFinal){procesarVoz(t);stopVoice()}};recognition.onerror=()=>stopVoice();recognition.start()}
 function stopVoice(){if(recognition)recognition.stop();$("voiceBtn").classList.remove("listening");$("voiceBtn").innerHTML="🎤 Voz";isListening=false}
-function procesarVoz(texto){
-  let monto=convertirPalabrasANumero(texto);
-  if(!monto){const mn=texto.match(/(\d[\d.,]*)/);if(mn)monto=parseMonto(mn[1])}
-  if(monto>0){
-    const tipo=/recib[ií]|ingres[oó]|cobr[eé]|salario/i.test(texto)?"ingreso":"gasto";
-    setMode(tipo,document.querySelectorAll(".mode-tab")[tipo==="ingreso"?0:1]);
-    $("descripcion").value=texto.split(" ").filter(w=>w.length>2&&!['mil','pesos','con','para','y','de','en','el','la','los','las','un','una'].includes(w.toLowerCase())&&!LETRAS_A_NUMERO[w.toLowerCase()]).join(" ")||"Movimiento por voz";
-    $("montoInput").value=monto.toLocaleString("es-CO");
-    $("voiceFeedback").innerHTML=`✅ Detectado: ${money(monto)}<br><small>Revisa y guarda</small>`;
-  }else{$("voiceFeedback").innerHTML="❌ No detecté monto<br><small>Prueba: 20 mil o 20000</small>"}
-}
+function procesarVoz(texto){let monto=convertirPalabrasANumero(texto);if(!monto){const mn=texto.match(/(\d[\d.,]*)/);if(mn)monto=parseMonto(mn[1])}if(monto>0){const tipo=/recib[ií]|ingres[oó]|cobr[eé]|salario/i.test(texto)?"ingreso":"gasto";setMode(tipo,document.querySelectorAll(".mode-tab")[tipo==="ingreso"?0:1]);$("descripcion").value=texto.split(" ").filter(w=>w.length>2&&!['mil','pesos','con','para','y','de','en','el','la','los','las','un','una'].includes(w.toLowerCase())&&!LETRAS_A_NUMERO[w.toLowerCase()]).join(" ")||"Movimiento por voz";$("montoInput").value=monto.toLocaleString("es-CO");$("voiceFeedback").innerHTML=`✅ Detectado: ${money(monto)}<br><small>Revisa y guarda</small>`;}else{$("voiceFeedback").innerHTML="❌ No detecté monto<br><small>Prueba: 20 mil o 20000</small>"}}
 
 // ══ PAREJA ══
 async function inicializarPareja(){if(!window.auth?.currentUser)return;try{const q=window.fbQuery(window.fbCollection(window.db,"parejas"),window.fbWhere("miembros","array-contains",window.auth.currentUser.uid));const snap=await window.fbGetDocs(q);if(!snap.empty){const d=snap.docs[0];idPareja=d.id;datosPareja=d.data();parejaConectada=datosPareja.estado==="activo";renderParejaConfig()}}catch(e){}}
@@ -1036,8 +1038,8 @@ window.buscarPareja=buscarPareja;window.desconectarPareja=desconectarPareja;wind
 window.exportarCSV=exportarCSV;window.limpiarCache=limpiarCache;
 window.renderCoach=renderCoach;window.renderPrestamos=renderPrestamos;window.renderSuscripciones=renderSuscripciones;
 
-console.log("✅ Banking PRO AI v29 - ESTABLE Y FUNCIONAL");
-console.log("🔑 Login corregido | 💵 Préstamos | 📱 Suscripciones | 🧠 Coach IA | ⚙️ Reglas | 🔔 Recordatorios");
+console.log("✅ Banking PRO AI v29 - LOGIN CORREGIDO");
+console.log("🔑 Login funcional | 💵 Préstamos | 📱 Suscripciones | 🧠 Coach IA | ⚙️ Reglas | 🔔 Recordatorios");
 </script>
 </body>
 </html>
