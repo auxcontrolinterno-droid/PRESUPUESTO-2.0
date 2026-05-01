@@ -696,18 +696,30 @@ function renderPresupuestosConjuntos(){
   const sel=$("presupuestoConjuntoCat");if(sel){sel.innerHTML="";categorias.filter(c=>c.tipo==="gasto"||c.tipo==="ambos").forEach(c=>{sel.innerHTML+=`<option value="${c.icon} ${c.nombre}">${c.icon} ${c.nombre}</option>`})}
 }
 
-// ══ TEMAS ══
+// ══ TEMAS (CORREGIDO: PERSISTENCIA) ══
 function aplicarTema(tema){
-  temaActual=tema;localStorage.setItem("tema",tema);
+  temaActual=tema;
+  localStorage.setItem("tema",tema);
+  // Remover todas las clases de tema
   document.body.classList.remove("tema-light","tema-ocean","tema-forest","tema-sunset","tema-purple","tema-rose","tema-cyber");
+  // Aplicar clase si no es dark
   if(tema!=="dark")document.body.classList.add("tema-"+tema);
+  // Actualizar fondo
   const fondos={dark:"linear-gradient(180deg,#0a0f1a,#111827)",light:"linear-gradient(180deg,#f8fafc,#ffffff)",ocean:"linear-gradient(180deg,#0c1929,#122738)",forest:"linear-gradient(180deg,#0d1f0d,#152815)",sunset:"linear-gradient(180deg,#1a0d0d,#281515)",purple:"linear-gradient(180deg,#1a0d2e,#2d1b4e)",rose:"linear-gradient(180deg,#1a0d14,#2d1523)",cyber:"linear-gradient(180deg,#001a1a,#002626)"};
   if(fondos[tema])document.body.style.background=fondos[tema];
+  // Actualizar indicador visual
   document.querySelectorAll(".tema-preview").forEach(t=>t.classList.remove("activo"));
   const cap=tema.charAt(0).toUpperCase()+tema.slice(1);
   const el=$("tema"+cap);if(el)el.classList.add("activo");
+  // Restaurar color del tema si no hay color libre
   if(!colorLibre)restaurarColorTema();
   toast(`🎨 Tema ${tema} aplicado`);
+}
+
+// Aplicar tema guardado al cargar la página (POR DEFECTO OSCURO)
+function cargarTemaInicial(){
+  const temaGuardado=localStorage.getItem("tema")||"dark";
+  aplicarTema(temaGuardado);
 }
 
 // ══ FUNCIONES BASE ══
@@ -722,7 +734,10 @@ function labelDay(f){const n=new Date(),t=n.getFullYear()+"-"+String(n.getMonth(
 document.addEventListener("DOMContentLoaded",()=>{
   $("today").innerText=new Date().toLocaleDateString("es-CO",{weekday:"long",day:"numeric",month:"long"});
   $("fecha").valueAsDate=new Date();$("streakBox").innerText=streak;
-  if(colorLibre){aplicarColorLibre(colorLibre);}else{aplicarTema(temaActual);}
+  // Cargar tema guardado (por defecto oscuro)
+  cargarTemaInicial();
+  // Aplicar color libre si existe
+  if(colorLibre){aplicarColorLibre(colorLibre);}
   $("tabLoginBtn").onclick=()=>switchTab("login");$("tabRegisterBtn").onclick=()=>switchTab("register");
   $("loginBtn").onclick=iniciarSesion;$("registerBtn").onclick=registrarUsuario;
   $("traspasoDireccion")?.addEventListener("change",poblarTraspaso);
@@ -880,7 +895,6 @@ function renderLista(){
   f.forEach(x=>{const m=Number(x.Monto)||0,cls=x.Tipo==="Ingreso"?"ingreso":x.Tipo==="Gasto"?"gasto":x.Tipo==="Transferencia"?"transferencia":"traspaso";if(orden.startsWith("fecha")&&x.Fecha!==ld){$("lista").innerHTML+=`<div style="font-size:11px;color:var(--muted);font-weight:700;margin:8px 0 4px">${labelDay(x.Fecha)}</div>`;ld=x.Fecha}let cl="";if(x.Tipo==="Transferencia"){const o=cuentas.find(c=>c.id===x.CuentaOrigen),d=cuentas.find(c=>c.id===x.CuentaDestino);cl=`<span style="font-size:9px;color:var(--transfer);margin-left:4px">🔄 ${o?.nombre||x.CuentaOrigen} → ${d?.nombre||x.CuentaDestino}</span>`}else if(x.Cuenta){const c=cuentas.find(cu=>cu.id===x.Cuenta);if(c)cl=`<span style="font-size:9px;color:var(--muted);margin-left:4px">${c.icon} ${c.nombre}</span>`}const eb=(x.Tipo==="Ingreso"||x.Tipo==="Gasto")?`<button class="warn-btn" onclick="abrirEditar('${x.ID}')">✏️</button>`:"";$("lista").innerHTML+=`<div class="item ${cls}"><div><div style="font-size:12px;font-weight:600">${x.Categoría||""} - ${x.Descripción||""}${cl}</div>${x.Nota?`<div style="font-size:10px;color:var(--muted);margin-top:2px">📝 ${x.Nota}</div>`:""}</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px"><b>${x.Tipo==="TraspasoSalida"?"-":x.Tipo==="TraspasoEntrada"?"+":""}${money(m)}</b><div style="display:flex;gap:4px">${eb}<button class="small-btn" onclick="borrar('${x.ID}')">🗑️</button></div></div></div>`});
 }
 
-// ══ RESTO DE FUNCIONES (mantenidas igual) ══
 function renderHistorial(){if(!historial.length){$("historialCard").style.display="none";return}$("historialCard").style.display="block";$("historialLista").innerHTML=historial.map((m,i)=>`<div class="item" style="cursor:pointer" onclick="toggleMes(${i})"><div style="display:flex;justify-content:space-between"><span style="font-weight:700">📅 ${m.label}</span><span id="ma${i}">▶</span></div><div class="small">Ing: ${money(m.ing)} · Gas: ${money(m.gas)} · Bal: ${money(m.ing-m.gas)}</div><div style="display:none;margin-top:6px" id="mb${i}">${m.movimientos?.length?m.movimientos.map(x=>`<div>${x.Categoría||""} - ${x.Descripción||""}: ${money(x.Monto)}</div>`).join(""):'<div class="small">Sin datos</div>'}</div></div>`).join("")}
 function toggleMes(i){const b=$("mb"+i),a=$("ma"+i);b.style.display=b.style.display==="none"?"block":"none";a.textContent=b.style.display==="none"?"▶":"▼"}
 function abrirCierre(){const s=calcSaldos(),ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gas=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0);let h=`<div class="grid2" style="margin-bottom:8px"><div class="kpi"><span>Ingresos</span><strong style="color:var(--ok)">${money(ing)}</strong></div><div class="kpi"><span>Gastos</span><strong style="color:var(--bad)">${money(gas)}</strong></div></div>`;cuentas.forEach(c=>{h+=`<div style="font-size:12px;margin-bottom:3px">${c.icon} ${c.nombre}: ${money(s[c.id]||0)}</div>`});$("modalResumen").innerHTML=h;$("modalCierre").classList.add("open")}
@@ -969,8 +983,9 @@ window.renderBudgets=renderBudgets;window.renderRecList=renderRecList;window.tog
 window.exportarCSV=exportarCSV;window.limpiarCache=limpiarCache;window.diag=diag;
 window.aplicarColorLibre=aplicarColorLibre;window.restaurarColorTema=restaurarColorTema;
 
-console.log("✅ Banking PRO AI v27 - FINAL CORREGIDO");
-console.log("🏠 Movimiento SOLO en pestaña Home | ☀️ Tema claro OK | 🏆 Logros en Dashboard");
+// CORRECCIÓN FINAL: Tema oscuro por defecto y persistente
+console.log("✅ Banking PRO AI v27 - FINAL");
+console.log("🌙 Tema oscuro por defecto | 💾 Tema persistente al recargar");
 </script>
 </body>
 </html>
