@@ -44,6 +44,7 @@
     });
 
     window.firebaseReady = true;
+    console.log("✅ Módulo Firebase listo");
   </script>
 
   <style>
@@ -396,7 +397,7 @@
 
 <script>
 // ═══════════════════════════════════════════
-// BANKING PRO AI v29 - COMPLETO Y FUNCIONAL
+// BANKING PRO AI v29 - LOGIN CORREGIDO
 // ═══════════════════════════════════════════
 const $=id=>document.getElementById(id);
 const ACC_COLORS=["#3b82f6","#22c55e","#f59e0b","#ec4899","#a78bfa","#14b8a6"];
@@ -447,7 +448,6 @@ function addPrestamo(){
   const montoConInteres=monto*(1+interes/100);
   const valorCuota=montoConInteres/cuotas;
   prestamos.push({id:"pres_"+Date.now(),persona,tipo,monto,montoConInteres,cuotas,valorCuota,interes,nota,pagado:0,fecha:new Date().toISOString().slice(0,10),estado:"activo"});
-  // Movimiento automático
   const hoy=new Date().toISOString().slice(0,10);
   if(tipo==="prestado"){
     data.push({Fecha:hoy,Tipo:"Gasto",Cuenta:cuentas[0]?.id||"efectivo",Categoría:"💵 Préstamo",Descripción:`Préstamo a ${persona}`,Monto:monto,Nota:`${cuotas} cuotas de $${valorCuota.toLocaleString("es-CO")}`,Contexto:contexto,ID:"presmov_"+Date.now()});
@@ -497,13 +497,26 @@ function money(n){if(hidden)return"••••••";return"$"+Number(n).toLoc
 function parseMonto(s){return Number(String(s).replace(/\./g,"").replace(",","."))||0}
 function labelDay(f){const n=new Date(),t=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0")+"-"+String(n.getDate()).padStart(2,"0"),a=new Date(n);a.setDate(n.getDate()-1);const y=a.getFullYear()+"-"+String(a.getMonth()+1).padStart(2,"0")+"-"+String(a.getDate()).padStart(2,"0");if(f===t)return"HOY";if(f===y)return"AYER";return new Date(f+"T00:00:00").toLocaleDateString("es-CO",{day:"numeric",month:"short"})}
 
+// ══ INICIALIZACIÓN CON ESPERA DE FIREBASE ══
+function esperarFirebase(callback){
+  if(window.firebaseReady){callback();return;}
+  setTimeout(()=>esperarFirebase(callback),200);
+}
+
 document.addEventListener("DOMContentLoaded",()=>{
   $("today").innerText=new Date().toLocaleDateString("es-CO",{weekday:"long",day:"numeric",month:"long"});
   $("fecha").valueAsDate=new Date();$("streakBox").innerText=streak;
   cargarTemaInicial();
   $("tabLoginBtn").onclick=()=>switchTab("login");$("tabRegisterBtn").onclick=()=>switchTab("register");
-  $("loginBtn").onclick=iniciarSesion;$("registerBtn").onclick=registrarUsuario;
   $("traspasoDireccion")?.addEventListener("change",poblarTraspaso);
+  
+  // Esperar a Firebase para asignar eventos de login
+  esperarFirebase(()=>{
+    $("loginBtn").onclick=iniciarSesion;
+    $("registerBtn").onclick=registrarUsuario;
+    console.log("✅ Eventos de login asignados correctamente");
+  });
+  
   $("toggleDiario").checked=localStorage.getItem("notiDiaria")==="1";
   $("horaRecordatorio").value=localStorage.getItem("horaNoti")||"20";
   checkFB();
@@ -707,12 +720,12 @@ window.abrirCierre=abrirCierre;window.confirmarCierre=confirmarCierre;
 window.agregarInversion=agregarInversion;window.eliminarInversion=eliminarInversion;window.mostrarFormInversion=mostrarFormInversion;
 window.switchDashTab=switchDashTab;window.aplicarTema=aplicarTema;
 window.addPrestamo=addPrestamo;window.pagarCuotaPrestamo=pagarCuotaPrestamo;window.eliminarPrestamo=eliminarPrestamo;
-window.renderPrestamos=renderPrestamos;window.renderCoach=render.bind(window);
+window.renderPrestamos=renderPrestamos;
 window.buscarPareja=buscarPareja;window.desconectarPareja=desconectarPareja;window.enviarInvitPareja=enviarInvitPareja;
 window.exportarCSV=exportarCSV;window.limpiarCache=limpiarCache;
 
-console.log("✅ Banking PRO AI v29 - FUNCIONAL Y COMPLETO");
-console.log("🔑 Login OK | 💵 Préstamos | 🎨 8 Temas | ⏰ Cierre automático");
+console.log("✅ Banking PRO AI v29 - LOGIN CORREGIDO DEFINITIVAMENTE");
+console.log("⏳ Espera Firebase | 🔑 Login | 💵 Préstamos | 🎨 8 Temas | ⏰ Cierre auto");
 </script>
 </body>
 </html>
