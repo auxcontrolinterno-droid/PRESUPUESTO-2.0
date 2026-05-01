@@ -5,13 +5,13 @@
   <meta name="theme-color" content="#0f172a">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-  <title>Banking PRO AI v28 - Coach Potenciado</title>
+  <title>Banking PRO AI v29 - Final Estable</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, getDoc, deleteDoc, doc, updateDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, getDoc, deleteDoc, doc, updateDoc, query, where } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
     const firebaseConfig = {
@@ -32,7 +32,7 @@
     window.fbGetDocs = getDocs; window.fbGetDoc = getDoc;
     window.fbDeleteDoc = deleteDoc; window.fbDoc = doc;
     window.fbUpdateDoc = updateDoc; window.fbQuery = query;
-    window.fbWhere = where; window.fbOnSnapshot = onSnapshot;
+    window.fbWhere = where;
     window.fbRegister = (e,p) => createUserWithEmailAndPassword(auth,e,p);
     window.fbLogin = (e,p) => signInWithEmailAndPassword(auth,e,p);
     window.fbLogout = () => signOut(auth);
@@ -42,7 +42,6 @@
       window.currentUser = user;
       if (typeof window.onUserChanged === 'function') window.onUserChanged(user);
     });
-
     window.firebaseReady = true;
   </script>
 
@@ -100,7 +99,8 @@
     .kpi span{display:block;font-size:11px;color:var(--muted);margin-bottom:4px}
     .kpi strong{font-size:16px;font-weight:800}
     input,select,button{width:100%;border:none;outline:none;border-radius:12px;font-family:inherit;font-size:14px}
-    input,select{padding:12px;background:var(--input);color:var(--inputText);font-weight:500;margin-bottom:8px}
+    input,select{padding:12px;background:var(--input);color:var(--inputText);font-weight:500;margin-bottom:8px;border:1px solid transparent}
+    input:focus,select:focus{border-color:var(--primary)}
     button{padding:12px;font-weight:700;cursor:pointer;transition:all .2s}
     .primary{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff}
     .secondary{background:rgba(255,255,255,.06);color:var(--text)}
@@ -195,15 +195,22 @@
     .modal-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
     .cat-chip{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:14px;padding:4px 8px;font-size:11px;margin:2px}
     .cat-chip button{width:auto;padding:0 3px;background:transparent;color:var(--bad);font-size:12px}
-    .color-preset{width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:.2s;display:inline-block}
-    .color-preset:hover{transform:scale(1.2);border-color:#fff}
-    .color-preset.selected{border-color:#fff;box-shadow:0 0 10px rgba(255,255,255,.5)}
-    
-    .coach-score{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,.03);border-radius:14px;margin-bottom:8px}
-    .coach-score-circle{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;border:3px solid}
-    .coach-recomendacion{background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:14px;padding:12px;margin-top:8px}
-    .coach-metrica{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)}
-    .coach-metrica:last-child{border-bottom:none}
+    .prestamo-card{background:rgba(6,182,212,.06);border:1px solid rgba(6,182,212,.15);border-radius:14px;padding:12px;margin-bottom:8px}
+    .suscripcion-card{background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.15);border-radius:14px;padding:12px;margin-bottom:8px}
+    .tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;margin:2px}
+    .tag-suscripcion{background:rgba(139,92,246,.15);color:#a78bfa}
+    .tag-prestamo{background:rgba(6,182,212,.15);color:#06b6d4}
+    .tag-regla{background:rgba(245,158,11,.15);color:var(--warn)}
+    .coach-score-circle{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;border:3px solid;flex-shrink:0}
+    .notification-settings{background:rgba(255,255,255,.03);border-radius:14px;padding:10px;margin-top:8px}
+    .notification-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+    .notification-row:last-child{border-bottom:none}
+    .toggle-switch{position:relative;width:44px;height:24px;display:inline-block}
+    .toggle-switch input{opacity:0;width:0;height:0;margin:0}
+    .toggle-slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,.1);transition:.3s;border-radius:24px}
+    .toggle-slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background:#fff;transition:.3s;border-radius:50%}
+    input:checked+.toggle-slider{background:linear-gradient(135deg,#3b82f6,#7c3aed)}
+    input:checked+.toggle-slider:before{transform:translateX(20px)}
   </style>
 </head>
 <body>
@@ -235,7 +242,7 @@
 <div id="appContent">
   <div class="header">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-      <div><div class="small">Banking PRO AI v28 <span style="color:var(--ok)">●</span></div><div class="small" id="today"></div></div>
+      <div><div class="small">Banking PRO AI v29 <span style="color:var(--ok)">●</span></div><div class="small" id="today"></div></div>
       <div class="user-chip" onclick="goTab('settings',5)">
         <div class="user-chip-avatar" id="userAvatar">?</div>
         <div class="user-chip-name" id="userName">—</div>
@@ -272,14 +279,14 @@
         <label>Cuenta</label><select id="cuentaSel"></select>
         <label>Categoría</label><select id="categoria"></select>
         <input type="text" id="descripcion" placeholder="Descripción">
-        <input type="text" id="montoInput" placeholder="Monto ej: 20.000">
+        <input type="text" id="montoInput" placeholder="Monto ej: 20000">
         <input type="text" id="notaInput" placeholder="Nota (opcional)">
       </div>
       <div class="form-section" id="fs-transfer">
         <label>Cuenta origen</label><select id="cuentaOrigen"></select>
         <div style="text-align:center;margin:2px 0">⬇️</div>
         <label>Cuenta destino</label><select id="cuentaDestino"></select>
-        <input type="text" id="montoTransfer" placeholder="Monto ej: 50.000">
+        <input type="text" id="montoTransfer" placeholder="Monto ej: 50000">
         <input type="text" id="descTransfer" placeholder="Descripción">
       </div>
       <div class="form-section" id="fs-traspaso">
@@ -302,10 +309,7 @@
     <!-- COACH POTENCIADO -->
     <div class="card">
       <div class="title">🧠 Coach Financiero IA</div>
-      <div id="coachScore"></div>
-      <div id="coachAlertas"></div>
-      <div id="coachRecomendaciones"></div>
-      <div id="coachMetricas"></div>
+      <div id="coachContent"></div>
     </div>
   </section>
 
@@ -355,8 +359,8 @@
       <input type="text" id="prestamoPersona" placeholder="Persona o entidad">
       <select id="prestamoTipo"><option value="prestado">Yo presté 💸</option><option value="recibido">Me prestaron 📥</option></select>
       <input type="text" id="prestamoMonto" placeholder="Monto total">
-      <input type="number" id="prestamoCuotas" placeholder="Número de cuotas" min="1">
-      <input type="text" id="prestamoInteres" placeholder="Interés % (0 si no tiene)">
+      <input type="number" id="prestamoCuotas" placeholder="Número de cuotas" min="1" value="1">
+      <input type="text" id="prestamoInteres" placeholder="Interés % (0 si no tiene)" value="0">
       <input type="text" id="prestamoNota" placeholder="Nota (opcional)">
       <button class="primary" onclick="addPrestamo()">💾 Guardar préstamo</button>
     </div>
@@ -426,30 +430,10 @@
         <div class="tema-preview" id="temaRose" style="background:linear-gradient(135deg,#ec4899,#db2777)" onclick="aplicarTema('rose')">🌹<br>Rosa</div>
         <div class="tema-preview" id="temaCyber" style="background:linear-gradient(135deg,#00ff87,#60efff)" onclick="aplicarTema('cyber')">🤖<br>Cyber</div>
       </div>
-      <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--line)">
-        <label style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;display:block">🎨 Color principal libre</label>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
-          <input type="color" id="customColorPicker" value="#3b82f6" oninput="aplicarColorLibre(this.value)" style="width:44px;height:44px;padding:2px;border-radius:8px;cursor:pointer;margin:0">
-          <span id="colorHexValue" style="font-size:12px;font-weight:600">#3b82f6</span>
-        </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <div class="color-preset" style="background:#3b82f6" onclick="aplicarColorLibre('#3b82f6')"></div>
-          <div class="color-preset" style="background:#06b6d4" onclick="aplicarColorLibre('#06b6d4')"></div>
-          <div class="color-preset" style="background:#10b981" onclick="aplicarColorLibre('#10b981')"></div>
-          <div class="color-preset" style="background:#f59e0b" onclick="aplicarColorLibre('#f59e0b')"></div>
-          <div class="color-preset" style="background:#ef4444" onclick="aplicarColorLibre('#ef4444')"></div>
-          <div class="color-preset" style="background:#ec4899" onclick="aplicarColorLibre('#ec4899')"></div>
-          <div class="color-preset" style="background:#8b5cf6" onclick="aplicarColorLibre('#8b5cf6')"></div>
-          <div class="color-preset" style="background:#00ff87" onclick="aplicarColorLibre('#00ff87')"></div>
-          <div class="color-preset" style="background:#ff6b35" onclick="aplicarColorLibre('#ff6b35')"></div>
-          <div class="color-preset" style="background:#6366f1" onclick="aplicarColorLibre('#6366f1')"></div>
-        </div>
-        <button class="secondary" style="margin-top:8px;width:auto;font-size:11px" onclick="restaurarColorTema()">🔄 Restaurar color del tema</button>
-      </div>
     </div>
     
     <div class="card"><div class="title">⚙️ Reglas automáticas</div>
-      <select id="reglaTipo"><option value="limite">Límite de gasto por categoría</option><option value="alerta">Alerta cuando saldo baje de</option><option value="autoahorro">Auto-ahorro al recibir ingresos</option></select>
+      <select id="reglaTipo" onchange="actualizarReglaConfig()"><option value="limite">Límite de gasto por categoría</option><option value="alerta">Alerta cuando saldo baje de</option><option value="autoahorro">Auto-ahorro al recibir ingresos</option></select>
       <div id="reglaConfig"></div>
       <button class="primary" onclick="addRegla()">➕ Agregar regla</button>
       <div id="reglasLista" style="margin-top:8px"></div>
@@ -485,17 +469,18 @@
 </div>
 
 <div class="toast" id="toast"></div>
+<div class="modal-overlay" id="modalCierre"><div class="modal"><h3>🔒 Cerrar mes</h3><p>Archivará movimientos y actualizará saldos.</p><div id="modalResumen" style="margin-bottom:12px"></div><div class="modal-btns"><button class="secondary" onclick="document.getElementById('modalCierre').classList.remove('open')">Cancelar</button><button class="primary" onclick="confirmarCierre()">✔ Confirmar</button></div></div></div>
 
 <script>
 // ═══════════════════════════════════════════
-// BANKING PRO AI v28 - COACH POTENCIADO
+// BANKING PRO AI v29 - FINAL ESTABLE
 // ═══════════════════════════════════════════
 const $=id=>document.getElementById(id);
 const ACC_COLORS=["#3b82f6","#22c55e","#f59e0b","#ec4899","#a78bfa","#14b8a6"];
 
 let contexto=localStorage.getItem("contexto")||"personal",data=[],pending=[],hidden=localStorage.getItem("hideMoney")==="1";
 let goals=[],modoActual="ingreso",historial=[],cuentas=[],categorias=[];
-let c1,c2,c3,c4,c5,c6,cInv,filtroTipo="todos",editandoId=null;
+let c1,c2,c3,c4,c5,c6,cInv,filtroTipo="todos";
 let parejaConectada=false,idPareja=null,datosPareja=null;
 let recognition=null,isListening=false;
 let inversiones=JSON.parse(localStorage.getItem("inversiones")||"[]");
@@ -504,35 +489,6 @@ let suscripciones=JSON.parse(localStorage.getItem("suscripciones")||"[]");
 let reglas=JSON.parse(localStorage.getItem("reglas")||"[]");
 let recordatorios=JSON.parse(localStorage.getItem("recordatorios")||"[]");
 let temaActual=localStorage.getItem("tema")||"dark";
-let colorLibre=localStorage.getItem("colorLibre")||null;
-
-// ══ COLOR LIBRE ══
-function aplicarColorLibre(color){
-  colorLibre=color;localStorage.setItem("colorLibre",color);
-  document.documentElement.style.setProperty("--primary",color);
-  document.documentElement.style.setProperty("--primary2",ajustarColor(color,-20));
-  $("customColorPicker").value=color;$("colorHexValue").textContent=color;
-  document.querySelectorAll(".color-preset").forEach(p=>p.classList.remove("selected"));
-  document.querySelectorAll(".color-preset").forEach(p=>{if(p.style.background.toLowerCase()===color.toLowerCase())p.classList.add("selected")});
-  toast("🎨 Color libre: "+color);
-}
-function ajustarColor(hex,percent){
-  const num=parseInt(hex.replace("#",""),16);
-  const r=Math.min(255,Math.max(0,(num>>16)+percent));
-  const g=Math.min(255,Math.max(0,((num>>8)&0x00FF)+percent));
-  const b=Math.min(255,Math.max(0,(num&0x0000FF)+percent));
-  return "#"+(0x1000000+(r<<16)+(g<<8)+b).toString(16).slice(1);
-}
-function restaurarColorTema(){
-  colorLibre=null;localStorage.removeItem("colorLibre");
-  const tc={dark:"#3b82f6",light:"#3b82f6",ocean:"#06b6d4",forest:"#22c55e",sunset:"#f59e0b",purple:"#8b5cf6",rose:"#ec4899",cyber:"#00ff87"};
-  const color=tc[temaActual]||"#3b82f6";
-  document.documentElement.style.setProperty("--primary",color);
-  document.documentElement.style.setProperty("--primary2",ajustarColor(color,-20));
-  $("customColorPicker").value=color;$("colorHexValue").textContent=color;
-  document.querySelectorAll(".color-preset").forEach(p=>p.classList.remove("selected"));
-  toast("🔄 Color del tema restaurado");
-}
 
 // ══ TEMAS ══
 function aplicarTema(tema){
@@ -544,8 +500,7 @@ function aplicarTema(tema){
   document.querySelectorAll(".tema-preview").forEach(t=>t.classList.remove("activo"));
   const cap=tema.charAt(0).toUpperCase()+tema.slice(1);
   const el=$("tema"+cap);if(el)el.classList.add("activo");
-  if(!colorLibre)restaurarColorTema();else aplicarColorLibre(colorLibre);
-  toast(`🎨 Tema ${tema} aplicado`);
+  toast("🎨 Tema "+tema+" aplicado");
 }
 function cargarTemaInicial(){const tg=localStorage.getItem("tema")||"dark";aplicarTema(tg);}
 
@@ -555,24 +510,55 @@ function keyFor(b){const s=contexto==="negocio"?"Negocio":contexto==="pareja"?"P
 function keyForCtx(b,c){const s=c==="negocio"?"Negocio":c==="pareja"?"Pareja":"";return uid()+"_"+s+b}
 function toast(m){const t=$("toast");t.innerText=m;t.style.display="block";setTimeout(()=>t.style.display="none",2400)}
 function money(n){if(hidden)return"••••••";return"$"+Number(n).toLocaleString("es-CO")}
-function parseMonto(s){return Number(String(s).replace(/\./g,"").replace(",","."))||0}
+
+// CORRECCIÓN: parseMonto mejorado para manejar 20.000, 20,000, 20000
+function parseMonto(s){
+  if(!s)return 0;
+  let cleaned=String(s).trim();
+  // Si tiene puntos de mil y coma decimal: 20.000,50 -> 20000.50
+  if(cleaned.includes(",")&&cleaned.includes(".")){
+    // Asumir que el punto es separador de miles y coma es decimal
+    cleaned=cleaned.replace(/\./g,"").replace(",",".");
+  }else if(cleaned.includes(",")&&!cleaned.includes(".")){
+    // Solo coma: puede ser 20000,50 o 20,000
+    const parts=cleaned.split(",");
+    if(parts.length===2&&parts[1].length<=2){
+      // Es decimal: 20000,50
+      cleaned=cleaned.replace(",",".");
+    }else{
+      // Es separador de miles: 20,000
+      cleaned=cleaned.replace(/,/g,"");
+    }
+  }else if(cleaned.includes(".")&&!cleaned.includes(",")){
+    // Solo punto: 20.000 o 20000.50
+    const parts=cleaned.split(".");
+    if(parts.length===2&&parts[1].length<=2&&parts[0].length<=5){
+      // Probablemente decimal: 20000.50
+    }else{
+      // Probablemente separador de miles: 20.000
+      cleaned=cleaned.replace(/\./g,"");
+    }
+  }
+  return parseFloat(cleaned)||0;
+}
+
 function labelDay(f){const n=new Date(),t=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0")+"-"+String(n.getDate()).padStart(2,"0"),a=new Date(n);a.setDate(n.getDate()-1);const y=a.getFullYear()+"-"+String(a.getMonth()+1).padStart(2,"0")+"-"+String(a.getDate()).padStart(2,"0");if(f===t)return"HOY";if(f===y)return"AYER";return new Date(f+"T00:00:00").toLocaleDateString("es-CO",{day:"numeric",month:"short"})}
 
 document.addEventListener("DOMContentLoaded",()=>{
   $("today").innerText=new Date().toLocaleDateString("es-CO",{weekday:"long",day:"numeric",month:"long"});
-  $("fecha").valueAsDate=new Date();
+  $("fecha").valueAsDate=new Date();$("subFechaCobro").valueAsDate=new Date();$("recordatorioFecha").valueAsDate=new Date();
   cargarTemaInicial();
-  if(colorLibre)aplicarColorLibre(colorLibre);
   $("tabLoginBtn").onclick=()=>switchLoginTab("login");$("tabRegisterBtn").onclick=()=>switchLoginTab("register");
   $("loginBtn").onclick=iniciarSesion;$("registerBtn").onclick=registrarUsuario;
   $("traspasoDireccion")?.addEventListener("change",poblarTraspaso);
   $("reglaTipo")?.addEventListener("change",actualizarReglaConfig);
   actualizarReglaConfig();
   checkFB();
+  // Verificar recordatorios cada minuto
+  setInterval(verificarRecordatorios,60000);
 });
 
 function checkFB(){if(window.firebaseReady){window.onUserChanged=onUserChanged;if(window.auth?.currentUser)onUserChanged(window.auth.currentUser)}else setTimeout(checkFB,300)}
-
 function switchLoginTab(t){$("formLogin").style.display=t==="login"?"block":"none";$("formRegister").style.display=t==="register"?"block":"none";$("tabLoginBtn").classList.toggle("active",t==="login");$("tabRegisterBtn").classList.toggle("active",t==="register");$("loginError").classList.remove("visible")}
 function showError(m){const e=$("loginError");e.textContent=m;e.classList.add("visible")}
 async function iniciarSesion(){const e=$("loginEmail").value.trim(),p=$("loginPass").value;if(!e||!p){showError("Completa");return}$("loginError").classList.remove("visible");$("loginBtn").disabled=true;$("loginBtn").textContent="⏳...";try{await window.fbLogin(e,p)}catch(err){$("loginBtn").disabled=false;$("loginBtn").textContent="Entrar →";showError("Error: "+err.message)}}
@@ -598,7 +584,7 @@ function cargarTodo(){
   suscripciones=JSON.parse(localStorage.getItem("suscripciones")||"[]");
   reglas=JSON.parse(localStorage.getItem("reglas")||"[]");
   recordatorios=JSON.parse(localStorage.getItem("recordatorios")||"[]");
-  $("syncCount").innerText=data.length;$("prestamosCount").innerText=prestamos.length;$("suscripcionesCount").innerText=suscripciones.length;
+  $("syncCount").innerText=data.length;$("prestamosCount").innerText=prestamos.filter(p=>p.estado==="activo").length;$("suscripcionesCount").innerText=suscripciones.filter(s=>s.activa!==false).length;
   poblarSelects();actualizarLabels();
 }
 
@@ -607,7 +593,7 @@ function poblarSelects(){
   poblarCat("ingreso");
   const fsl=$("filterCuentaSelLista");if(fsl){fsl.innerHTML='<option value="">Todas</option>';cuentas.forEach(c=>{fsl.innerHTML+=`<option value="${c.id}">${c.icon} ${c.nombre}</option>`})}
   const bs=$("budgetCatSel");if(bs){bs.innerHTML="";categorias.filter(c=>c.tipo==="gasto"||c.tipo==="ambos").forEach(c=>{bs.innerHTML+=`<option value="${c.icon} ${c.nombre}">${c.icon} ${c.nombre}</option>`})}
-  ["recCatSel"].forEach(id=>{const s=$(id);if(!s)return;s.innerHTML="";categorias.filter(c=>c.tipo==="gasto"||c.tipo==="ambos").forEach(c=>{s.innerHTML+=`<option value="${c.icon} ${c.nombre}">${c.icon} ${c.nombre}</option>`})});
+  const rs=$("recCatSel");if(rs){rs.innerHTML="";categorias.filter(c=>c.tipo==="gasto"||c.tipo==="ambos").forEach(c=>{rs.innerHTML+=`<option value="${c.icon} ${c.nombre}">${c.icon} ${c.nombre}</option>`})}
 }
 function poblarCat(modo){const s=$("categoria");if(!s)return;s.innerHTML="";categorias.filter(c=>c.tipo==="ambos"||c.tipo===modo).forEach(c=>{s.innerHTML+=`<option value="${c.icon} ${c.nombre}">${c.icon} ${c.nombre}</option>`})}
 function poblarTraspaso(){const so=$("traspasoOrigen"),sd=$("traspasoDestino"),dir=$("traspasoDireccion").value;if(!so||!sd)return;const co=dir==="p2n"?"personal":"negocio",cd=dir==="p2n"?"negocio":"personal";const cO=JSON.parse(localStorage.getItem(keyForCtx("cuentas",co))||"[]"),cD=JSON.parse(localStorage.getItem(keyForCtx("cuentas",cd))||"[]");so.innerHTML="";cO.forEach(c=>{so.innerHTML+=`<option value="${c.id}">${c.icon||""} ${c.nombre}</option>`});sd.innerHTML="";cD.forEach(c=>{sd.innerHTML+=`<option value="${c.id}">${c.icon||""} ${c.nombre}</option>`})}
@@ -627,7 +613,7 @@ async function guardar(){
     datos={Fecha:$("fecha").value,Tipo:"Transferencia",CuentaOrigen:$("cuentaOrigen").value,CuentaDestino:$("cuentaDestino").value,Descripción:$("descTransfer").value.trim()||"Transferencia",Monto:m,Categoría:"🔄 Transferencia",Contexto:contexto};
     $("montoTransfer").value=$("descTransfer").value="";
   }else{
-    const m=parseMonto($("montoInput").value);if(!$("descripcion").value.trim()||m<=0){toast("Completa");return}
+    const m=parseMonto($("montoInput").value);if(!$("descripcion").value.trim()||m<=0){toast("Completa descripción y monto");return}
     if(modoActual==="gasto"&&m>(saldos[$("cuentaSel").value]||0)){toast("❌ Saldo insuficiente");return}
     datos={Fecha:$("fecha").value,Tipo:modoActual==="ingreso"?"Ingreso":"Gasto",Cuenta:$("cuentaSel").value,Categoría:$("categoria").value,Descripción:$("descripcion").value.trim(),Monto:m,Nota:$("notaInput").value.trim(),Contexto:contexto};
     $("descripcion").value=$("montoInput").value=$("notaInput").value="";
@@ -649,150 +635,206 @@ async function guardarTraspaso(){
   render();toast("✔ Traspaso: "+money(m));
 }
 
-function guardarDatos(){localStorage.setItem(keyFor("dataCache"),JSON.stringify(data));localStorage.setItem(keyFor("cuentas"),JSON.stringify(cuentas));localStorage.setItem(keyFor("categorias"),JSON.stringify(categorias));localStorage.setItem(keyFor("goals"),JSON.stringify(goals));localStorage.setItem("prestamos",JSON.stringify(prestamos));localStorage.setItem("suscripciones",JSON.stringify(suscripciones));localStorage.setItem("reglas",JSON.stringify(reglas));localStorage.setItem("recordatorios",JSON.stringify(recordatorios));localStorage.setItem("inversiones",JSON.stringify(inversiones))}
+function guardarDatos(){
+  localStorage.setItem(keyFor("dataCache"),JSON.stringify(data));
+  localStorage.setItem(keyFor("cuentas"),JSON.stringify(cuentas));
+  localStorage.setItem(keyFor("categorias"),JSON.stringify(categorias));
+  localStorage.setItem(keyFor("goals"),JSON.stringify(goals));
+  localStorage.setItem(keyFor("historialMeses"),JSON.stringify(historial));
+  localStorage.setItem("prestamos",JSON.stringify(prestamos));
+  localStorage.setItem("suscripciones",JSON.stringify(suscripciones));
+  localStorage.setItem("reglas",JSON.stringify(reglas));
+  localStorage.setItem("recordatorios",JSON.stringify(recordatorios));
+  localStorage.setItem("inversiones",JSON.stringify(inversiones));
+}
 
 async function borrar(id){if(!confirm("¿Eliminar?"))return;const x=data.find(d=>String(d.ID)===String(id));data=data.filter(d=>String(d.ID)!==String(id));guardarDatos();render();try{if(window.db&&window.auth?.currentUser&&!String(id).startsWith("local_"))await window.fbDeleteDoc(window.fbDoc(window.db,"users",window.auth.currentUser.uid,(x?.Contexto||contexto)==="negocio"?"movimientos_negocio":(x?.Contexto||contexto)==="pareja"?"movimientos_pareja":"movimientos_personal",String(id)))}catch(e){}toast("🗑️ Eliminado")}
 
-// ══ COACH FINANCIERO POTENCIADO ══
-function calcularScoreFinanciero(ing,gas,saldos,prestamosActivos,suscripcionesActivas){
-  let score=50;
-  if(ing>0&&gas>0){
-    const ratio=ing/gas;
-    if(ratio>2)score+=20;else if(ratio>1.5)score+=15;else if(ratio>1)score+=10;else if(ratio>0.8)score+=5;else score-=15;
-  }
-  const totalDeuda=prestamosActivos.reduce((a,p)=>a+(p.tipo==="recibido"?p.monto-p.pagado:0),0);
-  const totalIngresos=ing||1;
-  if(totalDeuda/totalIngresos<0.3)score+=10;else if(totalDeuda/totalIngresos<0.5)score+=5;else score-=10;
-  const totalSuscripciones=suscripcionesActivas.reduce((a,s)=>a+(s.monto||0),0);
-  if(totalSuscripciones/totalIngresos<0.1)score+=10;else if(totalSuscripciones/totalIngresos<0.2)score+=5;else score-=5;
-  const saldoTotal=Object.values(saldos).reduce((a,b)=>a+b,0);
-  if(saldoTotal>0)score+=5;else score-=5;
-  return Math.max(0,Math.min(100,score));
-}
-
-function generarRecomendaciones(ing,gas,cats,prestamosActivos,suscripcionesActivas){
-  const recomendaciones=[];
-  const topCat=Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
-  if(topCat&&ing>0&&(topCat[1]/ing)>0.4)recomendaciones.push({icono:"⚠️",texto:`Tu gasto en <b>${topCat[0]}</b> representa el ${((topCat[1]/ing)*100).toFixed(0)}% de tus ingresos. ¿Podrías reducirlo un 20%?`,tipo:"bad"});
-  if(gas>ing&&ing>0)recomendaciones.push({icono:"🔴",texto:"Estás gastando más de lo que ingresas. Necesitas reducir gastos o aumentar ingresos.",tipo:"bad"});
-  if(prestamosActivos.filter(p=>p.tipo==="recibido").length>0)recomendaciones.push({icono:"📥",texto:"Tienes préstamos activos. Prioriza pagarlos para reducir deuda.",tipo:"mid"});
-  if(suscripcionesActivas.length>3)recomendaciones.push({icono:"📱",texto:`Tienes ${suscripcionesActivas.length} suscripciones. Revisa si usas todas.`,tipo:"tip"});
-  if(ing>0&&gas>0&&(ing-gas)/ing>0.3)recomendaciones.push({icono:"🌟",texto:"¡Excelente! Ahorras más del 30% de tus ingresos. Considera invertir ese excedente.",tipo:"good"});
-  if(ing>0&&gas>0&&(ing-gas)/ing<0.1)recomendaciones.push({icono:"💡",texto:"Tu margen de ahorro es bajo. Intenta ahorrar al menos el 10% de tus ingresos.",tipo:"mid"});
-  const hoy=new Date();const diasMes=new Date(hoy.getFullYear(),hoy.getMonth()+1,0).getDate();
-  const gastoPromedioDiario=gas/Math.max(hoy.getDate(),1);
-  const proyeccionGasto=gastoPromedioDiario*diasMes;
-  if(proyeccionGasto>ing)recomendaciones.push({icono:"📉",texto:`Proyectas gastar ${money(proyeccionGasto)} este mes, más que tus ingresos (${money(ing)}).`,tipo:"bad"});
-  return recomendaciones;
-}
-
+// ══ COACH FINANCIERO POTENCIADO (CONSEJOS + ANÁLISIS) ══
 function renderCoach(){
   const ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0);
   const gas=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0);
   const cats={};data.filter(x=>x.Tipo==="Gasto").forEach(x=>{cats[x.Categoría]=(cats[x.Categoría]||0)+Number(x.Monto||0)});
   const saldos=calcSaldos();
+  const saldoTotal=Object.values(saldos).reduce((a,b)=>a+b,0);
   const prestamosActivos=prestamos.filter(p=>p.estado==="activo");
   const suscripcionesActivas=suscripciones.filter(s=>s.activa!==false);
-  const score=calcularScoreFinanciero(ing,gas,saldos,prestamosActivos,suscripcionesActivas);
-  const recomendaciones=generarRecomendaciones(ing,gas,cats,prestamosActivos,suscripcionesActivas);
-  
-  const colorScore=score>=70?"var(--ok)":score>=50?"var(--warn)":"var(--bad)";
-  const emojiScore=score>=80?"🌟":score>=60?"👍":score>=40?"⚠️":"🔴";
-  
-  // Score
-  $("coachScore").innerHTML=`
-    <div class="coach-score">
-      <div class="coach-score-circle" style="border-color:${colorScore};color:${colorScore}">${score}</div>
-      <div>
-        <div style="font-weight:800;font-size:16px">${emojiScore} Salud Financiera: ${score>=80?'Excelente':score>=60?'Buena':score>=40?'Regular':'Crítica'}</div>
-        <div class="small">Puntuación basada en tus hábitos</div>
-      </div>
-    </div>`;
-  
-  // Alertas de reglas
-  let alertasHTML='';
-  reglas.forEach(r=>{
-    if(r.tipo==="limite"){const gCat=data.filter(x=>x.Tipo==="Gasto"&&x.Categoría===r.cat).reduce((a,x)=>a+Number(x.Monto||0),0);if(gCat>r.valor)alertasHTML+=`<div class="alert bad">🚨 ¡Alerta! Has superado el límite de ${r.cat}: ${money(gCat)} / ${money(r.valor)}</div>`}
-    if(r.tipo==="alerta"){const st=Object.values(calcSaldos()).reduce((a,b)=>a+b,0);if(st<r.valor)alertasHTML+=`<div class="alert bad">⚠️ Saldo total bajo: ${money(st)} (límite: ${money(r.valor)})</div>`}
-  });
-  $("coachAlertas").innerHTML=alertasHTML;
-  
-  // Recomendaciones
-  $("coachRecomendaciones").innerHTML=recomendaciones.length?`
-    <div class="coach-recomendacion">
-      <div style="font-weight:700;margin-bottom:8px">💡 Recomendaciones</div>
-      ${recomendaciones.map(r=>`<div class="alert ${r.tipo}" style="margin-top:4px">${r.icono} ${r.texto}</div>`).join("")}
-    </div>`:'';
-  
-  // Métricas detalladas
   const totalSubs=suscripcionesActivas.reduce((a,s)=>a+(s.monto||0),0);
   const totalDeuda=prestamosActivos.filter(p=>p.tipo==="recibido").reduce((a,p)=>a+(p.monto-p.pagado),0);
   const totalPrestado=prestamosActivos.filter(p=>p.tipo==="prestado").reduce((a,p)=>a+(p.monto-p.pagado),0);
-  const ahorroMes=data.filter(x=>x.Categoría?.includes("Ahorro")&&x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0);
   const tasaAhorro=ing>0?((ing-gas)/ing*100).toFixed(1):0;
   
-  $("coachMetricas").innerHTML=`
+  // Calcular score
+  let score=50;
+  if(ing>0&&gas>0){const ratio=ing/gas;if(ratio>2)score+=20;else if(ratio>1.5)score+=15;else if(ratio>1)score+=10;else if(ratio>0.8)score+=5;else score-=15;}
+  if(totalDeuda/(ing||1)<0.3)score+=10;else if(totalDeuda/(ing||1)<0.5)score+=5;else score-=10;
+  if(totalSubs/(ing||1)<0.1)score+=10;else if(totalSubs/(ing||1)<0.2)score+=5;else score-=5;
+  if(saldoTotal>0)score+=5;else score-=5;
+  score=Math.max(0,Math.min(100,score));
+  
+  const colorScore=score>=70?"var(--ok)":score>=50?"var(--warn)":"var(--bad)";
+  const emojiScore=score>=80?"🌟":score>=60?"👍":score>=40?"⚠️":"🔴";
+  const estadoScore=score>=80?"Excelente":score>=60?"Buena":score>=40?"Regular":"Crítica";
+  
+  // Generar consejos
+  let consejos=[];
+  if(tasaAhorro>30)consejos.push({icono:"🌟",texto:`¡Impresionante! Ahorras el ${tasaAhorro}% de tus ingresos. Eres un ejemplo de disciplina financiera. Considera invertir ese excedente en un CDT o fondo de inversión para hacerlo crecer.`,tipo:"good"});
+  if(tasaAhorro<10&&tasaAhorro>0)consejos.push({icono:"💡",texto:`Solo ahorras el ${tasaAhorro}% de tus ingresos. Intenta reduciendo gastos hormiga como cafés, domicilios o suscripciones que no uses. Pequeños cambios generan grandes resultados.`,tipo:"mid"});
+  if(tasaAhorro<=0&&ing>0)consejos.push({icono:"🔴",texto:"Estás gastando más de lo que ganas. Es urgente que revises tus gastos y elimines lo innecesario. Cada peso cuenta para salir del déficit.",tipo:"bad"});
+  
+  const topCat=Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
+  if(topCat&&ing>0&&(topCat[1]/ing)>0.3)consejos.push({icono:"⚠️",texto:`Tu categoría <b>${topCat[0]}</b> consume el ${((topCat[1]/ing)*100).toFixed(0)}% de tus ingresos. ¿Podrías reducirlo un 20%? Ese dinero podría ir a ahorro o inversión.`,tipo:"bad"});
+  
+  if(suscripcionesActivas.length>3)consejos.push({icono:"📱",texto:`Tienes ${suscripcionesActivas.length} suscripciones activas que suman ${money(totalSubs)}/mes. ¿Realmente usas todas? Cancelar las que no usas te ahorraría ese dinero cada mes.`,tipo:"tip"});
+  if(suscripcionesActivas.length===0&&data.length>5)consejos.push({icono:"📱",texto:"No tienes suscripciones registradas. Si pagas Netflix, Spotify u otros servicios, regístralos para tener mejor control de tus gastos fijos.",tipo:"info"});
+  
+  if(prestamosActivos.filter(p=>p.tipo==="recibido").length>0)consejos.push({icono:"📥",texto:`Debes ${money(totalDeuda)} en préstamos. Prioriza pagarlos cuanto antes para liberarte de deudas y evitar intereses.`,tipo:"mid"});
+  if(prestamosActivos.filter(p=>p.tipo==="prestado").length>0)consejos.push({icono:"💸",texto:`Has prestado ${money(totalPrestado)}. Asegúrate de llevar un buen seguimiento de los pagos para que no se te olvide cobrar.`,tipo:"info"});
+  
+  const hoy=new Date();const diasMes=new Date(hoy.getFullYear(),hoy.getMonth()+1,0).getDate();
+  const gastoPromDiario=gas/Math.max(hoy.getDate(),1);
+  const proyeccion=gastoPromDiario*diasMes;
+  if(proyeccion>ing&&ing>0)consejos.push({icono:"📉",texto:`Al ritmo actual, proyectas gastar ${money(proyeccion)} este mes, superando tus ingresos de ${money(ing)}. Reduce gastos ya para evitar problemas.`,tipo:"bad"});
+  
+  if(data.length<5)consejos.push({icono:"👋",texto:"¡Bienvenido! Apenas estás empezando. Registra tus movimientos diarios para que pueda darte mejores consejos personalizados.",tipo:"info"});
+  
+  if(saldoTotal===0&&data.length>0)consejos.push({icono:"⚠️",texto:"Tu saldo está en cero. Es importante mantener un colchón financiero para emergencias. Intenta ahorrar al menos el 10% de tus ingresos.",tipo:"bad"});
+  
+  // Renderizar
+  let html=`
+    <div style="display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,.03);border-radius:14px;margin-bottom:12px">
+      <div class="coach-score-circle" style="border-color:${colorScore};color:${colorScore}">${score}</div>
+      <div>
+        <div style="font-weight:800;font-size:16px">${emojiScore} Salud Financiera: ${estadoScore}</div>
+        <div class="small">Puntuación basada en tus hábitos financieros</div>
+      </div>
+    </div>
+    
+    <div class="grid3" style="margin-bottom:12px">
+      <div class="kpi"><span>💰 Ingresos</span><strong style="color:var(--ok)">${money(ing)}</strong></div>
+      <div class="kpi"><span>💸 Gastos</span><strong style="color:var(--bad)">${money(gas)}</strong></div>
+      <div class="kpi"><span>📈 Ahorro</span><strong>${tasaAhorro}%</strong></div>
+    </div>
+    
+    <div style="font-weight:700;margin-bottom:8px">💬 Consejos personalizados</div>
+    ${consejos.slice(0,5).map(c=>`<div class="alert ${c.tipo}">${c.icono} ${c.texto}</div>`).join("")}
+    
     <div style="margin-top:12px">
-      <div style="font-weight:700;margin-bottom:8px">📊 Métricas clave</div>
-      <div class="coach-metrica"><span>💰 Ingresos totales</span><b style="color:var(--ok)">${money(ing)}</b></div>
-      <div class="coach-metrica"><span>💸 Gastos totales</span><b style="color:var(--bad)">${money(gas)}</b></div>
-      <div class="coach-metrica"><span>📈 Tasa de ahorro</span><b>${tasaAhorro}%</b></div>
-      <div class="coach-metrica"><span>🏦 Ahorro acumulado</span><b style="color:var(--ok)">${money(ahorroMes)}</b></div>
-      <div class="coach-metrica"><span>📱 Gasto suscripciones</span><b>${money(totalSubs)}/mes</b></div>
-      <div class="coach-metrica"><span>📥 Deuda activa</span><b style="color:${totalDeuda>0?'var(--bad)':'var(--ok)'}">${money(totalDeuda)}</b></div>
-      <div class="coach-metrica"><span>💵 Prestado a otros</span><b>${money(totalPrestado)}</b></div>
+      <div style="font-weight:700;margin-bottom:8px">📊 Resumen rápido</div>
+      <div class="grid2">
+        <div class="kpi"><span>📱 Suscripciones</span><strong>${money(totalSubs)}/mes</strong></div>
+        <div class="kpi"><span>📥 Deudas</span><strong style="color:${totalDeuda>0?'var(--bad)':'var(--ok)'}">${money(totalDeuda)}</strong></div>
+        <div class="kpi"><span>💵 Prestado</span><strong>${money(totalPrestado)}</strong></div>
+        <div class="kpi"><span>🏦 Saldo total</span><strong>${money(saldoTotal)}</strong></div>
+      </div>
     </div>`;
+  
+  $("coachContent").innerHTML=html;
 }
 
-// ══ PRÉSTAMOS ══
+// ══ PRÉSTAMOS (CON MOVIMIENTOS) ══
 function addPrestamo(){
   const persona=$("prestamoPersona").value.trim(),tipo=$("prestamoTipo").value,monto=parseMonto($("prestamoMonto").value);
-  const cuotas=parseInt($("prestamoCuotas").value)||1,interes=parseFloat($("prestamoInteres").value)||0,nota=$("prestamoNota").value.trim();
+  const cuotas=parseInt($("prestamoCuotas").value)||1,interes=parseFloat(($("prestamoInteres").value||"0").replace(",","."))||0,nota=$("prestamoNota").value.trim();
   if(!persona||!monto){toast("Completa los datos");return}
   const montoConInteres=monto*(1+interes/100);
   const valorCuota=montoConInteres/cuotas;
   prestamos.push({id:"pres_"+Date.now(),persona,tipo,monto,montoConInteres,cuotas,valorCuota,interes,nota,pagado:0,fecha:new Date().toISOString().slice(0,10),estado:"activo"});
+  
+  // Crear movimiento automático
+  const hoy=new Date().toISOString().slice(0,10);
+  if(tipo==="prestado"){
+    // Presté dinero: gasto
+    data.push({Fecha:hoy,Tipo:"Gasto",Cuenta:cuentas[0]?.id||"efectivo",Categoría:"💵 Préstamo",Descripción:`Préstamo a ${persona}`,Monto:monto,Nota:`${cuotas} cuotas de ${money(valorCuota)}${interes>0?`, interés ${interes}%`:""}`,Contexto:contexto,ID:"presmov_"+Date.now()});
+  }else{
+    // Me prestaron: ingreso
+    data.push({Fecha:hoy,Tipo:"Ingreso",Cuenta:cuentas[0]?.id||"efectivo",Categoría:"📥 Préstamo recibido",Descripción:`Préstamo de ${persona}`,Monto:monto,Nota:`${cuotas} cuotas de ${money(valorCuota)}${interes>0?`, interés ${interes}%`:""}`,Contexto:contexto,ID:"presmov_"+Date.now()});
+  }
+  
   guardarDatos();
-  $("prestamoPersona").value=$("prestamoMonto").value=$("prestamoCuotas").value=$("prestamoInteres").value=$("prestamoNota").value="";
-  renderPrestamos();render();toast("💵 Préstamo registrado");
+  $("prestamoPersona").value=$("prestamoMonto").value=$("prestamoCuotas").value="1";$("prestamoInteres").value="0";$("prestamoNota").value="";
+  render();renderPrestamos();toast("💵 Préstamo registrado");
 }
+
 function pagarCuotaPrestamo(id){
   const p=prestamos.find(x=>x.id===id);if(!p)return;
   const montoPago=parseFloat(prompt(`Pagar cuota de ${money(p.valorCuota)}. Monto a pagar:`));
   if(!montoPago||montoPago<=0)return;
   p.pagado+=montoPago;
+  
+  // Crear movimiento automático
+  const hoy=new Date().toISOString().slice(0,10);
+  if(p.tipo==="prestado"){
+    // Me pagan: ingreso
+    data.push({Fecha:hoy,Tipo:"Ingreso",Cuenta:cuentas[0]?.id||"efectivo",Categoría:"💵 Cobro préstamo",Descripción:`Abono de ${p.persona}`,Monto:montoPago,Nota:`Préstamo: quedan ${money(p.montoConInteres-p.pagado)}`,Contexto:contexto,ID:"pagopres_"+Date.now()});
+  }else{
+    // Pago deuda: gasto
+    data.push({Fecha:hoy,Tipo:"Gasto",Cuenta:cuentas[0]?.id||"efectivo",Categoría:"📥 Pago deuda",Descripción:`Pago a ${p.persona}`,Monto:montoPago,Nota:`Deuda: quedan ${money(p.montoConInteres-p.pagado)}`,Contexto:contexto,ID:"pagopres_"+Date.now()});
+  }
+  
   if(p.pagado>=p.montoConInteres){p.estado="pagado";toast("✅ Préstamo liquidado");}
   else toast(`✅ Cuota pagada. Restante: ${money(p.montoConInteres-p.pagado)}`);
-  guardarDatos();renderPrestamos();render();
+  guardarDatos();render();renderPrestamos();
 }
-function eliminarPrestamo(id){if(!confirm("¿Eliminar?"))return;prestamos=prestamos.filter(p=>p.id!==id);guardarDatos();renderPrestamos();render()}
+
+function eliminarPrestamo(id){if(!confirm("¿Eliminar?"))return;prestamos=prestamos.filter(p=>p.id!==id);guardarDatos();render();renderPrestamos()}
+
 function renderPrestamos(){
   $("prestamosCount").innerText=prestamos.filter(p=>p.estado==="activo").length;
   const activos=prestamos.filter(p=>p.estado==="activo");
   const completados=prestamos.filter(p=>p.estado!=="activo");
   let html='';
-  if(activos.length)html+=`<div style="font-weight:700;margin-bottom:6px;color:var(--warn)">🟡 Activos</div>`+activos.map(p=>`<div class="prestamo-card"><div style="display:flex;justify-content:space-between"><span style="font-weight:700">${p.tipo==="prestado"?"💸":"📥"} ${p.persona}</span><button class="small-btn" onclick="eliminarPrestamo('${p.id}')">🗑️</button></div><div class="small">${p.tipo==="prestado"?"Prestaste":"Te prestaron"}: ${money(p.monto)} ${p.interes>0?`(${p.interes}% int.)`:""}</div><div class="small">Total a pagar: ${money(p.montoConInteres)} · Cuota: ${money(p.valorCuota)} x ${p.cuotas}</div><div class="progress" style="margin-top:6px"><div class="bar" style="width:${(p.pagado/p.montoConInteres*100).toFixed(0)}%;background:#06b6d4"></div></div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px"><span class="small">Pagado: ${money(p.pagado)} / ${money(p.montoConInteres)}</span><button class="small-btn success-btn" onclick="pagarCuotaPrestamo('${p.id}')">💵 Pagar cuota</button></div>${p.nota?`<div class="small" style="margin-top:4px">📝 ${p.nota}</div>`:""}</div>`).join("");
+  if(activos.length)html+=`<div style="font-weight:700;margin-bottom:6px;color:var(--warn)">🟡 Activos</div>`+activos.map(p=>{
+    const pct=(p.pagado/p.montoConInteres*100).toFixed(0);
+    return`<div class="prestamo-card"><div style="display:flex;justify-content:space-between"><span style="font-weight:700">${p.tipo==="prestado"?"💸":"📥"} ${p.persona}</span><button class="small-btn" onclick="eliminarPrestamo('${p.id}')">🗑️</button></div><div class="small">${p.tipo==="prestado"?"Prestaste":"Te prestaron"}: ${money(p.monto)} ${p.interes>0?`(${p.interes}% int.)`:""}</div><div class="small">Total: ${money(p.montoConInteres)} · Cuota: ${money(p.valorCuota)} x ${p.cuotas}</div><div class="progress" style="margin-top:6px"><div class="bar" style="width:${pct}%;background:#06b6d4"></div></div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px"><span class="small">Pagado: ${money(p.pagado)} / ${money(p.montoConInteres)}</span><button class="small-btn success-btn" onclick="pagarCuotaPrestamo('${p.id}')">💵 Pagar</button></div>${p.nota?`<div class="small" style="margin-top:4px">📝 ${p.nota}</div>`:""}</div>`;
+  }).join("");
   if(completados.length)html+=`<div style="font-weight:700;margin:12px 0 6px;color:var(--ok)">🟢 Completados</div>`+completados.map(p=>`<div class="prestamo-card" style="opacity:.6"><div style="display:flex;justify-content:space-between"><span style="font-weight:700">✅ ${p.persona}</span><button class="small-btn" onclick="eliminarPrestamo('${p.id}')">🗑️</button></div><div class="small">${money(p.montoConInteres)} - Pagado totalmente</div></div>`).join("");
-  $("prestamosLista").innerHTML=html||'<div class="alert mid">Sin préstamos</div>';
+  $("prestamosLista").innerHTML=html||'<div class="alert mid">Sin préstamos registrados</div>';
 }
 
-// ══ SUSCRIPCIONES ══
+// ══ SUSCRIPCIONES (CON GASTO AUTOMÁTICO) ══
 function addSuscripcion(){
   const nombre=$("subNombre").value.trim(),monto=parseMonto($("subMonto").value),fecha=$("subFechaCobro").value,cuenta=$("subCuenta").value,nota=$("subNota").value.trim();
   if(!nombre||!monto||!fecha){toast("Completa los datos");return}
   suscripciones.push({id:"sub_"+Date.now(),nombre,monto,fechaCobro:fecha,cuenta,nota,activa:true});
+  
+  // Crear gasto automático para este mes
+  const diaCobro=new Date(fecha+"T00:00:00").getDate();
+  const hoy=new Date();
+  const fechaMov=hoy.getFullYear()+"-"+String(hoy.getMonth()+1).padStart(2,"0")+"-"+String(Math.min(diaCobro,new Date(hoy.getFullYear(),hoy.getMonth()+1,0).getDate())).padStart(2,"0");
+  data.push({Fecha:fechaMov,Tipo:"Gasto",Cuenta:cuenta,Categoría:"📱 Suscripciones",Descripción:nombre,Monto:monto,Nota:nota||"Suscripción mensual",Contexto:contexto,ID:"submov_"+Date.now()});
+  
   guardarDatos();
   $("subNombre").value=$("subMonto").value=$("subNota").value="";
-  renderSuscripciones();render();toast("📱 Suscripción registrada");
+  render();renderSuscripciones();toast("📱 Suscripción registrada");
 }
+
 function toggleSuscripcion(id){const s=suscripciones.find(x=>x.id===id);if(s){s.activa=!s.activa;guardarDatos();renderSuscripciones();render();toast(s.activa?"✅ Activada":"⏸️ Pausada")}}
 function eliminarSuscripcion(id){if(!confirm("¿Eliminar?"))return;suscripciones=suscripciones.filter(s=>s.id!==id);guardarDatos();renderSuscripciones();render()}
+
 function renderSuscripciones(){
   $("suscripcionesCount").innerText=suscripciones.filter(s=>s.activa!==false).length;
   const totalMensual=suscripciones.filter(s=>s.activa!==false).reduce((a,s)=>a+(s.monto||0),0);
   let html=`<div class="alert info" style="margin-bottom:8px">💸 Gasto mensual total: <b>${money(totalMensual)}</b></div>`;
-  html+=suscripciones.map(s=>`<div class="suscripcion-card" style="opacity:${s.activa!==false?1:.5}"><div style="display:flex;justify-content:space-between"><span style="font-weight:700">📱 ${s.nombre}</span><button class="small-btn" onclick="eliminarSuscripcion('${s.id}')">🗑️</button></div><div class="small">${money(s.monto)}/mes · Cobro: día ${new Date(s.fechaCobro+"T00:00:00").getDate()}</div><div class="small">${cuentas.find(c=>c.id===s.cuenta)?.icon||""} ${cuentas.find(c=>c.id===s.cuenta)?.nombre||s.cuenta}</div>${s.nota?`<div class="small">📝 ${s.nota}</div>`:""}<button class="small-btn ${s.activa!==false?'warn-btn':'success-btn'}" onclick="toggleSuscripcion('${s.id}')" style="margin-top:4px">${s.activa!==false?'⏸️ Pausar':'▶️ Activar'}</button></div>`).join("")||'<div class="alert mid">Sin suscripciones</div>';
+  html+=suscripciones.map(s=>{
+    const c=cuentas.find(cu=>cu.id===s.cuenta);
+    return`<div class="suscripcion-card" style="opacity:${s.activa!==false?1:.5}"><div style="display:flex;justify-content:space-between"><span style="font-weight:700">📱 ${s.nombre}</span><button class="small-btn" onclick="eliminarSuscripcion('${s.id}')">🗑️</button></div><div class="small">${money(s.monto)}/mes · Cobro: día ${new Date(s.fechaCobro+"T00:00:00").getDate()}</div><div class="small">${c?.icon||""} ${c?.nombre||s.cuenta}</div>${s.nota?`<div class="small">📝 ${s.nota}</div>`:""}<button class="small-btn ${s.activa!==false?'warn-btn':'success-btn'}" onclick="toggleSuscripcion('${s.id}')" style="margin-top:4px">${s.activa!==false?'⏸️ Pausar':'▶️ Activar'}</button></div>`;
+  }).join("")||'<div class="alert mid">Sin suscripciones registradas</div>';
   $("suscripcionesLista").innerHTML=html;
+}
+
+// ══ DETECCIÓN AUTOMÁTICA DE SUSCRIPCIONES ══
+function detectarSuscripcion(mov){
+  if(mov.Tipo!=="Gasto")return;
+  const palabras=["netflix","spotify","disney","hbo","amazon prime","youtube premium","apple music","google one","microsoft 365","adobe","dropbox","icloud","onlyfans","patreon","crunchyroll","paramount","star+","hulu","deezer","tidal","prime video","disney+","hbo max"];
+  const desc=(mov.Descripción||"").toLowerCase();
+  const coincide=palabras.some(p=>desc.includes(p));
+  if(coincide&&!suscripciones.find(s=>s.nombre.toLowerCase()===desc.slice(0,25))){
+    if(confirm(`🤖 Detecté posible suscripción: "${mov.Descripción}" por ${money(mov.Monto)}. ¿Deseas registrarla?`)){
+      suscripciones.push({id:"sub_"+Date.now(),nombre:mov.Descripción,monto:Number(mov.Monto),fechaCobro:mov.Fecha,cuenta:mov.Cuenta||cuentas[0]?.id,nota:"Detectada automáticamente",activa:true});
+      guardarDatos();renderSuscripciones();render();
+    }
+  }
 }
 
 // ══ REGLAS AUTOMÁTICAS ══
@@ -800,12 +842,12 @@ function actualizarReglaConfig(){
   const tipo=$("reglaTipo").value;let html='';
   if(tipo==="limite")html=`<select id="reglaCat">${categorias.filter(c=>c.tipo==="gasto"||c.tipo==="ambos").map(c=>`<option value="${c.icon} ${c.nombre}">${c.icon} ${c.nombre}</option>`).join("")}</select><input type="text" id="reglaValor" placeholder="Límite máximo">`;
   else if(tipo==="alerta")html=`<input type="text" id="reglaValor" placeholder="Saldo mínimo para alerta">`;
-  else if(tipo==="autoahorro")html=`<input type="text" id="reglaValor" placeholder="% a ahorrar de cada ingreso">`;
+  else if(tipo==="autoahorro")html=`<input type="text" id="reglaValor" placeholder="% a ahorrar de cada ingreso (ej: 10)">`;
   $("reglaConfig").innerHTML=html;
 }
 function addRegla(){
   const tipo=$("reglaTipo").value,valor=parseFloat(($("reglaValor")?.value||"0").replace(",","."));
-  if(!valor){toast("Ingresa un valor");return}
+  if(!valor||valor<=0){toast("Ingresa un valor válido");return}
   const regla={id:"reg_"+Date.now(),tipo,valor};
   if(tipo==="limite")regla.cat=$("reglaCat")?.value;
   reglas.push(regla);
@@ -817,7 +859,8 @@ function verificarReglas(mov){
     if(r.tipo==="autoahorro"&&mov.Tipo==="Ingreso"){
       const mAhorro=Math.round(Number(mov.Monto||0)*(r.valor/100));
       if(mAhorro>0){
-        data.push({Fecha:mov.Fecha,Tipo:"Ingreso",Cuenta:mov.Cuenta,Categoría:"🏦 Ahorro",Descripción:"Auto-ahorro "+r.valor+"%",Monto:mAhorro,Nota:"Automático",Contexto:contexto,ID:"ahorro_"+Date.now()});
+        const movAhorro={Fecha:mov.Fecha,Tipo:"Gasto",Cuenta:mov.Cuenta,Categoría:"🏦 Ahorro",Descripción:`Auto-ahorro ${r.valor}%`,Monto:mAhorro,Nota:"Regla automática",Contexto:contexto,ID:"ahorro_"+Date.now()};
+        data.push(movAhorro);
         guardarDatos();toast(`🐷 Auto-ahorro: ${money(mAhorro)}`);
       }
     }
@@ -825,36 +868,33 @@ function verificarReglas(mov){
   render();
 }
 function renderReglas(){
-  $("reglasLista").innerHTML=reglas.map(r=>`<div style="background:rgba(255,255,255,.02);padding:8px;border-radius:10px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center"><div><span class="tag tag-regla">⚙️</span> ${r.tipo==="limite"?"Límite "+r.cat+": "+money(r.valor):r.tipo==="alerta"?"Alerta saldo < "+money(r.valor):"Auto-ahorro "+r.valor+"%"}</div><button class="small-btn" onclick="eliminarRegla('${r.id}')">🗑️</button></div>`).join("")||'<div class="alert mid">Sin reglas</div>';
-}
-
-// ══ DETECCIÓN DE SUSCRIPCIONES ══
-function detectarSuscripcion(mov){
-  if(mov.Tipo!=="Gasto")return;
-  const palabrasSuscripcion=["netflix","spotify","disney","hbo","amazon prime","youtube","apple","google","microsoft","adobe","dropbox","icloud","onlyfans","patreon","crunchyroll","paramount","star+","hulu","deezer","tidal"];
-  const desc=(mov.Descripción||"").toLowerCase();
-  const coincide=palabrasSuscripcion.some(p=>desc.includes(p));
-  if(coincide&&!suscripciones.find(s=>s.nombre.toLowerCase()===desc.slice(0,20))){
-    if(confirm(`🤖 Detecté posible suscripción: "${mov.Descripción}" por ${money(mov.Monto)}. ¿Deseas registrarla?`)){
-      suscripciones.push({id:"sub_"+Date.now(),nombre:mov.Descripción,monto:Number(mov.Monto),fechaCobro:mov.Fecha,cuenta:mov.Cuenta,nota:"Detectada automáticamente",activa:true});
-      guardarDatos();renderSuscripciones();render();
-    }
-  }
+  $("reglasLista").innerHTML=reglas.map(r=>`<div style="background:rgba(255,255,255,.02);padding:8px;border-radius:10px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center"><div><span class="tag tag-regla">⚙️</span> ${r.tipo==="limite"?"Límite "+r.cat+": "+money(r.valor):r.tipo==="alerta"?"Alerta saldo < "+money(r.valor):"Auto-ahorro "+r.valor+"%"}</div><button class="small-btn" onclick="eliminarRegla('${r.id}')">🗑️</button></div>`).join("")||'<div class="alert mid">Sin reglas configuradas</div>';
 }
 
 // ══ RECORDATORIOS ══
 function addRecordatorio(){
   const nombre=$("recordatorioNombre").value.trim(),fecha=$("recordatorioFecha").value,monto=parseMonto($("recordatorioMonto").value);
-  if(!nombre||!fecha){toast("Completa");return}
+  if(!nombre||!fecha){toast("Completa nombre y fecha");return}
   recordatorios.push({id:"rec_"+Date.now(),nombre,fecha,monto,notificado:false});
   guardarDatos();renderRecordatorios();toast("🔔 Recordatorio agregado");
   $("recordatorioNombre").value=$("recordatorioFecha").value=$("recordatorioMonto").value="";
 }
 function eliminarRecordatorio(id){recordatorios=recordatorios.filter(r=>r.id!==id);guardarDatos();renderRecordatorios()}
-function renderRecordatorios(){
+function verificarRecordatorios(){
   const hoy=new Date().toISOString().slice(0,10);
-  recordatorios.forEach(r=>{if(r.fecha===hoy&&!r.notificado&&Notification.permission==="granted"){new Notification("🔔 Recordatorio",{body:`${r.nombre}${r.monto?" - "+money(r.monto):""}`,icon:"💳"});r.notificado=true;guardarDatos()}});
-  $("recordatoriosLista").innerHTML=recordatorios.sort((a,b)=>new Date(a.fecha)-new Date(b.fecha)).map(r=>`<div style="background:rgba(255,255,255,.02);padding:8px;border-radius:10px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center"><div><span class="tag tag-recordatorio">🔔</span> <b>${r.nombre}</b>${r.monto?` - ${money(r.monto)}`:""}<br><span class="small">📅 ${new Date(r.fecha+"T00:00:00").toLocaleDateString("es-CO",{day:"numeric",month:"short"})} ${r.notificado?"✅":""}</span></div><button class="small-btn" onclick="eliminarRecordatorio('${r.id}')">🗑️</button></div>`).join("")||'<div class="alert mid">Sin recordatorios</div>';
+  let cambios=false;
+  recordatorios.forEach(r=>{
+    if(r.fecha===hoy&&!r.notificado&&Notification.permission==="granted"){
+      new Notification("🔔 Recordatorio de pago",{body:`${r.nombre}${r.monto?" - "+money(r.monto):""}`,icon:"💳"});
+      r.notificado=true;
+      cambios=true;
+    }
+  });
+  if(cambios)guardarDatos();
+}
+function renderRecordatorios(){
+  recordatorios.sort((a,b)=>new Date(a.fecha)-new Date(b.fecha));
+  $("recordatoriosLista").innerHTML=recordatorios.map(r=>`<div style="background:rgba(255,255,255,.02);padding:8px;border-radius:10px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center"><div><span class="tag" style="background:rgba(239,68,68,.15);color:var(--bad)">🔔</span> <b>${r.nombre}</b>${r.monto?` - ${money(r.monto)}`:""}<br><span class="small">📅 ${new Date(r.fecha+"T00:00:00").toLocaleDateString("es-CO",{day:"numeric",month:"short"})} ${r.notificado?"✅ Notificado":""}</span></div><button class="small-btn" onclick="eliminarRecordatorio('${r.id}')">🗑️</button></div>`).join("")||'<div class="alert mid">Sin recordatorios</div>';
 }
 
 // ══ RENDER PRINCIPAL ══
@@ -870,7 +910,7 @@ function render(){
   
   const hoy=new Date(),ts=hoy.getFullYear()+"-"+String(hoy.getMonth()+1).padStart(2,"0")+"-"+String(hoy.getDate()).padStart(2,"0");
   const hoyG=data.filter(x=>x.Fecha===ts&&x.Tipo==="Gasto").reduce((a,b)=>a+Number(b.Monto||0),0);
-  $("cockpit").innerHTML=`<div class="grid2"><div class="kpi"><span>Hoy gastado</span><strong>${money(hoyG)}</strong></div><div class="kpi"><span>Disp./día</span><strong>${money(Math.max((ing-gas)/7,0))}</strong></div><div class="kpi"><span>Ahorro</span><strong>${money(ah)}</strong></div><div class="kpi"><span>Balance</span><strong>${money(ing-gas)}</strong></div></div>`;
+  $("cockpit").innerHTML=`<div class="grid2"><div class="kpi"><span>Hoy gastado</span><strong>${money(hoyG)}</strong></div><div class="kpi"><span>Disp./día</span><strong>${money(Math.max((ing-gas)/Math.max(hoy.getDate(),1),0))}</strong></div><div class="kpi"><span>Ahorro</span><strong>${money(ah)}</strong></div><div class="kpi"><span>Balance</span><strong style="color:${ing-gas>=0?'var(--ok)':'var(--bad)'}">${money(ing-gas)}</strong></div></div>`;
   
   const mesActual=hoy.getMonth(),anoActual=hoy.getFullYear();
   const movMes=data.filter(x=>{const f=new Date(x.Fecha+"T00:00:00");return f.getMonth()===mesActual&&f.getFullYear()===anoActual});
@@ -878,17 +918,17 @@ function render(){
   const gasMes=movMes.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0);
   if($("resumenMensual")){$("resumenMensual").innerHTML=`<div class="grid3" style="margin-bottom:8px"><div class="kpi"><span>Ingresos mes</span><strong style="color:var(--ok)">${money(ingMes)}</strong></div><div class="kpi"><span>Gastos mes</span><strong style="color:var(--bad)">${money(gasMes)}</strong></div><div class="kpi"><span>Balance</span><strong>${money(ingMes-gasMes)}</strong></div></div>`}
   
-  // COACH POTENCIADO
   renderCoach();
   
   const favs={};data.forEach(x=>{if(x.Tipo==="Transferencia"||x.Tipo?.includes("Traspaso"))return;const k=x.Categoría+"|"+x.Descripción+"|"+x.Monto+"|"+(x.Cuenta||"");if(!favs[k])favs[k]={cat:x.Categoría,des:x.Descripción,monto:x.Monto,cuenta:x.Cuenta,count:0};favs[k].count++});
   const topFavs=Object.values(favs).sort((a,b)=>b.count-a.count).slice(0,4);
-  $("favList").innerHTML=topFavs.length?topFavs.map(f=>`<button class="secondary" onclick="usarFav('${f.cat}','${f.des}',${f.monto},'${f.cuenta||""}')" style="font-size:11px">${f.cat}<br><small>${f.des}</small><br><small>${money(f.monto)}</small></button>`).join(""):'<div class="small">Sin favoritos</div>';
+  $("favList").innerHTML=topFavs.length?topFavs.map(f=>`<button class="secondary" onclick="usarFav('${f.cat}','${f.des}',${f.monto},'${f.cuenta||""}')" style="font-size:11px">${f.cat}<br><small>${f.des}</small><br><small>${money(f.monto)}</small></button>`).join(""):'<div class="small">Sin favoritos aún</div>';
   
   $("goalList").innerHTML=goals.length?goals.map((g,i)=>{const p=Math.min((ah/g.valor)*100,100);return`<div class="item"><div style="font-weight:700">${g.nombre}</div><div class="small">${money(ah)} / ${money(g.valor)}</div><div class="progress"><div class="bar" style="width:${p}%"></div></div><button class="small-btn" onclick="delGoal(${i})">🗑️</button></div>`}).join(""):'<div class="alert mid">Sin metas</div>';
   
   if($("tab-list").classList.contains("active"))renderLista();
   if($("tab-dashboard").classList.contains("active")){renderCharts();renderComparativa();}
+  $("syncCount").innerText=data.length;
 }
 
 function usarFav(cat,des,monto,cuenta){setMode("gasto",document.querySelectorAll(".mode-tab")[1]);$("categoria").value=cat;$("descripcion").value=des;$("montoInput").value=Number(monto).toLocaleString("es-CO");if(cuenta)$("cuentaSel").value=cuenta;toast("Cargado")}
@@ -908,7 +948,7 @@ function renderLista(){
 // ══ GRÁFICOS ══
 function renderCharts(){
   const saldos=calcSaldos();let ing=0,gas=0,cats={};data.forEach(x=>{const m=Number(x.Monto)||0;if(x.Tipo==="Ingreso")ing+=m;else if(x.Tipo==="Gasto"){gas+=m;cats[x.Categoría]=(cats[x.Categoría]||0)+m}});[c1,c2,c3,c4,c5,c6].forEach(c=>{if(c)c.destroy()});
-  const ctx6=$("chart6");if(ctx6)c6=new Chart(ctx6,{type:"bar",data:{labels:cuentas.map(c=>c.icon+" "+c.nombre),datasets:[{data:cuentas.map(c=>saldos[c.id]||0),backgroundColor:cuentas.map((_,i)=>ACC_COLORS[i%ACC_COLORS.length])}]},options:{plugins:{legend:{display:false}}}});
+  const ctx6=$("chart6");if(ctx6)c6=new Chart(ctx6,{type:"bar",data:{labels:cuentas.map(c=>c.icon+" "+c.nombre),datasets:[{data:cuentas.map(c=>saldos[c.id]||0),backgroundColor:cuentas.map((_,i)=>ACC_COLORS[i%ACC_COLORS.length]})]},options:{plugins:{legend:{display:false}}}});
   const ctx1=$("chart1");if(ctx1&&Object.keys(cats).length)c1=new Chart(ctx1,{type:"doughnut",data:{labels:Object.keys(cats),datasets:[{data:Object.values(cats)}]}});
   const ctx2=$("chart2");if(ctx2)c2=new Chart(ctx2,{type:"bar",data:{labels:["Ingresos","Gastos"],datasets:[{data:[ing,gas],backgroundColor:["#22c55e","#ef4444"]}]}});
   const dias={};let s=0;[...data].sort((a,b)=>new Date(a.Fecha)-new Date(b.Fecha)).forEach(x=>{const m=Number(x.Monto)||0;if(x.Tipo==="Ingreso")s+=m;else if(x.Tipo==="Gasto")s-=m;dias[x.Fecha]=s});const ctx3=$("chart3");if(ctx3&&Object.keys(dias).length)c3=new Chart(ctx3,{type:"line",data:{labels:Object.keys(dias),datasets:[{data:Object.values(dias),borderColor:"#3b82f6",tension:0.3,pointRadius:2}]}});
@@ -943,15 +983,32 @@ function switchDashTab(tab,btn){document.querySelectorAll(".tab-mini").forEach(t
 function setMode(mode,btn){modoActual=mode;document.querySelectorAll(".mode-tab").forEach(t=>t.classList.remove("active"));btn.classList.add("active");document.querySelectorAll(".form-section").forEach(s=>s.classList.remove("active"));if(mode==="transferencia")$("fs-transfer").classList.add("active");else if(mode==="traspaso"){$("fs-traspaso").classList.add("active");poblarTraspaso()}else{$("fs-normal").classList.add("active");poblarCat(mode==="ingreso"?"ingreso":"gasto")}}
 function toggleHide(){hidden=!hidden;localStorage.setItem("hideMoney",hidden?"1":"0");render()}
 function abrirCierre(){const s=calcSaldos(),ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gas=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0);$("modalResumen").innerHTML=`<div class="grid2"><div class="kpi"><span>Ingresos</span><strong style="color:var(--ok)">${money(ing)}</strong></div><div class="kpi"><span>Gastos</span><strong style="color:var(--bad)">${money(gas)}</strong></div></div>`;$("modalCierre").classList.add("open")}
-function confirmarCierre(){const s=calcSaldos(),ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gas=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0),label=new Date().toLocaleDateString("es-CO",{month:"long",year:"numeric"});historial.unshift({label,ing,gas,saldosCierre:{...s},movimientos:[...data]});localStorage.setItem(keyFor("historialMeses"),JSON.stringify(historial));cuentas=cuentas.map(c=>({...c,saldoInicial:s[c.id]||0}));data=[];guardarDatos();$("modalCierre").classList.remove("open");render();toast("✔ Mes cerrado")}
+function confirmarCierre(){const s=calcSaldos(),ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gas=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0),label=new Date().toLocaleDateString("es-CO",{month:"long",year:"numeric"});historial.unshift({label,ing,gas,saldosCierre:{...s},movimientos:[...data]});cuentas=cuentas.map(c=>({...c,saldoInicial:s[c.id]||0}));data=[];guardarDatos();$("modalCierre").classList.remove("open");render();toast("✔ Mes cerrado")}
 
-// ══ VOZ ══
+// ══ VOZ CORREGIDA ══
 const LETRAS_A_NUMERO={cero:0,un:1,uno:1,dos:2,tres:3,cuatro:4,cinco:5,seis:6,siete:7,ocho:8,nueve:9,diez:10,once:11,doce:12,trece:13,catorce:14,quince:15,veinte:20,veintiun:21,treinta:30,cuarenta:40,cincuenta:50,sesenta:60,setenta:70,ochenta:80,noventa:90,cien:100,ciento:100,doscientos:200,trescientos:300,cuatrocientos:400,quinientos:500,mil:1000,millon:1000000};
-function convertirPalabrasANumero(texto){const md=texto.match(/(\d[\d.]*)/);if(md)return parseInt(md[1].replace(/\./g,''));const p=texto.toLowerCase().replace(/[áéíóú]/g,c=>'aeiou'['áéíóú'.indexOf(c)]).split(/\s+/);let t=0,a=0;p.forEach(w=>{if(w==='y')return;const v=LETRAS_A_NUMERO[w];if(!v)return;if(v===1000){if(a===0)a=1;t+=a*1000;a=0}else if(v===1000000){if(a===0)a=1;t+=a*1000000;a=0}else if(v>=100)a*=v;else a+=v});return t+a;}
+function convertirPalabrasANumero(texto){
+  const md=texto.match(/(\d[\d.]*)/);
+  if(md)return parseMonto(md[1]);
+  const p=texto.toLowerCase().replace(/[áéíóú]/g,c=>'aeiou'['áéíóú'.indexOf(c)]).split(/\s+/);
+  let t=0,a=0;
+  p.forEach(w=>{if(w==='y')return;const v=LETRAS_A_NUMERO[w];if(!v)return;if(v===1000){if(a===0)a=1;t+=a*1000;a=0}else if(v===1000000){if(a===0)a=1;t+=a*1000000;a=0}else if(v>=100)a*=v;else a+=v});
+  return t+a;
+}
 function toggleVoice(){if(!('webkitSpeechRecognition' in window)){toast("❌ No soportado");return}isListening?stopVoice():startVoice()}
 function startVoice(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;recognition=new SR();recognition.lang="es-CO";recognition.interimResults=true;$("voiceBtn").classList.add("listening");$("voiceBtn").innerHTML="🎤...";$("voiceFeedback").classList.add("active");$("voiceFeedback").innerHTML="👂 Habla...";isListening=true;recognition.onresult=(e)=>{const t=e.results[0][0].transcript;$("voiceFeedback").innerHTML=`📝 "${t}"`;if(e.results[0].isFinal){procesarVoz(t);stopVoice()}};recognition.onerror=()=>stopVoice();recognition.start()}
 function stopVoice(){if(recognition)recognition.stop();$("voiceBtn").classList.remove("listening");$("voiceBtn").innerHTML="🎤 Voz";isListening=false}
-function procesarVoz(texto){let monto=convertirPalabrasANumero(texto);if(!monto){const mn=texto.match(/(\d[\d.,]*)/);if(mn)monto=parseFloat(mn[1].replace(/\./g,'').replace(',','.'))}if(monto){const tipo=/recib[ií]|ingres[oó]|cobr[eé]|salario/i.test(texto)?"ingreso":"gasto";setMode(tipo,document.querySelectorAll(".mode-tab")[tipo==="ingreso"?0:1]);$("descripcion").value=texto.split(" ").filter(w=>w.length>2&&!['mil','pesos','con','para','y','de','en','el','la','los','las','un','una'].includes(w.toLowerCase())&&!LETRAS_A_NUMERO[w.toLowerCase()]).join(" ")||"Movimiento";$("montoInput").value=monto.toLocaleString("es-CO");$("voiceFeedback").innerHTML=`✅ ${money(monto)}`}else $("voiceFeedback").innerHTML="❌ No detecté monto"}
+function procesarVoz(texto){
+  let monto=convertirPalabrasANumero(texto);
+  if(!monto){const mn=texto.match(/(\d[\d.,]*)/);if(mn)monto=parseMonto(mn[1])}
+  if(monto>0){
+    const tipo=/recib[ií]|ingres[oó]|cobr[eé]|salario/i.test(texto)?"ingreso":"gasto";
+    setMode(tipo,document.querySelectorAll(".mode-tab")[tipo==="ingreso"?0:1]);
+    $("descripcion").value=texto.split(" ").filter(w=>w.length>2&&!['mil','pesos','con','para','y','de','en','el','la','los','las','un','una'].includes(w.toLowerCase())&&!LETRAS_A_NUMERO[w.toLowerCase()]).join(" ")||"Movimiento por voz";
+    $("montoInput").value=monto.toLocaleString("es-CO");
+    $("voiceFeedback").innerHTML=`✅ Detectado: ${money(monto)}<br><small>Revisa y guarda</small>`;
+  }else{$("voiceFeedback").innerHTML="❌ No detecté monto<br><small>Prueba: 20 mil o 20000</small>"}
+}
 
 // ══ PAREJA ══
 async function inicializarPareja(){if(!window.auth?.currentUser)return;try{const q=window.fbQuery(window.fbCollection(window.db,"parejas"),window.fbWhere("miembros","array-contains",window.auth.currentUser.uid));const snap=await window.fbGetDocs(q);if(!snap.empty){const d=snap.docs[0];idPareja=d.id;datosPareja=d.data();parejaConectada=datosPareja.estado==="activo";renderParejaConfig()}}catch(e){}}
@@ -989,11 +1046,7 @@ function delGoal(i){goals.splice(i,1);guardarDatos();render()}
 function getBudgets(){return JSON.parse(localStorage.getItem(keyFor("budgets"))||"{}")}
 function addBudget(){const cat=$("budgetCatSel").value,m=parseMonto($("budgetMonto").value);if(!cat||m<=0){toast("Completa");return}const b=getBudgets();b[cat]=m;localStorage.setItem(keyFor("budgets"),JSON.stringify(b));renderBudgets();toast("✔ Guardado");$("budgetMonto").value=""}
 function delBudget(cat){const b=getBudgets();delete b[cat];localStorage.setItem(keyFor("budgets"),JSON.stringify(b));renderBudgets()}
-function renderBudgets(){
-  const el=$("budgetList"),b=getBudgets();if(!Object.keys(b).length){el.innerHTML='<div class="alert mid">Sin presupuestos</div>';return}
-  const gr={};data.filter(x=>x.Tipo==="Gasto").forEach(x=>{gr[x.Categoría]=(gr[x.Categoría]||0)+Number(x.Monto||0)});
-  el.innerHTML=Object.entries(b).map(([cat,lim])=>{const g=gr[cat]||0,pct=Math.min((g/lim)*100,100);return`<div style="background:rgba(255,255,255,.02);padding:10px;border-radius:10px;margin-bottom:6px"><div style="display:flex;justify-content:space-between"><span>${cat}</span><button class="small-btn" onclick="delBudget('${cat.replace(/'/g,"\\'")}')">🗑️</button></div><div class="small">${money(g)} / ${money(lim)}</div><div class="progress"><div class="bar" style="width:${pct}%"></div></div></div>`}).join("");
-}
+function renderBudgets(){const el=$("budgetList"),b=getBudgets();if(!Object.keys(b).length){el.innerHTML='<div class="alert mid">Sin presupuestos</div>';return}const gr={};data.filter(x=>x.Tipo==="Gasto").forEach(x=>{gr[x.Categoría]=(gr[x.Categoría]||0)+Number(x.Monto||0)});el.innerHTML=Object.entries(b).map(([cat,lim])=>{const g=gr[cat]||0,pct=Math.min((g/lim)*100,100);return`<div style="background:rgba(255,255,255,.02);padding:10px;border-radius:10px;margin-bottom:6px"><div style="display:flex;justify-content:space-between"><span>${cat}</span><button class="small-btn" onclick="delBudget('${cat.replace(/'/g,"\\'")}')">🗑️</button></div><div class="small">${money(g)} / ${money(lim)}</div><div class="progress"><div class="bar" style="width:${pct}%"></div></div></div>`}).join("")}
 function addRecurrente(){const c=$("recCuentaSel").value,cat=$("recCatSel").value,d=$("recDesc").value.trim(),m=parseMonto($("recMonto").value);if(!d||m<=0){toast("Completa");return}const r=JSON.parse(localStorage.getItem(keyFor("recurrentes"))||"[]");r.push({id:"rec_"+Date.now(),cuenta:c,cat,desc:d,monto:m});localStorage.setItem(keyFor("recurrentes"),JSON.stringify(r));renderRecList();toast("✔ Agregado")}
 function delRec(id){const r=JSON.parse(localStorage.getItem(keyFor("recurrentes"))||"[]").filter(x=>x.id!==id);localStorage.setItem(keyFor("recurrentes"),JSON.stringify(r));renderRecList()}
 function renderRecList(){const el=$("recList"),r=JSON.parse(localStorage.getItem(keyFor("recurrentes"))||"[]");if(!r.length){el.innerHTML='<div class="alert mid">Sin recurrentes</div>';return}el.innerHTML=r.map(x=>`<div style="display:flex;justify-content:space-between;padding:8px;background:rgba(255,255,255,.02);border-radius:10px;margin-bottom:4px"><div><b>${x.cat} · ${x.desc}</b><br><span class="small">${money(x.monto)}</span></div><button class="small-btn" onclick="delRec('${x.id}')">🗑️</button></div>`).join("")}
@@ -1011,16 +1064,17 @@ window.addCuenta=addCuenta;window.delCuenta=delCuenta;window.addCategoria=addCat
 window.borrar=borrar;window.abrirCierre=abrirCierre;window.confirmarCierre=confirmarCierre;
 window.agregarInversion=agregarInversion;window.eliminarInversion=eliminarInversion;window.mostrarFormInversion=mostrarFormInversion;
 window.switchDashTab=switchDashTab;window.aplicarTema=aplicarTema;
-window.aplicarColorLibre=aplicarColorLibre;window.restaurarColorTema=restaurarColorTema;
 window.addPrestamo=addPrestamo;window.pagarCuotaPrestamo=pagarCuotaPrestamo;window.eliminarPrestamo=eliminarPrestamo;
 window.addSuscripcion=addSuscripcion;window.toggleSuscripcion=toggleSuscripcion;window.eliminarSuscripcion=eliminarSuscripcion;
 window.addRegla=addRegla;window.eliminarRegla=eliminarRegla;window.actualizarReglaConfig=actualizarReglaConfig;
 window.addRecordatorio=addRecordatorio;window.eliminarRecordatorio=eliminarRecordatorio;
-window.buscarPareja=buscarPareja;window.desconectarPareja=desconectarPareja;
+window.buscarPareja=buscarPareja;window.desconectarPareja=desconectarPareja;window.enviarInvitPareja=enviarInvitPareja;
 window.exportarCSV=exportarCSV;window.limpiarCache=limpiarCache;
+window.renderCoach=renderCoach;window.renderPrestamos=renderPrestamos;window.renderSuscripciones=renderSuscripciones;
 
-console.log("✅ Banking PRO AI v28 - Coach Potenciado + Préstamos + Suscripciones");
-console.log("🧠 Coach IA | 💵 Préstamos | 📱 Suscripciones | ⚙️ Reglas | 🔔 Recordatorios");
+console.log("✅ Banking PRO AI v29 - ESTABLE");
+console.log("🔄 Datos OK | 💵 Préstamos con movimientos | 📱 Suscripciones automáticas");
+console.log("🧠 Coach con consejos | ⚙️ Reglas | 🔔 Recordatorios | 🎤 Voz corregida");
 </script>
 </body>
 </html>
