@@ -134,7 +134,7 @@
     .login-input-wrap{margin-bottom:10px}
     .login-input-wrap label{display:block;font-size:10px;font-weight:700;color:#64748b;margin-bottom:5px}
     .login-input-wrap input{padding:12px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;color:#fff;font-size:13px;width:100%}
-    .login-btn-main{width:100%;padding:13px;border-radius:12px;font-size:14px;font-weight:800;border:none;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;margin-top:4px}
+    .login-btn-main{width:100%;padding:13px;border-radius:12px;font-size:14px;font-weight:800;border:none;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;margin-top:4px;cursor:pointer}
     .login-error{background:rgba(239,68,68,.12);color:#ef4444;border-radius:10px;padding:8px 10px;font-size:12px;font-weight:600;margin-bottom:10px;display:none}
     .login-error.visible{display:block}
     #appContent{display:none}
@@ -220,20 +220,20 @@
   <div class="login-box">
     <div class="login-logo"><span>💳</span><h1>Banking PRO AI</h1><p>Tu gestor financiero inteligente</p></div>
     <div class="login-tabs">
-      <button class="login-tab active" id="tabLoginBtn">Iniciar sesión</button>
-      <button class="login-tab" id="tabRegisterBtn">Registrarse</button>
+      <button type="button" class="login-tab active" id="tabLoginBtn">Iniciar sesión</button>
+      <button type="button" class="login-tab" id="tabRegisterBtn">Registrarse</button>
     </div>
     <div id="loginError" class="login-error"></div>
     <div id="formLogin">
       <div class="login-input-wrap"><label>Correo</label><input type="email" id="loginEmail" placeholder="tu@correo.com"></div>
       <div class="login-input-wrap"><label>Contraseña</label><input type="password" id="loginPass" placeholder="••••••••"></div>
-      <button class="login-btn-main" id="loginBtn">Entrar →</button>
+      <button type="button" class="login-btn-main" id="loginBtn">Entrar →</button>
     </div>
     <div id="formRegister" style="display:none">
       <div class="login-input-wrap"><label>Nombre</label><input type="text" id="regName" placeholder="Tu nombre"></div>
       <div class="login-input-wrap"><label>Correo</label><input type="email" id="regEmail" placeholder="tu@correo.com"></div>
       <div class="login-input-wrap"><label>Contraseña (mín. 6)</label><input type="password" id="regPass" placeholder="••••••••"></div>
-      <button class="login-btn-main" id="registerBtn">Crear cuenta →</button>
+      <button type="button" class="login-btn-main" id="registerBtn">Crear cuenta →</button>
     </div>
   </div>
 </div>
@@ -297,8 +297,8 @@
         <label>Cuenta destino</label><select id="traspasoDestino"></select>
         <input type="text" id="montoTrspaso" placeholder="Monto"><input type="text" id="descTrspaso" placeholder="Concepto">
       </div>
-      <button class="primary" id="saveBtn" onclick="guardar()">💾 Guardar</button>
-      <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">🎤 Voz</button>
+      <button type="button" class="primary" id="saveBtn" onclick="guardar()">💾 Guardar</button>
+      <button type="button" class="voice-btn" id="voiceBtn" onclick="toggleVoice()">🎤 Voz</button>
       <div class="voice-feedback" id="voiceFeedback"></div>
     </div>
     
@@ -331,13 +331,13 @@
     </div>
     <div id="dash-inversiones" style="display:none">
       <div class="card"><div class="title">📈 Portafolio</div><div id="inversionesResumen"></div>
-        <button class="primary" style="width:100%;margin-top:8px;background:linear-gradient(135deg,#06b6d4,#0891b2)" onclick="mostrarFormInversion()">➕ Nueva inversión</button>
+        <button type="button" class="primary" style="width:100%;margin-top:8px;background:linear-gradient(135deg,#06b6d4,#0891b2)" onclick="mostrarFormInversion()">➕ Nueva inversión</button>
         <div id="formInversion" style="display:none;margin-top:8px">
           <select id="invTipo"><option>CDT</option><option>Acciones</option><option>Cripto</option><option>Finca Raíz</option></select>
           <input type="text" id="invNombre" placeholder="Nombre">
           <input type="text" id="invMonto" placeholder="Monto invertido">
           <input type="text" id="invRentabilidad" placeholder="Rentabilidad % (ej: 12.5)">
-          <button class="primary" onclick="agregarInversion()">💾 Guardar</button>
+          <button type="button" class="primary" onclick="agregarInversion()">💾 Guardar</button>
         </div>
       </div>
       <div class="card"><div class="title">📊 Distribución</div><canvas id="chartInv"></canvas></div>
@@ -346,10 +346,10 @@
 
   <!-- GOALS -->
   <section class="tab" id="tab-goals">
-    <div class="card"><div class="title">🎯 Nueva meta <span class="ctx-label personal" id="goalCtxLabel">Personal</span></div><input type="text" id="goalName" placeholder="Ej: Viaje"><input type="number" id="goalValue" placeholder="Monto"><button class="primary" onclick="addGoal()">💾 Guardar</button></div>
+    <div class="card"><div class="title">🎯 Nueva meta <span class="ctx-label personal" id="goalCtxLabel">Personal</span></div><input type="text" id="goalName" placeholder="Ej: Viaje"><input type="number" id="goalValue" placeholder="Monto"><button type="button" class="primary" onclick="addGoal()">💾 Guardar</button></div>
     <div class="card"><div class="title">🚀 Mis metas</div><div id="goalList"></div></div>
-    <div class="card"><div class="title">💰 Presupuestos <span class="ctx-label personal" id="budgetCtxLabel">Personal</span></div><select id="budgetCatSel"></select><input type="text" id="budgetMonto" placeholder="Límite"><button class="primary" onclick="addBudget()">➕ Guardar</button><div id="budgetList" style="margin-top:8px"></div></div>
-    <div class="card"><div class="title">🔁 Recurrentes <span class="ctx-label personal" id="recCtxLabel">Personal</span></div><select id="recCuentaSel"></select><select id="recCatSel"></select><input type="text" id="recDesc" placeholder="Descripción"><input type="text" id="recMonto" placeholder="Monto"><button class="primary" onclick="addRecurrente()">➕ Agregar</button><div id="recList" style="margin-top:8px"></div><button class="warn-btn" style="width:100%;margin-top:8px" onclick="aplicarRecurrentes()">⚡ Aplicar al mes</button></div>
+    <div class="card"><div class="title">💰 Presupuestos <span class="ctx-label personal" id="budgetCtxLabel">Personal</span></div><select id="budgetCatSel"></select><input type="text" id="budgetMonto" placeholder="Límite"><button type="button" class="primary" onclick="addBudget()">➕ Guardar</button><div id="budgetList" style="margin-top:8px"></div></div>
+    <div class="card"><div class="title">🔁 Recurrentes <span class="ctx-label personal" id="recCtxLabel">Personal</span></div><select id="recCuentaSel"></select><select id="recCatSel"></select><input type="text" id="recDesc" placeholder="Descripción"><input type="text" id="recMonto" placeholder="Monto"><button type="button" class="primary" onclick="addRecurrente()">➕ Agregar</button><div id="recList" style="margin-top:8px"></div><button type="button" class="warn-btn" style="width:100%;margin-top:8px" onclick="aplicarRecurrentes()">⚡ Aplicar al mes</button></div>
   </section>
 
   <!-- PRÉSTAMOS -->
@@ -362,7 +362,7 @@
       <input type="number" id="prestamoCuotas" placeholder="Número de cuotas" min="1" value="1">
       <input type="text" id="prestamoInteres" placeholder="Interés % (0 si no tiene)" value="0">
       <input type="text" id="prestamoNota" placeholder="Nota (opcional)">
-      <button class="primary" onclick="addPrestamo()">💾 Guardar préstamo</button>
+      <button type="button" class="primary" onclick="addPrestamo()">💾 Guardar préstamo</button>
     </div>
     <div class="card">
       <div class="title">📋 Mis préstamos</div>
@@ -379,7 +379,7 @@
       <input type="date" id="subFechaCobro">
       <select id="subCuenta"></select>
       <input type="text" id="subNota" placeholder="Nota (opcional)">
-      <button class="primary" onclick="addSuscripcion()">💾 Guardar suscripción</button>
+      <button type="button" class="primary" onclick="addSuscripcion()">💾 Guardar suscripción</button>
     </div>
     <div class="card">
       <div class="title">📋 Mis suscripciones</div>
@@ -408,7 +408,7 @@
       </div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
         <span class="small" id="searchResultCount"></span>
-        <button class="small-btn success-btn" onclick="exportarCSV()">📥 CSV</button>
+        <button type="button" class="small-btn success-btn" onclick="exportarCSV()">📥 CSV</button>
       </div>
       <div class="list" id="lista"></div>
     </div>
@@ -416,7 +416,7 @@
 
   <!-- SETTINGS -->
   <section class="tab" id="tab-settings">
-    <div class="card"><div class="title">👤 Mi cuenta</div><div id="userInfoBlock" style="margin-bottom:12px"></div><button class="danger" style="width:100%" onclick="cerrarSesion()">🚪 Cerrar sesión</button></div>
+    <div class="card"><div class="title">👤 Mi cuenta</div><div id="userInfoBlock" style="margin-bottom:12px"></div><button type="button" class="danger" style="width:100%" onclick="cerrarSesion()">🚪 Cerrar sesión</button></div>
     
     <div class="card">
       <div class="title">🎨 Personalizar tema</div>
@@ -435,12 +435,12 @@
     <div class="card"><div class="title">⚙️ Reglas automáticas</div>
       <select id="reglaTipo" onchange="actualizarReglaConfig()"><option value="limite">Límite de gasto por categoría</option><option value="alerta">Alerta cuando saldo baje de</option><option value="autoahorro">Auto-ahorro al recibir ingresos</option></select>
       <div id="reglaConfig"></div>
-      <button class="primary" onclick="addRegla()">➕ Agregar regla</button>
+      <button type="button" class="primary" onclick="addRegla()">➕ Agregar regla</button>
       <div id="reglasLista" style="margin-top:8px"></div>
     </div>
     
     <div class="card"><div class="title">💑 Conexión en pareja</div>
-      <div><label>Email</label><div style="display:flex;gap:6px"><input type="email" id="parejaEmailBuscar" placeholder="pareja@correo.com" style="margin-bottom:0"><button class="primary" onclick="buscarPareja()" style="width:auto">🔍</button></div><div id="resultadoBusqueda" style="margin-top:6px"></div></div>
+      <div><label>Email</label><div style="display:flex;gap:6px"><input type="email" id="parejaEmailBuscar" placeholder="pareja@correo.com" style="margin-bottom:0"><button type="button" class="primary" onclick="buscarPareja()" style="width:auto">🔍</button></div><div id="resultadoBusqueda" style="margin-top:6px"></div></div>
       <div id="miembrosConectados" style="margin-top:8px"></div>
     </div>
     
@@ -448,33 +448,30 @@
       <input type="text" id="recordatorioNombre" placeholder="Ej: Pago tarjeta">
       <input type="date" id="recordatorioFecha">
       <input type="text" id="recordatorioMonto" placeholder="Monto (opcional)">
-      <button class="primary" onclick="addRecordatorio()">➕ Agregar recordatorio</button>
+      <button type="button" class="primary" onclick="addRecordatorio()">➕ Agregar recordatorio</button>
       <div id="recordatoriosLista" style="margin-top:8px"></div>
     </div>
     
-    <div class="card"><div class="title">📅 Cierre de mes <span class="ctx-label personal" id="cierreCtxLabel">Personal</span></div><button class="primary" onclick="abrirCierre()">🔒 Cerrar mes</button></div>
-    <div class="card"><div class="title">🏦 Cuentas</div><div id="cuentasAdmin"></div><label>Nueva</label><input type="text" id="newCuentaNombre" placeholder="Nombre"><select id="newCuentaIcon"><option>🏦</option><option>📱</option><option>💵</option><option>🐷</option><option>🏪</option></select><button class="primary" onclick="addCuenta()">➕ Agregar</button></div>
-    <div class="card"><div class="title">🏷️ Categorías</div><div style="display:flex;flex-wrap:wrap;gap:2px;margin-bottom:6px" id="catsAdmin"></div><input type="text" id="newCatIcon" placeholder="Ícono"><input type="text" id="newCatNombre" placeholder="Nombre"><select id="newCatTipo"><option value="ambos">Ambos</option><option value="ingreso">Ingreso</option><option value="gasto">Gasto</option></select><button class="primary" onclick="addCategoria()">➕ Agregar</button></div>
-    <div class="card"><div class="title">🧹 Limpiar</div><button class="secondary" onclick="limpiarCache('personal')" style="margin-bottom:6px">🗑️ Personal</button><button class="secondary" onclick="limpiarCache('negocio')">🗑️ Negocio</button></div>
+    <div class="card"><div class="title">📅 Cierre de mes <span class="ctx-label personal" id="cierreCtxLabel">Personal</span></div><button type="button" class="primary" onclick="abrirCierre()">🔒 Cerrar mes</button></div>
+    <div class="card"><div class="title">🏦 Cuentas</div><div id="cuentasAdmin"></div><label>Nueva</label><input type="text" id="newCuentaNombre" placeholder="Nombre"><select id="newCuentaIcon"><option>🏦</option><option>📱</option><option>💵</option><option>🐷</option><option>🏪</option></select><button type="button" class="primary" onclick="addCuenta()">➕ Agregar</button></div>
+    <div class="card"><div class="title">🏷️ Categorías</div><div style="display:flex;flex-wrap:wrap;gap:2px;margin-bottom:6px" id="catsAdmin"></div><input type="text" id="newCatIcon" placeholder="Ícono"><input type="text" id="newCatNombre" placeholder="Nombre"><select id="newCatTipo"><option value="ambos">Ambos</option><option value="ingreso">Ingreso</option><option value="gasto">Gasto</option></select><button type="button" class="primary" onclick="addCategoria()">➕ Agregar</button></div>
+    <div class="card"><div class="title">🧹 Limpiar</div><button type="button" class="secondary" onclick="limpiarCache('personal')" style="margin-bottom:6px">🗑️ Personal</button><button type="button" class="secondary" onclick="limpiarCache('negocio')">🗑️ Negocio</button></div>
   </section>
 
   <nav class="nav">
-    <button class="active" onclick="goTab('home',this)">🏠</button>
-    <button onclick="goTab('dashboard',this)">📊</button>
-    <button onclick="goTab('goals',this)">🎯</button>
-    <button onclick="goTab('prestamos',this)">💵</button>
-    <button onclick="goTab('suscripciones',this)">📱</button>
-    <button onclick="goTab('settings',this)">⚙️</button>
+    <button type="button" class="active" onclick="goTab('home',this)">🏠</button>
+    <button type="button" onclick="goTab('dashboard',this)">📊</button>
+    <button type="button" onclick="goTab('goals',this)">🎯</button>
+    <button type="button" onclick="goTab('prestamos',this)">💵</button>
+    <button type="button" onclick="goTab('suscripciones',this)">📱</button>
+    <button type="button" onclick="goTab('settings',this)">⚙️</button>
   </nav>
 </div>
 
 <div class="toast" id="toast"></div>
-<div class="modal-overlay" id="modalCierre"><div class="modal"><h3>🔒 Cerrar mes</h3><p>Archivará movimientos y actualizará saldos.</p><div id="modalResumen" style="margin-bottom:12px"></div><div class="modal-btns"><button class="secondary" onclick="document.getElementById('modalCierre').classList.remove('open')">Cancelar</button><button class="primary" onclick="confirmarCierre()">✔ Confirmar</button></div></div></div>
+<div class="modal-overlay" id="modalCierre"><div class="modal"><h3>🔒 Cerrar mes</h3><p>Archivará movimientos y actualizará saldos.</p><div id="modalResumen" style="margin-bottom:12px"></div><div class="modal-btns"><button type="button" class="secondary" onclick="document.getElementById('modalCierre').classList.remove('open')">Cancelar</button><button type="button" class="primary" onclick="confirmarCierre()">✔ Confirmar</button></div></div></div>
 
 <script>
-// ═══════════════════════════════════════════
-// BANKING PRO AI v29 - FINAL ESTABLE
-// ═══════════════════════════════════════════
 const $=id=>document.getElementById(id);
 const ACC_COLORS=["#3b82f6","#22c55e","#f59e0b","#ec4899","#a78bfa","#14b8a6"];
 
@@ -490,7 +487,6 @@ let reglas=JSON.parse(localStorage.getItem("reglas")||"[]");
 let recordatorios=JSON.parse(localStorage.getItem("recordatorios")||"[]");
 let temaActual=localStorage.getItem("tema")||"dark";
 
-// ══ TEMAS ══
 function aplicarTema(tema){
   temaActual=tema;localStorage.setItem("tema",tema);
   document.body.classList.remove("tema-light","tema-ocean","tema-forest","tema-sunset","tema-purple","tema-rose","tema-cyber");
@@ -504,40 +500,21 @@ function aplicarTema(tema){
 }
 function cargarTemaInicial(){const tg=localStorage.getItem("tema")||"dark";aplicarTema(tg);}
 
-// ══ FUNCIONES BASE ══
 function uid(){return window.currentUser?.uid||localStorage.getItem("uid")||"guest"}
 function keyFor(b){const s=contexto==="negocio"?"Negocio":contexto==="pareja"?"Pareja":"";return uid()+"_"+s+b}
 function keyForCtx(b,c){const s=c==="negocio"?"Negocio":c==="pareja"?"Pareja":"";return uid()+"_"+s+b}
 function toast(m){const t=$("toast");t.innerText=m;t.style.display="block";setTimeout(()=>t.style.display="none",2400)}
 function money(n){if(hidden)return"••••••";return"$"+Number(n).toLocaleString("es-CO")}
 
-// CORRECCIÓN: parseMonto mejorado para manejar 20.000, 20,000, 20000
 function parseMonto(s){
   if(!s)return 0;
   let cleaned=String(s).trim();
-  // Si tiene puntos de mil y coma decimal: 20.000,50 -> 20000.50
   if(cleaned.includes(",")&&cleaned.includes(".")){
-    // Asumir que el punto es separador de miles y coma es decimal
     cleaned=cleaned.replace(/\./g,"").replace(",",".");
   }else if(cleaned.includes(",")&&!cleaned.includes(".")){
-    // Solo coma: puede ser 20000,50 o 20,000
     const parts=cleaned.split(",");
-    if(parts.length===2&&parts[1].length<=2){
-      // Es decimal: 20000,50
-      cleaned=cleaned.replace(",",".");
-    }else{
-      // Es separador de miles: 20,000
-      cleaned=cleaned.replace(/,/g,"");
-    }
-  }else if(cleaned.includes(".")&&!cleaned.includes(",")){
-    // Solo punto: 20.000 o 20000.50
-    const parts=cleaned.split(".");
-    if(parts.length===2&&parts[1].length<=2&&parts[0].length<=5){
-      // Probablemente decimal: 20000.50
-    }else{
-      // Probablemente separador de miles: 20.000
-      cleaned=cleaned.replace(/\./g,"");
-    }
+    if(parts.length===2&&parts[1].length<=2)cleaned=cleaned.replace(",",".");
+    else cleaned=cleaned.replace(/,/g,"");
   }
   return parseFloat(cleaned)||0;
 }
@@ -548,28 +525,29 @@ document.addEventListener("DOMContentLoaded",()=>{
   $("today").innerText=new Date().toLocaleDateString("es-CO",{weekday:"long",day:"numeric",month:"long"});
   $("fecha").valueAsDate=new Date();$("subFechaCobro").valueAsDate=new Date();$("recordatorioFecha").valueAsDate=new Date();
   cargarTemaInicial();
-  $("tabLoginBtn").onclick=()=>switchLoginTab("login");$("tabRegisterBtn").onclick=()=>switchLoginTab("register");
-  $("loginBtn").onclick=iniciarSesion;$("registerBtn").onclick=registrarUsuario;
+  $("tabLoginBtn").onclick=()=>switchLoginTab("login");
+  $("tabRegisterBtn").onclick=()=>switchLoginTab("register");
+  $("loginBtn").onclick=iniciarSesion;
+  $("registerBtn").onclick=registrarUsuario;
   $("traspasoDireccion")?.addEventListener("change",poblarTraspaso);
   $("reglaTipo")?.addEventListener("change",actualizarReglaConfig);
   actualizarReglaConfig();
   checkFB();
-  // Verificar recordatorios cada minuto
   setInterval(verificarRecordatorios,60000);
 });
 
 function checkFB(){if(window.firebaseReady){window.onUserChanged=onUserChanged;if(window.auth?.currentUser)onUserChanged(window.auth.currentUser)}else setTimeout(checkFB,300)}
 function switchLoginTab(t){$("formLogin").style.display=t==="login"?"block":"none";$("formRegister").style.display=t==="register"?"block":"none";$("tabLoginBtn").classList.toggle("active",t==="login");$("tabRegisterBtn").classList.toggle("active",t==="register");$("loginError").classList.remove("visible")}
 function showError(m){const e=$("loginError");e.textContent=m;e.classList.add("visible")}
-async function iniciarSesion(){const e=$("loginEmail").value.trim(),p=$("loginPass").value;if(!e||!p){showError("Completa");return}$("loginError").classList.remove("visible");$("loginBtn").disabled=true;$("loginBtn").textContent="⏳...";try{await window.fbLogin(e,p)}catch(err){$("loginBtn").disabled=false;$("loginBtn").textContent="Entrar →";showError("Error: "+err.message)}}
-async function registrarUsuario(){const n=$("regName").value.trim(),e=$("regEmail").value.trim(),p=$("regPass").value;if(!n||!e||!p||p.length<6){showError("Completa (mín. 6)");return}$("loginError").classList.remove("visible");$("registerBtn").disabled=true;$("registerBtn").textContent="⏳...";try{const cred=await window.fbRegister(e,p);await window.fbUpdateProfile(cred.user,{displayName:n});try{await window.fbAddDoc(window.fbCollection(window.db,"users"),{uid:cred.user.uid,email:e,displayName:n,createdAt:new Date().toISOString()})}catch(ex){}}catch(err){$("registerBtn").disabled=false;$("registerBtn").textContent="Crear cuenta →";showError("Error: "+err.message)}}
+async function iniciarSesion(){const e=$("loginEmail").value.trim(),p=$("loginPass").value;if(!e||!p){showError("Completa todos los campos");return}$("loginError").classList.remove("visible");$("loginBtn").disabled=true;$("loginBtn").textContent="⏳...";try{await window.fbLogin(e,p)}catch(err){$("loginBtn").disabled=false;$("loginBtn").textContent="Entrar →";showError("Error: "+err.message)}}
+async function registrarUsuario(){const n=$("regName").value.trim(),e=$("regEmail").value.trim(),p=$("regPass").value;if(!n||!e||!p||p.length<6){showError("Completa todos los campos (contraseña mín. 6)");return}$("loginError").classList.remove("visible");$("registerBtn").disabled=true;$("registerBtn").textContent="⏳...";try{const cred=await window.fbRegister(e,p);await window.fbUpdateProfile(cred.user,{displayName:n});try{await window.fbAddDoc(window.fbCollection(window.db,"users"),{uid:cred.user.uid,email:e,displayName:n,createdAt:new Date().toISOString()})}catch(ex){}}catch(err){$("registerBtn").disabled=false;$("registerBtn").textContent="Crear cuenta →";showError("Error: "+err.message)}}
 async function cerrarSesion(){if(!confirm("¿Cerrar sesión?"))return;await window.fbLogout()}
 
 function onUserChanged(user){
   if(user){$("loginScreen").classList.add("oculto");$("appContent").classList.add("visible");actualizarUI(user);localStorage.setItem("uid",user.uid);
     cargarTodo();render();renderPrestamos();renderSuscripciones();renderReglas();renderRecordatorios();inicializarPareja();
   }else{$("loginScreen").classList.remove("oculto");$("appContent").classList.remove("visible")}
-  $("loginBtn").disabled=false;$("registerBtn").disabled=false;$("loginBtn").textContent="Entrar →";$("registerBtn").textContent="Crear cuenta →"
+  $("loginBtn").disabled=false;$("registerBtn").disabled=false;$("loginBtn").textContent="Entrar →";$("registerBtn").textContent="Crear cuenta →";
 }
 
 function cargarTodo(){
@@ -624,7 +602,7 @@ async function guardar(){
 
 async function guardarTraspaso(){
   const m=parseMonto($("montoTrspaso").value),desc=$("descTrspaso").value.trim()||"Traspaso",dir=$("traspasoDireccion").value,co=$("traspasoOrigen").value,cd=$("traspasoDestino").value,f=$("fecha").value;
-  if(m<=0){toast("Monto");return}
+  if(m<=0){toast("Monto requerido");return}
   const ctxO=dir==="p2n"?"personal":"negocio",ctxD=dir==="p2n"?"negocio":"personal";
   const rO={Fecha:f,Tipo:"TraspasoSalida",Cuenta:co,Categoría:"🔀 Traspaso",Descripción:desc+" → "+(ctxD==="negocio"?"🏪":"👤"),Monto:m,Contexto:ctxO};
   const rD={Fecha:f,Tipo:"TraspasoEntrada",Cuenta:cd,Categoría:"🔀 Traspaso",Descripción:desc+" ← "+(ctxO==="negocio"?"🏪":"👤"),Monto:m,Contexto:ctxD};
@@ -648,9 +626,9 @@ function guardarDatos(){
   localStorage.setItem("inversiones",JSON.stringify(inversiones));
 }
 
-async function borrar(id){if(!confirm("¿Eliminar?"))return;const x=data.find(d=>String(d.ID)===String(id));data=data.filter(d=>String(d.ID)!==String(id));guardarDatos();render();try{if(window.db&&window.auth?.currentUser&&!String(id).startsWith("local_"))await window.fbDeleteDoc(window.fbDoc(window.db,"users",window.auth.currentUser.uid,(x?.Contexto||contexto)==="negocio"?"movimientos_negocio":(x?.Contexto||contexto)==="pareja"?"movimientos_pareja":"movimientos_personal",String(id)))}catch(e){}toast("🗑️ Eliminado")}
+async function borrar(id){if(!confirm("¿Eliminar este movimiento?"))return;const x=data.find(d=>String(d.ID)===String(id));data=data.filter(d=>String(d.ID)!==String(id));guardarDatos();render();try{if(window.db&&window.auth?.currentUser&&!String(id).startsWith("local_"))await window.fbDeleteDoc(window.fbDoc(window.db,"users",window.auth.currentUser.uid,(x?.Contexto||contexto)==="negocio"?"movimientos_negocio":(x?.Contexto||contexto)==="pareja"?"movimientos_pareja":"movimientos_personal",String(id)))}catch(e){}toast("🗑️ Eliminado")}
 
-// ══ COACH FINANCIERO POTENCIADO (CONSEJOS + ANÁLISIS) ══
+// ══ COACH FINANCIERO ══
 function renderCoach(){
   const ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0);
   const gas=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0);
@@ -664,7 +642,6 @@ function renderCoach(){
   const totalPrestado=prestamosActivos.filter(p=>p.tipo==="prestado").reduce((a,p)=>a+(p.monto-p.pagado),0);
   const tasaAhorro=ing>0?((ing-gas)/ing*100).toFixed(1):0;
   
-  // Calcular score
   let score=50;
   if(ing>0&&gas>0){const ratio=ing/gas;if(ratio>2)score+=20;else if(ratio>1.5)score+=15;else if(ratio>1)score+=10;else if(ratio>0.8)score+=5;else score-=15;}
   if(totalDeuda/(ing||1)<0.3)score+=10;else if(totalDeuda/(ing||1)<0.5)score+=5;else score-=10;
@@ -676,7 +653,6 @@ function renderCoach(){
   const emojiScore=score>=80?"🌟":score>=60?"👍":score>=40?"⚠️":"🔴";
   const estadoScore=score>=80?"Excelente":score>=60?"Buena":score>=40?"Regular":"Crítica";
   
-  // Generar consejos
   let consejos=[];
   if(tasaAhorro>30)consejos.push({icono:"🌟",texto:`¡Impresionante! Ahorras el ${tasaAhorro}% de tus ingresos. Eres un ejemplo de disciplina financiera. Considera invertir ese excedente en un CDT o fondo de inversión para hacerlo crecer.`,tipo:"good"});
   if(tasaAhorro<10&&tasaAhorro>0)consejos.push({icono:"💡",texto:`Solo ahorras el ${tasaAhorro}% de tus ingresos. Intenta reduciendo gastos hormiga como cafés, domicilios o suscripciones que no uses. Pequeños cambios generan grandes resultados.`,tipo:"mid"});
@@ -697,10 +673,8 @@ function renderCoach(){
   if(proyeccion>ing&&ing>0)consejos.push({icono:"📉",texto:`Al ritmo actual, proyectas gastar ${money(proyeccion)} este mes, superando tus ingresos de ${money(ing)}. Reduce gastos ya para evitar problemas.`,tipo:"bad"});
   
   if(data.length<5)consejos.push({icono:"👋",texto:"¡Bienvenido! Apenas estás empezando. Registra tus movimientos diarios para que pueda darte mejores consejos personalizados.",tipo:"info"});
-  
   if(saldoTotal===0&&data.length>0)consejos.push({icono:"⚠️",texto:"Tu saldo está en cero. Es importante mantener un colchón financiero para emergencias. Intenta ahorrar al menos el 10% de tus ingresos.",tipo:"bad"});
   
-  // Renderizar
   let html=`
     <div style="display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,.03);border-radius:14px;margin-bottom:12px">
       <div class="coach-score-circle" style="border-color:${colorScore};color:${colorScore}">${score}</div>
@@ -732,27 +706,24 @@ function renderCoach(){
   $("coachContent").innerHTML=html;
 }
 
-// ══ PRÉSTAMOS (CON MOVIMIENTOS) ══
+// ══ PRÉSTAMOS ══
 function addPrestamo(){
   const persona=$("prestamoPersona").value.trim(),tipo=$("prestamoTipo").value,monto=parseMonto($("prestamoMonto").value);
   const cuotas=parseInt($("prestamoCuotas").value)||1,interes=parseFloat(($("prestamoInteres").value||"0").replace(",","."))||0,nota=$("prestamoNota").value.trim();
-  if(!persona||!monto){toast("Completa los datos");return}
+  if(!persona||!monto){toast("Completa los datos del préstamo");return}
   const montoConInteres=monto*(1+interes/100);
   const valorCuota=montoConInteres/cuotas;
   prestamos.push({id:"pres_"+Date.now(),persona,tipo,monto,montoConInteres,cuotas,valorCuota,interes,nota,pagado:0,fecha:new Date().toISOString().slice(0,10),estado:"activo"});
   
-  // Crear movimiento automático
   const hoy=new Date().toISOString().slice(0,10);
   if(tipo==="prestado"){
-    // Presté dinero: gasto
     data.push({Fecha:hoy,Tipo:"Gasto",Cuenta:cuentas[0]?.id||"efectivo",Categoría:"💵 Préstamo",Descripción:`Préstamo a ${persona}`,Monto:monto,Nota:`${cuotas} cuotas de ${money(valorCuota)}${interes>0?`, interés ${interes}%`:""}`,Contexto:contexto,ID:"presmov_"+Date.now()});
   }else{
-    // Me prestaron: ingreso
     data.push({Fecha:hoy,Tipo:"Ingreso",Cuenta:cuentas[0]?.id||"efectivo",Categoría:"📥 Préstamo recibido",Descripción:`Préstamo de ${persona}`,Monto:monto,Nota:`${cuotas} cuotas de ${money(valorCuota)}${interes>0?`, interés ${interes}%`:""}`,Contexto:contexto,ID:"presmov_"+Date.now()});
   }
   
   guardarDatos();
-  $("prestamoPersona").value=$("prestamoMonto").value=$("prestamoCuotas").value="1";$("prestamoInteres").value="0";$("prestamoNota").value="";
+  $("prestamoPersona").value=$("prestamoMonto").value="";$("prestamoCuotas").value="1";$("prestamoInteres").value="0";$("prestamoNota").value="";
   render();renderPrestamos();toast("💵 Préstamo registrado");
 }
 
@@ -762,13 +733,10 @@ function pagarCuotaPrestamo(id){
   if(!montoPago||montoPago<=0)return;
   p.pagado+=montoPago;
   
-  // Crear movimiento automático
   const hoy=new Date().toISOString().slice(0,10);
   if(p.tipo==="prestado"){
-    // Me pagan: ingreso
     data.push({Fecha:hoy,Tipo:"Ingreso",Cuenta:cuentas[0]?.id||"efectivo",Categoría:"💵 Cobro préstamo",Descripción:`Abono de ${p.persona}`,Monto:montoPago,Nota:`Préstamo: quedan ${money(p.montoConInteres-p.pagado)}`,Contexto:contexto,ID:"pagopres_"+Date.now()});
   }else{
-    // Pago deuda: gasto
     data.push({Fecha:hoy,Tipo:"Gasto",Cuenta:cuentas[0]?.id||"efectivo",Categoría:"📥 Pago deuda",Descripción:`Pago a ${p.persona}`,Monto:montoPago,Nota:`Deuda: quedan ${money(p.montoConInteres-p.pagado)}`,Contexto:contexto,ID:"pagopres_"+Date.now()});
   }
   
@@ -777,7 +745,7 @@ function pagarCuotaPrestamo(id){
   guardarDatos();render();renderPrestamos();
 }
 
-function eliminarPrestamo(id){if(!confirm("¿Eliminar?"))return;prestamos=prestamos.filter(p=>p.id!==id);guardarDatos();render();renderPrestamos()}
+function eliminarPrestamo(id){if(!confirm("¿Eliminar este préstamo?"))return;prestamos=prestamos.filter(p=>p.id!==id);guardarDatos();render();renderPrestamos()}
 
 function renderPrestamos(){
   $("prestamosCount").innerText=prestamos.filter(p=>p.estado==="activo").length;
@@ -792,13 +760,12 @@ function renderPrestamos(){
   $("prestamosLista").innerHTML=html||'<div class="alert mid">Sin préstamos registrados</div>';
 }
 
-// ══ SUSCRIPCIONES (CON GASTO AUTOMÁTICO) ══
+// ══ SUSCRIPCIONES ══
 function addSuscripcion(){
   const nombre=$("subNombre").value.trim(),monto=parseMonto($("subMonto").value),fecha=$("subFechaCobro").value,cuenta=$("subCuenta").value,nota=$("subNota").value.trim();
-  if(!nombre||!monto||!fecha){toast("Completa los datos");return}
+  if(!nombre||!monto||!fecha){toast("Completa los datos de la suscripción");return}
   suscripciones.push({id:"sub_"+Date.now(),nombre,monto,fechaCobro:fecha,cuenta,nota,activa:true});
   
-  // Crear gasto automático para este mes
   const diaCobro=new Date(fecha+"T00:00:00").getDate();
   const hoy=new Date();
   const fechaMov=hoy.getFullYear()+"-"+String(hoy.getMonth()+1).padStart(2,"0")+"-"+String(Math.min(diaCobro,new Date(hoy.getFullYear(),hoy.getMonth()+1,0).getDate())).padStart(2,"0");
@@ -810,7 +777,7 @@ function addSuscripcion(){
 }
 
 function toggleSuscripcion(id){const s=suscripciones.find(x=>x.id===id);if(s){s.activa=!s.activa;guardarDatos();renderSuscripciones();render();toast(s.activa?"✅ Activada":"⏸️ Pausada")}}
-function eliminarSuscripcion(id){if(!confirm("¿Eliminar?"))return;suscripciones=suscripciones.filter(s=>s.id!==id);guardarDatos();renderSuscripciones();render()}
+function eliminarSuscripcion(id){if(!confirm("¿Eliminar esta suscripción?"))return;suscripciones=suscripciones.filter(s=>s.id!==id);guardarDatos();renderSuscripciones();render()}
 
 function renderSuscripciones(){
   $("suscripcionesCount").innerText=suscripciones.filter(s=>s.activa!==false).length;
@@ -823,7 +790,6 @@ function renderSuscripciones(){
   $("suscripcionesLista").innerHTML=html;
 }
 
-// ══ DETECCIÓN AUTOMÁTICA DE SUSCRIPCIONES ══
 function detectarSuscripcion(mov){
   if(mov.Tipo!=="Gasto")return;
   const palabras=["netflix","spotify","disney","hbo","amazon prime","youtube premium","apple music","google one","microsoft 365","adobe","dropbox","icloud","onlyfans","patreon","crunchyroll","paramount","star+","hulu","deezer","tidal","prime video","disney+","hbo max"];
@@ -837,7 +803,7 @@ function detectarSuscripcion(mov){
   }
 }
 
-// ══ REGLAS AUTOMÁTICAS ══
+// ══ REGLAS ══
 function actualizarReglaConfig(){
   const tipo=$("reglaTipo").value;let html='';
   if(tipo==="limite")html=`<select id="reglaCat">${categorias.filter(c=>c.tipo==="gasto"||c.tipo==="ambos").map(c=>`<option value="${c.icon} ${c.nombre}">${c.icon} ${c.nombre}</option>`).join("")}</select><input type="text" id="reglaValor" placeholder="Límite máximo">`;
@@ -922,7 +888,7 @@ function render(){
   
   const favs={};data.forEach(x=>{if(x.Tipo==="Transferencia"||x.Tipo?.includes("Traspaso"))return;const k=x.Categoría+"|"+x.Descripción+"|"+x.Monto+"|"+(x.Cuenta||"");if(!favs[k])favs[k]={cat:x.Categoría,des:x.Descripción,monto:x.Monto,cuenta:x.Cuenta,count:0};favs[k].count++});
   const topFavs=Object.values(favs).sort((a,b)=>b.count-a.count).slice(0,4);
-  $("favList").innerHTML=topFavs.length?topFavs.map(f=>`<button class="secondary" onclick="usarFav('${f.cat}','${f.des}',${f.monto},'${f.cuenta||""}')" style="font-size:11px">${f.cat}<br><small>${f.des}</small><br><small>${money(f.monto)}</small></button>`).join(""):'<div class="small">Sin favoritos aún</div>';
+  $("favList").innerHTML=topFavs.length?topFavs.map(f=>`<button type="button" class="secondary" onclick="usarFav('${f.cat}','${f.des}',${f.monto},'${f.cuenta||""}')" style="font-size:11px">${f.cat}<br><small>${f.des}</small><br><small>${money(f.monto)}</small></button>`).join(""):'<div class="small">Sin favoritos aún</div>';
   
   $("goalList").innerHTML=goals.length?goals.map((g,i)=>{const p=Math.min((ah/g.valor)*100,100);return`<div class="item"><div style="font-weight:700">${g.nombre}</div><div class="small">${money(ah)} / ${money(g.valor)}</div><div class="progress"><div class="bar" style="width:${p}%"></div></div><button class="small-btn" onclick="delGoal(${i})">🗑️</button></div>`}).join(""):'<div class="alert mid">Sin metas</div>';
   
@@ -967,7 +933,7 @@ function renderComparativa(){
 function mostrarFormInversion(){$("formInversion").style.display=$("formInversion").style.display==="none"?"block":"none"}
 function agregarInversion(){
   const tipo=$("invTipo").value,nombre=$("invNombre").value.trim(),monto=parseMonto($("invMonto").value),rent=parseFloat(($("invRentabilidad").value||"0").replace(",","."));
-  if(!nombre||!monto){toast("Completa");return}
+  if(!nombre||!monto){toast("Completa los datos");return}
   inversiones.push({id:"inv_"+Date.now(),tipo,nombre,monto,rentabilidad:rent,fecha:new Date().toISOString().slice(0,10)});
   guardarDatos();renderInversiones();toast("📈 Inversión agregada");$("invNombre").value=$("invMonto").value=$("invRentabilidad").value="";$("formInversion").style.display="none";
 }
@@ -985,7 +951,7 @@ function toggleHide(){hidden=!hidden;localStorage.setItem("hideMoney",hidden?"1"
 function abrirCierre(){const s=calcSaldos(),ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gas=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0);$("modalResumen").innerHTML=`<div class="grid2"><div class="kpi"><span>Ingresos</span><strong style="color:var(--ok)">${money(ing)}</strong></div><div class="kpi"><span>Gastos</span><strong style="color:var(--bad)">${money(gas)}</strong></div></div>`;$("modalCierre").classList.add("open")}
 function confirmarCierre(){const s=calcSaldos(),ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gas=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0),label=new Date().toLocaleDateString("es-CO",{month:"long",year:"numeric"});historial.unshift({label,ing,gas,saldosCierre:{...s},movimientos:[...data]});cuentas=cuentas.map(c=>({...c,saldoInicial:s[c.id]||0}));data=[];guardarDatos();$("modalCierre").classList.remove("open");render();toast("✔ Mes cerrado")}
 
-// ══ VOZ CORREGIDA ══
+// ══ VOZ ══
 const LETRAS_A_NUMERO={cero:0,un:1,uno:1,dos:2,tres:3,cuatro:4,cinco:5,seis:6,siete:7,ocho:8,nueve:9,diez:10,once:11,doce:12,trece:13,catorce:14,quince:15,veinte:20,veintiun:21,treinta:30,cuarenta:40,cincuenta:50,sesenta:60,setenta:70,ochenta:80,noventa:90,cien:100,ciento:100,doscientos:200,trescientos:300,cuatrocientos:400,quinientos:500,mil:1000,millon:1000000};
 function convertirPalabrasANumero(texto){
   const md=texto.match(/(\d[\d.]*)/);
@@ -995,8 +961,8 @@ function convertirPalabrasANumero(texto){
   p.forEach(w=>{if(w==='y')return;const v=LETRAS_A_NUMERO[w];if(!v)return;if(v===1000){if(a===0)a=1;t+=a*1000;a=0}else if(v===1000000){if(a===0)a=1;t+=a*1000000;a=0}else if(v>=100)a*=v;else a+=v});
   return t+a;
 }
-function toggleVoice(){if(!('webkitSpeechRecognition' in window)){toast("❌ No soportado");return}isListening?stopVoice():startVoice()}
-function startVoice(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;recognition=new SR();recognition.lang="es-CO";recognition.interimResults=true;$("voiceBtn").classList.add("listening");$("voiceBtn").innerHTML="🎤...";$("voiceFeedback").classList.add("active");$("voiceFeedback").innerHTML="👂 Habla...";isListening=true;recognition.onresult=(e)=>{const t=e.results[0][0].transcript;$("voiceFeedback").innerHTML=`📝 "${t}"`;if(e.results[0].isFinal){procesarVoz(t);stopVoice()}};recognition.onerror=()=>stopVoice();recognition.start()}
+function toggleVoice(){if(!('webkitSpeechRecognition' in window)){toast("❌ Reconocimiento de voz no soportado");return}isListening?stopVoice():startVoice()}
+function startVoice(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;recognition=new SR();recognition.lang="es-CO";recognition.interimResults=true;$("voiceBtn").classList.add("listening");$("voiceBtn").innerHTML="🎤...";$("voiceFeedback").classList.add("active");$("voiceFeedback").innerHTML="👂 Habla ahora...";isListening=true;recognition.onresult=(e)=>{const t=e.results[0][0].transcript;$("voiceFeedback").innerHTML=`📝 "${t}"`;if(e.results[0].isFinal){procesarVoz(t);stopVoice()}};recognition.onerror=()=>stopVoice();recognition.start()}
 function stopVoice(){if(recognition)recognition.stop();$("voiceBtn").classList.remove("listening");$("voiceBtn").innerHTML="🎤 Voz";isListening=false}
 function procesarVoz(texto){
   let monto=convertirPalabrasANumero(texto);
@@ -1012,10 +978,10 @@ function procesarVoz(texto){
 
 // ══ PAREJA ══
 async function inicializarPareja(){if(!window.auth?.currentUser)return;try{const q=window.fbQuery(window.fbCollection(window.db,"parejas"),window.fbWhere("miembros","array-contains",window.auth.currentUser.uid));const snap=await window.fbGetDocs(q);if(!snap.empty){const d=snap.docs[0];idPareja=d.id;datosPareja=d.data();parejaConectada=datosPareja.estado==="activo";renderParejaConfig()}}catch(e){}}
-async function buscarPareja(){const email=$("parejaEmailBuscar").value.trim().toLowerCase(),r=$("resultadoBusqueda");if(!email||email===window.auth?.currentUser?.email){r.innerHTML='<div class="alert mid">Email inválido</div>';return}try{const all=await window.fbGetDocs(window.fbCollection(window.db,"users"));let f=null;all.forEach(d=>{if(d.data().email===email)f=d.data()});if(!f){r.innerHTML='<div class="alert mid">No encontrado</div>';return}r.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px;background:rgba(255,255,255,.03);border-radius:10px"><div><div style="font-weight:700">${f.displayName||"Usuario"}</div><div class="small">${f.email}</div></div><button class="primary" style="width:auto;background:linear-gradient(135deg,#ec4899,#db2777)" onclick="enviarInvitPareja('${f.uid}')">💌 Conectar</button></div>`}catch(e){r.innerHTML='<div class="alert bad">Error</div>'}}
-async function enviarInvitPareja(pid){try{const ref=await window.fbAddDoc(window.fbCollection(window.db,"parejas"),{miembros:[window.auth.currentUser.uid,pid],estado:"pendiente"});idPareja=ref.id;toast("💌 Enviada");$("resultadoBusqueda").innerHTML="";$("parejaEmailBuscar").value=""}catch(e){toast("Error")}}
+async function buscarPareja(){const email=$("parejaEmailBuscar").value.trim().toLowerCase(),r=$("resultadoBusqueda");if(!email||email===window.auth?.currentUser?.email){r.innerHTML='<div class="alert mid">Email inválido</div>';return}try{const all=await window.fbGetDocs(window.fbCollection(window.db,"users"));let f=null;all.forEach(d=>{if(d.data().email===email)f=d.data()});if(!f){r.innerHTML='<div class="alert mid">Usuario no encontrado</div>';return}r.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px;background:rgba(255,255,255,.03);border-radius:10px"><div><div style="font-weight:700">${f.displayName||"Usuario"}</div><div class="small">${f.email}</div></div><button class="primary" style="width:auto;background:linear-gradient(135deg,#ec4899,#db2777)" onclick="enviarInvitPareja('${f.uid}')">💌 Conectar</button></div>`}catch(e){r.innerHTML='<div class="alert bad">Error al buscar</div>'}}
+async function enviarInvitPareja(pid){try{const ref=await window.fbAddDoc(window.fbCollection(window.db,"parejas"),{miembros:[window.auth.currentUser.uid,pid],estado:"pendiente"});idPareja=ref.id;toast("💌 Invitación enviada");$("resultadoBusqueda").innerHTML="";$("parejaEmailBuscar").value=""}catch(e){toast("Error al enviar")}}
 function renderParejaConfig(){const me=$("miembrosConectados");if(!idPareja){if(me)me.innerHTML='';return}const estado=datosPareja?.estado||"pendiente";if(estado==="pendiente"){if(me)me.innerHTML='<div class="alert info">⏳ Invitación pendiente</div>'}else{if(me)me.innerHTML='<div style="padding:8px;background:rgba(255,255,255,.03);border-radius:10px"><span>💑</span> Conectado en pareja</div><button class="danger" style="width:100%;margin-top:6px" onclick="desconectarPareja()">💔 Desconectar</button>'}}
-async function desconectarPareja(){if(!confirm("¿Desconectar?"))return;try{await window.fbDeleteDoc(window.fbDoc(window.db,"parejas",idPareja));idPareja=null;datosPareja=null;parejaConectada=false;renderParejaConfig();toast("👋 Desconectado")}catch(e){toast("Error")}}
+async function desconectarPareja(){if(!confirm("¿Desconectar pareja?"))return;try{await window.fbDeleteDoc(window.fbDoc(window.db,"parejas",idPareja));idPareja=null;datosPareja=null;parejaConectada=false;renderParejaConfig();toast("👋 Desconectado")}catch(e){toast("Error")}}
 
 // ══ ADMIN ══
 function actualizarUI(user){const dn=user.displayName||(user.email||"").split("@")[0],ini=dn.split(/[\s._-]+/).filter(Boolean).map(w=>w[0]).join("").toUpperCase().slice(0,2)||"U";$("userAvatar").textContent=ini;$("userName").textContent=dn.split(" ")[0];$("userInfoBlock").innerHTML=`<div style="display:flex;align-items:center;gap:10px"><div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff">${ini}</div><div><div style="font-weight:700">${dn}</div><div class="small">${user.email||""}</div></div></div>`}
@@ -1034,27 +1000,25 @@ function goTab(tab,btn){
   if(tab==="suscripciones")renderSuscripciones();
 }
 
-// CRUD
-function addCuenta(){const n=$("newCuentaNombre").value.trim(),icon=$("newCuentaIcon").value;if(!n){toast("Nombre");return}cuentas.push({id:n.toLowerCase().replace(/\s+/g,"_")+"_"+Date.now(),nombre:n,icon});guardarDatos();poblarSelects();render();renderCuentasAdmin();toast("✔ Agregada");$("newCuentaNombre").value=""}
-function delCuenta(id){if(!confirm("¿Eliminar?"))return;cuentas=cuentas.filter(c=>c.id!==id);guardarDatos();poblarSelects();render();renderCuentasAdmin()}
+function addCuenta(){const n=$("newCuentaNombre").value.trim(),icon=$("newCuentaIcon").value;if(!n){toast("Ingresa un nombre");return}cuentas.push({id:n.toLowerCase().replace(/\s+/g,"_")+"_"+Date.now(),nombre:n,icon});guardarDatos();poblarSelects();render();renderCuentasAdmin();toast("✔ Cuenta agregada");$("newCuentaNombre").value=""}
+function delCuenta(id){if(!confirm("¿Eliminar esta cuenta?"))return;cuentas=cuentas.filter(c=>c.id!==id);guardarDatos();poblarSelects();render();renderCuentasAdmin()}
 function renderCuentasAdmin(){$("cuentasAdmin").innerHTML=cuentas.map(c=>`<div class="cuenta-card"><div class="cuenta-left"><div class="cuenta-icon">${c.icon}</div><div class="cuenta-name">${c.nombre}</div></div><button class="small-btn" onclick="delCuenta('${c.id}')">🗑️</button></div>`).join("")}
-function addCategoria(){const icon=$("newCatIcon").value.trim()||"📌",nombre=$("newCatNombre").value.trim(),tipo=$("newCatTipo").value;if(!nombre){toast("Nombre");return}categorias.push({id:"cat_"+Date.now(),nombre,icon,tipo});guardarDatos();renderCatsAdmin();poblarCat("ingreso");toast("✔ Agregada");$("newCatIcon").value=$("newCatNombre").value=""}
+function addCategoria(){const icon=$("newCatIcon").value.trim()||"📌",nombre=$("newCatNombre").value.trim(),tipo=$("newCatTipo").value;if(!nombre){toast("Ingresa un nombre");return}categorias.push({id:"cat_"+Date.now(),nombre,icon,tipo});guardarDatos();renderCatsAdmin();poblarCat("ingreso");toast("✔ Categoría agregada");$("newCatIcon").value=$("newCatNombre").value=""}
 function delCategoria(id){categorias=categorias.filter(c=>c.id!==id);guardarDatos();renderCatsAdmin();poblarCat("ingreso")}
 function renderCatsAdmin(){$("catsAdmin").innerHTML=categorias.map(c=>`<div class="cat-chip">${c.icon} ${c.nombre} <button onclick="delCategoria('${c.id}')">✕</button></div>`).join("")}
-function addGoal(){const n=$("goalName").value.trim(),v=Number($("goalValue").value);if(!n||v<=0){toast("Completa");return}goals.push({nombre:n,valor:v});guardarDatos();render();toast("🎯 Guardada");$("goalName").value=$("goalValue").value=""}
+function addGoal(){const n=$("goalName").value.trim(),v=Number($("goalValue").value);if(!n||v<=0){toast("Completa nombre y monto");return}goals.push({nombre:n,valor:v});guardarDatos();render();toast("🎯 Meta guardada");$("goalName").value=$("goalValue").value=""}
 function delGoal(i){goals.splice(i,1);guardarDatos();render()}
 function getBudgets(){return JSON.parse(localStorage.getItem(keyFor("budgets"))||"{}")}
-function addBudget(){const cat=$("budgetCatSel").value,m=parseMonto($("budgetMonto").value);if(!cat||m<=0){toast("Completa");return}const b=getBudgets();b[cat]=m;localStorage.setItem(keyFor("budgets"),JSON.stringify(b));renderBudgets();toast("✔ Guardado");$("budgetMonto").value=""}
+function addBudget(){const cat=$("budgetCatSel").value,m=parseMonto($("budgetMonto").value);if(!cat||m<=0){toast("Completa categoría y monto");return}const b=getBudgets();b[cat]=m;localStorage.setItem(keyFor("budgets"),JSON.stringify(b));renderBudgets();toast("✔ Presupuesto guardado");$("budgetMonto").value=""}
 function delBudget(cat){const b=getBudgets();delete b[cat];localStorage.setItem(keyFor("budgets"),JSON.stringify(b));renderBudgets()}
 function renderBudgets(){const el=$("budgetList"),b=getBudgets();if(!Object.keys(b).length){el.innerHTML='<div class="alert mid">Sin presupuestos</div>';return}const gr={};data.filter(x=>x.Tipo==="Gasto").forEach(x=>{gr[x.Categoría]=(gr[x.Categoría]||0)+Number(x.Monto||0)});el.innerHTML=Object.entries(b).map(([cat,lim])=>{const g=gr[cat]||0,pct=Math.min((g/lim)*100,100);return`<div style="background:rgba(255,255,255,.02);padding:10px;border-radius:10px;margin-bottom:6px"><div style="display:flex;justify-content:space-between"><span>${cat}</span><button class="small-btn" onclick="delBudget('${cat.replace(/'/g,"\\'")}')">🗑️</button></div><div class="small">${money(g)} / ${money(lim)}</div><div class="progress"><div class="bar" style="width:${pct}%"></div></div></div>`}).join("")}
-function addRecurrente(){const c=$("recCuentaSel").value,cat=$("recCatSel").value,d=$("recDesc").value.trim(),m=parseMonto($("recMonto").value);if(!d||m<=0){toast("Completa");return}const r=JSON.parse(localStorage.getItem(keyFor("recurrentes"))||"[]");r.push({id:"rec_"+Date.now(),cuenta:c,cat,desc:d,monto:m});localStorage.setItem(keyFor("recurrentes"),JSON.stringify(r));renderRecList();toast("✔ Agregado")}
+function addRecurrente(){const c=$("recCuentaSel").value,cat=$("recCatSel").value,d=$("recDesc").value.trim(),m=parseMonto($("recMonto").value);if(!d||m<=0){toast("Completa descripción y monto");return}const r=JSON.parse(localStorage.getItem(keyFor("recurrentes"))||"[]");r.push({id:"rec_"+Date.now(),cuenta:c,cat,desc:d,monto:m});localStorage.setItem(keyFor("recurrentes"),JSON.stringify(r));renderRecList();toast("✔ Recurrente agregado");$("recDesc").value=$("recMonto").value=""}
 function delRec(id){const r=JSON.parse(localStorage.getItem(keyFor("recurrentes"))||"[]").filter(x=>x.id!==id);localStorage.setItem(keyFor("recurrentes"),JSON.stringify(r));renderRecList()}
 function renderRecList(){const el=$("recList"),r=JSON.parse(localStorage.getItem(keyFor("recurrentes"))||"[]");if(!r.length){el.innerHTML='<div class="alert mid">Sin recurrentes</div>';return}el.innerHTML=r.map(x=>`<div style="display:flex;justify-content:space-between;padding:8px;background:rgba(255,255,255,.02);border-radius:10px;margin-bottom:4px"><div><b>${x.cat} · ${x.desc}</b><br><span class="small">${money(x.monto)}</span></div><button class="small-btn" onclick="delRec('${x.id}')">🗑️</button></div>`).join("")}
-async function aplicarRecurrentes(){const r=JSON.parse(localStorage.getItem(keyFor("recurrentes"))||"[]");if(!r.length){toast("Sin recurrentes");return}if(!confirm("Aplicar?"))return;const f=new Date().toISOString().slice(0,10);r.forEach(x=>{data.push({Fecha:f,Tipo:"Gasto",Cuenta:x.cuenta,Categoría:x.cat,Descripción:x.desc+" (rec)",Monto:x.monto,Contexto:contexto,ID:"rec_"+Date.now()})});guardarDatos();render();toast(`✔ ${r.length} aplicados`)}
-function limpiarCache(ctx){if(!confirm("¿Limpiar "+ctx+"?"))return;localStorage.removeItem(keyForCtx("dataCache",ctx));if(ctx===contexto){data=[];render()}toast("✔ Limpiado")}
+async function aplicarRecurrentes(){const r=JSON.parse(localStorage.getItem(keyFor("recurrentes"))||"[]");if(!r.length){toast("Sin recurrentes para aplicar");return}if(!confirm("¿Aplicar todos los recurrentes?"))return;const f=new Date().toISOString().slice(0,10);r.forEach(x=>{data.push({Fecha:f,Tipo:"Gasto",Cuenta:x.cuenta,Categoría:x.cat,Descripción:x.desc+" (rec)",Monto:x.monto,Contexto:contexto,ID:"rec_"+Date.now()})});guardarDatos();render();toast(`✔ ${r.length} recurrentes aplicados`)}
+function limpiarCache(ctx){if(!confirm("¿Limpiar datos de "+ctx+"?"))return;localStorage.removeItem(keyForCtx("dataCache",ctx));if(ctx===contexto){data=[];render()}toast("✔ Datos limpiados")}
 function exportarCSV(){const f=data.map(x=>[x.Fecha||"",x.Tipo||"",x.Categoría||"",(x.Descripción||"").replace(/,/g,";"),x.Monto||0,x.Cuenta||x.CuentaOrigen||"",x.Nota||""]);const csv="Fecha,Tipo,Categoría,Descripción,Monto,Cuenta,Nota\n"+f.map(r=>r.join(",")).join("\n");const b=new Blob(["\uFEFF"+csv]),url=URL.createObjectURL(b),a=document.createElement("a");a.href=url;a.download=`movimientos_${contexto}_${new Date().toISOString().slice(0,7)}.csv`;a.click();toast("📥 CSV exportado")}
 
-// ══ EXPONER ══
 window.goTab=goTab;window.setContexto=setContexto;window.setMode=setMode;
 window.toggleHide=toggleHide;window.setFiltro=setFiltro;window.guardar=guardar;
 window.renderLista=renderLista;window.toggleVoice=toggleVoice;window.usarFav=usarFav;
@@ -1072,9 +1036,8 @@ window.buscarPareja=buscarPareja;window.desconectarPareja=desconectarPareja;wind
 window.exportarCSV=exportarCSV;window.limpiarCache=limpiarCache;
 window.renderCoach=renderCoach;window.renderPrestamos=renderPrestamos;window.renderSuscripciones=renderSuscripciones;
 
-console.log("✅ Banking PRO AI v29 - ESTABLE");
-console.log("🔄 Datos OK | 💵 Préstamos con movimientos | 📱 Suscripciones automáticas");
-console.log("🧠 Coach con consejos | ⚙️ Reglas | 🔔 Recordatorios | 🎤 Voz corregida");
+console.log("✅ Banking PRO AI v29 - ESTABLE Y FUNCIONAL");
+console.log("🔑 Login corregido | 💵 Préstamos | 📱 Suscripciones | 🧠 Coach IA | ⚙️ Reglas | 🔔 Recordatorios");
 </script>
 </body>
 </html>
