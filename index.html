@@ -1015,7 +1015,10 @@ async function guardarTraspaso(){
   const rD={Fecha:f,Tipo:"TraspasoEntrada",Cuenta:cd,Categoría:"🔀 Traspaso",Descripción:desc+" ← "+(ctxO==="negocio"?"🏪":"👤"),Monto:m,Contexto:ctxD};
   const dO=JSON.parse(localStorage.getItem(keyForCtx("dataCache",ctxO))||"[]");dO.push(rO);localStorage.setItem(keyForCtx("dataCache",ctxO),JSON.stringify(dO));
   const dD=JSON.parse(localStorage.getItem(keyForCtx("dataCache",ctxD))||"[]");dD.push(rD);localStorage.setItem(keyForCtx("dataCache",ctxD),JSON.stringify(dD));
-  if(contexto===ctxO)data=dO;else if(contexto===ctxD)data=dD;$("syncCount")?.innerText=data.length;$("montoTrspaso").value=$("descTrspaso").value="";
+  if(contexto===ctxO)data=dO;else if(contexto===ctxD)data=dD;
+  const sc=$("syncCount");if(sc)sc.innerText=data.length;
+  $("montoTrspaso").value="";
+  $("descTrspaso").value="";
   $("fecha").value = fechaParaInput();
   render();toast("✔ Traspaso: "+money(m));
 }
