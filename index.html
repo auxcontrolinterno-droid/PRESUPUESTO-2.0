@@ -931,18 +931,28 @@ async function iniciarSesion(){const e=$("loginEmail").value.trim(),p=$("loginPa
 async function registrarUsuario(){const n=$("regName").value.trim(),e=$("regEmail").value.trim(),p=$("regPass").value;if(!n||!e||!p||p.length<6){showError("Completa (mín. 6)");return}$("loginError").classList.remove("visible");$("registerBtn").disabled=true;$("registerBtn").textContent="⏳...";try{const cred=await window.fbRegister(e,p);await window.fbUpdateProfile(cred.user,{displayName:n});try{await window.fbAddDoc(window.fbCollection(window.db,"users"),{uid:cred.user.uid,email:e,displayName:n,createdAt:fechaHoyColombia()})}catch(ex){}}catch(err){$("registerBtn").disabled=false;$("registerBtn").textContent="Crear cuenta →";showError("Error: "+err.message)}}
 async function cerrarSesion(){if(!confirm("¿Cerrar sesión?"))return;await window.fbLogout()}
 
-// ══ CORRECCIÓN: RENDER DENTRO DE CARGARTODO ══
+// ══ CORRECCIÓN: RENDER CON DELAY PARA ASEGURAR DOM ══
 function onUserChanged(user){
   if(user){
     localStorage.setItem("uid",user.uid);window.currentUser=user;
     $("loginScreen").classList.add("oculto");$("appContent").classList.add("visible");
     actualizarUI(user);
-    cargarTodo(); // Ahora cargarTodo() llama a render() internamente
+    cargarTodo();
     renderInversiones();
     renderPrestamos();
-    console.log("✅ Sesión iniciada, datos cargados");
-  }else{$("loginScreen").classList.remove("oculto");$("appContent").classList.remove("visible")}
-  $("loginBtn").disabled=false;$("registerBtn").disabled=false;$("loginBtn").textContent="Entrar →";$("registerBtn").textContent="Crear cuenta →";
+    // Forzar un segundo render después de que el DOM esté completamente listo
+    setTimeout(() => {
+      render();
+      console.log("🔄 Render forzado - DOM listo");
+    }, 300);
+  } else {
+    $("loginScreen").classList.remove("oculto");
+    $("appContent").classList.remove("visible");
+  }
+  $("loginBtn").disabled=false;
+  $("registerBtn").disabled=false;
+  $("loginBtn").textContent="Entrar →";
+  $("registerBtn").textContent="Crear cuenta →";
 }
 
 function actualizarUI(user){const dn=user.displayName||(user.email||"").split("@")[0],ini=dn.split(/[\s._-]+/).filter(Boolean).map(w=>w[0]).join("").toUpperCase().slice(0,2)||"U";$("userAvatar").textContent=ini;$("userName").textContent=dn.split(" ")[0];$("userInfoBlock").innerHTML='<div style="display:flex;align-items:center;gap:10px"><div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff">'+ini+'</div><div><div style="font-weight:700">'+dn+'</div><div class="small">'+(user.email||"")+'</div></div></div>';}
@@ -957,10 +967,8 @@ function cargarTodo(){
   inversiones=JSON.parse(localStorage.getItem("inversiones")||"[]");prestamos=JSON.parse(localStorage.getItem("prestamos")||"[]");
   $("syncCount").innerText=data.length;$("pendingCount").innerText=pending.length;
   poblarSelects();actualizarLabels();
-  
-  // ══ RENDER SE LLAMA AQUÍ DESPUÉS DE CARGAR TODO ══
   render();
-  console.log("✅ Datos cargados y renderizados:", data.length, "movimientos");
+  console.log("✅ Datos cargados:", data.length, "movimientos");
 }
 
 function poblarSelects(){
@@ -1081,7 +1089,6 @@ function render(){
 
 function usarFav(cat,des,monto,cuenta){setMode("gasto",document.querySelectorAll(".mode-tab")[1]);$("categoria").value=cat;$("descripcion").value=des;$("montoInput").value=Number(monto).toLocaleString("es-CO");if(cuenta)$("cuentaSel").value=cuenta;toast("Cargado")}
 
-// ═══════════════ LISTA ═══════════════
 function setFiltro(tipo,btn){filtroTipo=tipo;document.querySelectorAll(".filter-chip").forEach(c=>c.classList.remove("active"));btn.classList.add("active");renderLista()}
 function renderLista(){
   const busq=($("searchInput")?.value||"").toLowerCase().trim(),cf=$("filterCuentaSel")?.value||"",orden=$("filterOrden")?.value||"fecha_desc";
@@ -1096,16 +1103,11 @@ function renderLista(){
 async function borrar(id){if(!confirm("¿Eliminar?"))return;data=data.filter(d=>String(d.ID)!==String(id));guardarDatos();render();toast("🗑️ Eliminado")}
 function abrirEditar(id){const x=data.find(d=>String(d.ID)===String(id));if(!x||x.Tipo==="Transferencia"||x.Tipo?.includes("Traspaso")){toast("No editable");return}editandoId=String(id);const ec=$("editCategoria");ec.innerHTML="";const modo=x.Tipo==="Ingreso"?"ingreso":"gasto";categorias.filter(c=>c.tipo==="ambos"||c.tipo===modo).forEach(c=>{const o=document.createElement("option");o.value=c.icon+" "+c.nombre;o.textContent=c.icon+" "+c.nombre;if(o.value===x.Categoría)o.selected=true;ec.appendChild(o)});const ecu=$("editCuenta");ecu.innerHTML="";cuentas.forEach(c=>{const o=document.createElement("option");o.value=c.id;o.textContent=c.icon+" "+c.nombre;if(c.id===x.Cuenta)o.selected=true;ecu.appendChild(o)});$("editFecha").value=x.Fecha||"";$("editDescripcion").value=x.Descripción||"";$("editMonto").value=Number(x.Monto||0).toLocaleString("es-CO");$("editNota").value=x.Nota||"";$("modalEditar").classList.add("open")}
 function confirmarEdicion(){const x=data.find(d=>String(d.ID)===String(editandoId));if(!x){$("modalEditar").classList.remove("open");return}const m=parseMonto($("editMonto").value);if(!$("editDescripcion").value.trim()||m<=0){toast("Completa");return}x.Fecha=$("editFecha").value;x.Categoría=$("editCategoria").value;x.Descripción=$("editDescripcion").value.trim();x.Monto=m;x.Cuenta=$("editCuenta").value;x.Nota=$("editNota").value.trim();guardarDatos();$("modalEditar").classList.remove("open");render();editandoId=null;toast("✔ Actualizado")}
-
-// ═══════════════ HISTORIAL ═══════════════
 function renderHistorial(){if(!historial.length){$("historialCard").style.display="none";return}$("historialCard").style.display="block";$("historialLista").innerHTML=historial.map((m,i)=>`<div class="item" style="cursor:pointer" onclick="toggleMes(${i})"><div style="display:flex;justify-content:space-between"><span style="font-weight:700">📅 ${m.label}</span><span id="ma${i}">▶</span></div><div class="small">Ing: ${money(m.ing)} · Gas: ${money(m.gas)} · Bal: ${money(m.ing-m.gas)}</div><div style="display:none;margin-top:6px" id="mb${i}">${m.movimientos?.length?m.movimientos.map(x=>`<div>${x.Categoría||""} - ${x.Descripción||""}: ${money(x.Monto)}</div>`).join(""):'<div class="small">Sin datos</div>'}</div></div>`).join("")}
 function toggleMes(i){const b=$("mb"+i),a=$("ma"+i);b.style.display=b.style.display==="none"?"block":"none";a.textContent=b.style.display==="none"?"▶":"▼"}
-
-// ═══════════════ CIERRE MES ═══════════════
 function abrirCierre(){const s=calcSaldos(),ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gas=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0);let h=`<div class="grid2" style="margin-bottom:8px"><div class="kpi"><span>Ingresos</span><strong style="color:var(--ok)">${money(ing)}</strong></div><div class="kpi"><span>Gastos</span><strong style="color:var(--bad)">${money(gas)}</strong></div></div>`;cuentas.forEach(c=>{h+=`<div style="font-size:12px;margin-bottom:3px">${c.icon} ${c.nombre}: ${money(s[c.id]||0)}</div>`});$("modalResumen").innerHTML=h;$("modalCierre").classList.add("open")}
 function confirmarCierre(){const s=calcSaldos(),ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gas=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0),label=hoyColombia().toLocaleDateString("es-CO",{month:"long",year:"numeric"});historial.unshift({label,ing,gas,saldosCierre:{...s},movimientos:[...data]});localStorage.setItem(keyFor("historialMeses"),JSON.stringify(historial));cuentas=cuentas.map(c=>({...c,saldoInicial:s[c.id]||0}));guardarDatos();data=[];pending=[];localStorage.setItem(keyFor("dataCache"),"[]");localStorage.setItem(keyFor("pendingQueue"),"[]");$("syncCount").innerText=0;$("pendingCount").innerText=0;$("modalCierre").classList.remove("open");render();toast("✔ Mes cerrado")}
 
-// ═══════════════ GRÁFICOS ═══════════════
 function renderCharts(){
   const saldos=calcSaldos();let ing=0,gas=0,cats={};data.forEach(x=>{const m=Number(x.Monto)||0;if(x.Tipo==="Ingreso")ing+=m;else if(x.Tipo==="Gasto"){gas+=m;cats[x.Categoría]=(cats[x.Categoría]||0)+m}});
   [c1,c2,c3,c4,c5,c6].forEach(c=>{if(c)c.destroy()});
@@ -1127,7 +1129,6 @@ function renderComparativa(){
   el.innerHTML=meses.map(m=>`<div style="margin-bottom:10px;padding:10px;background:var(--cardBg);border-radius:12px;border:1px solid ${m.actual?"var(--primary)":"var(--line)"}"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-weight:700;font-size:12px">${m.label}${m.actual?' <span class="badge">actual</span>':""}</span><span style="font-size:11px;color:${m.ing-m.gas>=0?"var(--ok)":"var(--bad)"}">Bal: ${money(m.ing-m.gas)}</span></div><div class="compare-bar-wrap"><div class="compare-label">💰 Ing: ${money(m.ing)}</div><div class="compare-bar-bg"><div class="compare-bar-fill" style="width:${(m.ing/maxV*100).toFixed(1)}%;background:var(--ok)"></div></div></div><div class="compare-bar-wrap"><div class="compare-label">💸 Gas: ${money(m.gas)}</div><div class="compare-bar-bg"><div class="compare-bar-fill" style="width:${(m.gas/maxV*100).toFixed(1)}%;background:var(--bad)"></div></div></div></div>`).join("");
 }
 
-// ═══════════════ INVERSIONES Y PRÉSTAMOS ═══════════════
 function mostrarFormInversion(){$("formInversion").style.display=$("formInversion").style.display==="none"?"block":"none"}
 function agregarInversion(){
   const tipo=$("invTipo").value,nombre=$("invNombre").value.trim(),monto=parseFloat(($("invMonto").value||"0").replace(/\./g,"").replace(",","."))||0,rent=parseFloat(($("invRentabilidad").value||"0").replace(",","."))||0;
@@ -1176,7 +1177,6 @@ function renderPrestamos(){
   $("prestamosResumen").innerHTML=`<div class="grid2"><div class="kpi"><span>Debes</span><strong style="color:var(--bad)">${money(totalRec)}</strong></div><div class="kpi"><span>Te deben</span><strong style="color:var(--ok)">${money(totalOt)}</strong></div><div class="kpi"><span>Balance neto</span><strong style="color:${totalOt-totalRec>=0?'var(--ok)':'var(--bad)'}">${money(totalOt-totalRec)}</strong></div><div class="kpi"><span>⚠️ Atrasados</span><strong style="color:var(--bad)">${prestamos.filter(p=>p.estado==="atrasado").length}</strong></div></div>`;
 }
 
-// ═══════════════ NAVEGACIÓN ═══════════════
 function goTab(tab,btn){
   document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
   $("tab-"+tab).classList.add("active");
@@ -1199,7 +1199,6 @@ function switchDashTab(tab,btn){
 }
 function setMode(mode,btn){modoActual=mode;document.querySelectorAll(".mode-tab").forEach(t=>t.classList.remove("active"));btn.classList.add("active");document.querySelectorAll(".form-section").forEach(s=>s.classList.remove("active"));if(mode==="transferencia")$("fs-transfer").classList.add("active");else if(mode==="traspaso"){$("fs-traspaso").classList.add("active");poblarTraspaso()}else{$("fs-normal").classList.add("active");poblarCat(mode==="ingreso"?"ingreso":"gasto")}}
 
-// ═══════════════ SETTINGS ═══════════════
 function toggleHide(){hidden=!hidden;localStorage.setItem("hideMoney",hidden?"1":"0");render()}
 function addCuenta(){const n=$("newCuentaNombre").value.trim(),icon=$("newCuentaIcon").value;if(!n){toast("Nombre");return}cuentas.push({id:n.toLowerCase().replace(/\s+/g,"_")+"_"+Date.now(),nombre:n,icon,saldoInicial:0});guardarDatos();$("newCuentaNombre").value="";poblarSelects();render();renderCuentasAdmin();toast("✔ Agregada")}
 function delCuenta(id){if(!confirm("¿Eliminar?"))return;cuentas=cuentas.filter(c=>c.id!==id);guardarDatos();poblarSelects();render();renderCuentasAdmin()}
@@ -1229,7 +1228,6 @@ function exportarCSV(){const f=data.map(x=>[x.Fecha||"",x.Tipo||"",x.Categoría|
 function diag(){$("diagContent").innerHTML="✅ Firebase: "+(window.db?"OK":"NO")+"<br>👤 "+(window.auth?.currentUser?.email||"Sin sesión")+"<br>💾 "+data.length+" movimientos<br>📡 "+(navigator.onLine?"Online":"Offline")+"<br>🎨 Tema: "+temaActual+"<br>📈 Inv: "+inversiones.length+"<br>💳 Prest: "+prestamos.length+"<br>📅 Hoy: "+fechaHoyColombia()}
 function aplicarTema(tema){temaActual=tema;localStorage.setItem("tema",tema);document.body.className=document.body.className.replace(/tema-\w+/g,"");document.body.classList.add("tema-"+tema);document.querySelectorAll(".tema-preview").forEach(t=>t.classList.remove("activo"));const p=$("tema"+tema.charAt(0).toUpperCase()+tema.slice(1));if(p)p.classList.add("activo");if(contexto==="negocio")document.body.classList.add("modo-negocio");toast("🎨 Tema "+tema)}
 
-// ═══════════════ EXPORTACIONES GLOBALES ═══════════════
 window.setContexto=setContexto;window.toggleHide=toggleHide;
 window.goTab=goTab;window.switchDashTab=switchDashTab;window.setMode=setMode;
 window.guardar=guardar;window.renderLista=renderLista;window.setFiltro=setFiltro;
@@ -1247,8 +1245,9 @@ window.toggleMes=toggleMes;window.exportarCSV=exportarCSV;window.limpiarCache=li
 window.aplicarTema=aplicarTema;window.toggleNotiDiaria=toggleNotiDiaria;window.cambiarHora=cambiarHora;window.probarNoti=probarNoti;
 
 console.log("✅ Banking PRO AI v27 - Bugs corregidos");
-console.log("📅 Fecha actual Colombia:", fechaHoyColombia());
-console.log("🔄 Datos cargan automáticamente al iniciar sesión");
+console.log("📅 Fecha Colombia:", fechaHoyColombia());
+console.log("🔄 Datos cargan automáticamente + render forzado a 300ms");
 </script>
 </body>
 </html>
+```
