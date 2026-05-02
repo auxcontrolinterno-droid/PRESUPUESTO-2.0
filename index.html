@@ -5,7 +5,7 @@
   <meta name="theme-color" content="#0f172a">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-  <title>Banking PRO AI v29 - Coach Potente</title>
+  <title>Banking PRO AI v30 - Historial por Meses</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script type="module">
@@ -236,7 +236,7 @@
 <div id="appContent">
   <div class="header">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-      <div><div class="small">Banking PRO AI v29 <span style="color:var(--ok)">●</span></div><div class="small" id="today"></div></div>
+      <div><div class="small">Banking PRO AI v30 <span style="color:var(--ok)">●</span></div><div class="small" id="today"></div></div>
       <div class="user-chip" onclick="goTab('settings')"><div class="user-chip-avatar" id="userAvatar">?</div><div class="user-chip-name" id="userName">—</div></div>
     </div>
     <div class="ctx-wrap">
@@ -336,6 +336,10 @@
       <button class="primary" onclick="abrirCierre()">🔒 Cerrar mes manualmente</button>
       <div class="small" style="margin-top:4px">Al cerrar el mes se archivará todo y se limpiará Firebase</div>
     </div>
+    <div class="card"><div class="title">📆 Historial de Meses</div>
+      <button class="primary" onclick="verHistorialCompleto()">📅 Ver todos los meses cerrados</button>
+      <div class="small" style="margin-top:4px">Consulta el historial de todos los meses anteriores</div>
+    </div>
     <div class="card"><div class="title">🗂️ Administrar historial</div>
       <div id="historialAdminLista"></div>
     </div>
@@ -359,9 +363,10 @@
 <div class="modal-overlay" id="modalEditar"><div class="modal"><h3>✏️ Editar movimiento</h3><input type="date" id="editFecha"><select id="editCategoria"></select><input type="text" id="editDescripcion" placeholder="Descripción"><input type="text" id="editMonto" placeholder="Monto"><select id="editCuenta"></select><input type="text" id="editNota" placeholder="Nota"><div class="modal-btns"><button class="secondary" onclick="document.getElementById('modalEditar').classList.remove('open')">Cancelar</button><button class="primary" onclick="confirmarEdicion()">✔ Guardar</button></div></div></div>
 
 <script>
-// ═══════════════ BANKING PRO AI v29 - SCRIPT PRINCIPAL ═══════════════
+// ═══════════════ BANKING PRO AI v30 - COMPLETO CON HISTORIAL POR MESES ═══════════════
 const $=id=>document.getElementById(id);
 const ACC_COLORS=["#3b82f6","#22c55e","#f59e0b","#ec4899","#a78bfa","#14b8a6"];
+
 function hoyColombia(){const a=new Date();return new Date(a.getFullYear(),a.getMonth(),a.getDate())}
 function fechaHoyColombia(){const a=new Date();return a.getFullYear()+"-"+String(a.getMonth()+1).padStart(2,"0")+"-"+String(a.getDate()).padStart(2,"0")}
 function fechaParaInput(){const a=new Date();return a.getFullYear()+"-"+String(a.getMonth()+1).padStart(2,"0")+"-"+String(a.getDate()).padStart(2,"0")}
@@ -372,7 +377,6 @@ let c1,c2,c3,c4,c5,c6,cInv,filtroTipo="todos",editandoId=null,recognition=null,i
 let inversiones=JSON.parse(localStorage.getItem("inversiones")||"[]"),temaActual=localStorage.getItem("tema")||"dark";
 let prestamos=JSON.parse(localStorage.getItem("prestamos")||"[]"),prestamoFiltro="todos";
 let syncInProgress=false;
-
 function uid(){return window.currentUser?.uid||localStorage.getItem("uid")||"guest"}
 function keyFor(b){const s=contexto==="negocio"?"Negocio":"";return uid()+"_"+s+b}
 function keyForCtx(b,c){const s=c==="negocio"?"Negocio":"";return uid()+"_"+s+b}
@@ -558,6 +562,26 @@ async function cargarDesdeFirebase(){
   }
 }
 
+// ═══ CARGA DE HISTORIAL DESDE FIREBASE ═══
+async function cargarHistorialDesdeFirebase() {
+    if (!window.db || !window.auth?.currentUser) return;
+    try {
+        const colHistorico = "historial_mensual";
+        const snapshot = await window.fbGetDocs(window.fbCollection(window.db, "users", window.auth.currentUser.uid, colHistorico));
+        const historialFirebase = [];
+        snapshot.forEach(doc => historialFirebase.push({ ...doc.data(), id: doc.id }));
+        
+        if (historialFirebase.length > 0) {
+            const existingIds = new Set(historial.map(h => h.id));
+            const nuevos = historialFirebase.filter(h => !existingIds.has(h.id));
+            historial.push(...nuevos);
+            historial.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            localStorage.setItem(keyFor("historialMeses"), JSON.stringify(historial));
+            console.log("📚 Historial cargado desde Firebase:", nuevos.length, "nuevos meses");
+        }
+    } catch (e) { console.error("Error cargando historial:", e); }
+}
+
 function actualizarStatusBar(){
   const sb=$("statusBar");
   if(!sb)return;
@@ -624,6 +648,8 @@ async function registrarUsuario(){
   try{
     const cred=await window.fbRegister(e,p);
     await window.fbUpdateProfile(cred.user,{displayName:n});
+    try{await window.fbAddDoc(window.fbCollection(window.db,"users"),{uid:cred.user.uid,email:e,displayName:n,createdAt:fechaHoyColombia()});}
+    catch(ex){}
   }catch(err){$("registerBtn").disabled=false;$("registerBtn").textContent="Crear cuenta →";showError("Error: "+err.message);}
 }
 
@@ -665,6 +691,7 @@ async function cargarTodo(){
   const defCat={personal:[{id:"ingreso",nombre:"Ingreso",icon:"💰",tipo:"ingreso"},{id:"comida",nombre:"Comida",icon:"🍔",tipo:"gasto"},{id:"vivienda",nombre:"Vivienda",icon:"🏠",tipo:"gasto"},{id:"transporte",nombre:"Transporte",icon:"🚗",tipo:"gasto"},{id:"servicios",nombre:"Servicios",icon:"💡",tipo:"gasto"},{id:"entretenimiento",nombre:"Entretenimiento",icon:"🎮",tipo:"gasto"},{id:"ahorro",nombre:"Ahorro",icon:"🏦",tipo:"ambos"}],negocio:[{id:"ventas",nombre:"Ventas",icon:"💰",tipo:"ingreso"},{id:"inventario",nombre:"Inventario",icon:"📦",tipo:"gasto"},{id:"nomina",nombre:"Nómina",icon:"👷",tipo:"gasto"},{id:"servicios_pub",nombre:"Servicios",icon:"💡",tipo:"gasto"}]};
   categorias=JSON.parse(localStorage.getItem(keyFor("categorias"))||JSON.stringify(defCat[contexto]||defCat.personal));
   await cargarDesdeFirebase();
+  await cargarHistorialDesdeFirebase();
   await actualizarContadorPendientes();
   historial=JSON.parse(localStorage.getItem(keyFor("historialMeses"))||"[]");
   goals=JSON.parse(localStorage.getItem(keyFor("goals"))||"[]");
@@ -825,7 +852,7 @@ function guardarDatos(){
   localStorage.setItem("inversiones",JSON.stringify(inversiones));
 }
 
-// ═══════════════ COACH FINANCIERO V3 MEJORADO ═══════════════
+// ═══════════════ COACH FINANCIERO V3 ═══════════════
 function renderCoach(ing, gas, ah, cats, saldos) {
     const bal = ing - gas;
     const hoy = hoyColombia();
@@ -1071,41 +1098,177 @@ async function confirmarEdicion(){
 function renderHistorial(){if(!historial.length){$("historialCard").style.display="none";return}$("historialCard").style.display="block";$("historialLista").innerHTML=historial.map((m,i)=>`<div class="item" style="cursor:pointer" onclick="toggleMes(${i})"><div style="display:flex;justify-content:space-between"><span style="font-weight:700">📅 ${m.label}</span><span id="ma${i}">▶</span></div><div class="small">Ing: ${money(m.ing)} · Gas: ${money(m.gas)} · Bal: ${money(m.ing-m.gas)}</div><div style="display:none;margin-top:4px" id="mb${i}">${m.movimientos?.slice(0,3).map(x=>`<div>${x.Categoría||""} - ${x.Descripción||""}: ${money(x.Monto)}</div>`).join("")}</div></div>`).join("")}
 function toggleMes(i){const b=$("mb"+i),a=$("ma"+i);b.style.display=b.style.display==="none"?"block":"none";a.textContent=b.style.display==="none"?"▶":"▼";}
 function abrirCierre(){const s=calcSaldos(),ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gas=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0);let h=`<div class="grid2" style="margin-bottom:8px"><div class="kpi"><span>Ingresos</span><strong style="color:var(--ok)">${money(ing)}</strong></div><div class="kpi"><span>Gastos</span><strong style="color:var(--bad)">${money(gas)}</strong></div></div>`;cuentas.forEach(c=>{h+=`<div style="font-size:11px;margin-bottom:3px">${c.icon} ${c.nombre}: ${money(s[c.id]||0)}</div>`});$("modalResumen").innerHTML=h;$("modalCierre").classList.add("open");}
-async function confirmarCierre(){
-  const s=calcSaldos(),ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gas=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0),label=hoyColombia().toLocaleDateString("es-CO",{month:"long",year:"numeric"});
-  historial.unshift({label,ing,gas,saldosCierre:{...s},movimientos:[...data]});
-  localStorage.setItem(keyFor("historialMeses"),JSON.stringify(historial));
-  cuentas=cuentas.map(c=>({...c,saldoInicial:s[c.id]||0}));
-  localStorage.setItem(keyFor("cuentas"),JSON.stringify(cuentas));
-  if(window.db&&window.auth?.currentUser){
-    const colNamePersonal="movimientos_personal",colNameNegocio="movimientos_negocio";
-    try{
-      const snapPersonal=await window.fbGetDocs(window.fbCollection(window.db,"users",window.auth.currentUser.uid,colNamePersonal));
-      const snapNegocio=await window.fbGetDocs(window.fbCollection(window.db,"users",window.auth.currentUser.uid,colNameNegocio));
-      for(const doc of snapPersonal.docs) await window.fbDeleteDoc(window.fbDoc(window.db,"users",window.auth.currentUser.uid,colNamePersonal,doc.id));
-      for(const doc of snapNegocio.docs) await window.fbDeleteDoc(window.fbDoc(window.db,"users",window.auth.currentUser.uid,colNameNegocio,doc.id));
-    }catch(e){}
-  }
-  data=[]; await limpiarCola(); localStorage.setItem(keyFor("dataCache"),"[]"); guardarDatos();
-  if($("syncCount"))$("syncCount").innerText=0;
-  $("modalCierre").classList.remove("open"); render(); toast("✔ Mes cerrado: "+label);
+
+// ═══ NUEVO: CIERRE DE MES CON ARCHIVO POR MES ═══
+async function confirmarCierre() {
+    const s = calcSaldos();
+    const ing = data.filter(x => x.Tipo === "Ingreso").reduce((a, x) => a + Number(x.Monto || 0), 0);
+    const gas = data.filter(x => x.Tipo === "Gasto").reduce((a, x) => a + Number(x.Monto || 0), 0);
+    
+    const hoy = hoyColombia();
+    const label = hoy.toLocaleDateString("es-CO", { month: "long", year: "numeric" });
+    const mesKey = hoy.getFullYear() + "-" + String(hoy.getMonth() + 1).padStart(2, "0");
+    
+    const mesCerrado = {
+        id: mesKey,
+        label: label,
+        fecha: fechaHoyColombia(),
+        ing: ing,
+        gas: gas,
+        balance: ing - gas,
+        saldosCierre: { ...s },
+        movimientos: [...data],
+        cuentas: cuentas.map(c => ({ id: c.id, nombre: c.nombre, icon: c.icon, saldoFinal: s[c.id] || 0 })),
+        createdAt: Date.now()
+    };
+    
+    // Guardar en historial local
+    historial.unshift(mesCerrado);
+    localStorage.setItem(keyFor("historialMeses"), JSON.stringify(historial));
+    
+    // Guardar en Firebase
+    if (window.db && window.auth?.currentUser) {
+        try {
+            const colHistorico = "historial_mensual";
+            const historicoRef = window.fbDoc(window.db, "users", window.auth.currentUser.uid, colHistorico, mesKey);
+            await window.fbUpdateDoc(historicoRef, mesCerrado).catch(async () => {
+                await window.fbAddDoc(window.fbCollection(window.db, "users", window.auth.currentUser.uid, colHistorico), mesCerrado);
+            });
+            console.log("✅ Mes guardado en Firebase:", label);
+        } catch (e) { console.error("Error guardando en Firebase:", e); }
+    }
+    
+    // Actualizar saldos iniciales
+    cuentas = cuentas.map(c => ({ ...c, saldoInicial: s[c.id] || 0 }));
+    localStorage.setItem(keyFor("cuentas"), JSON.stringify(cuentas));
+    
+    // Limpiar movimientos actuales
+    if (window.db && window.auth?.currentUser) {
+        const colNamePersonal = "movimientos_personal";
+        const colNameNegocio = "movimientos_negocio";
+        try {
+            const snapPersonal = await window.fbGetDocs(window.fbCollection(window.db, "users", window.auth.currentUser.uid, colNamePersonal));
+            const snapNegocio = await window.fbGetDocs(window.fbCollection(window.db, "users", window.auth.currentUser.uid, colNameNegocio));
+            for (const doc of snapPersonal.docs) await window.fbDeleteDoc(window.fbDoc(window.db, "users", window.auth.currentUser.uid, colNamePersonal, doc.id));
+            for (const doc of snapNegocio.docs) await window.fbDeleteDoc(window.fbDoc(window.db, "users", window.auth.currentUser.uid, colNameNegocio, doc.id));
+            console.log("🗑️ Movimientos del mes eliminados de Firebase");
+        } catch (e) { console.error("Error limpiando movimientos:", e); }
+    }
+    
+    // Resetear datos locales
+    data = [];
+    await limpiarCola();
+    localStorage.setItem(keyFor("dataCache"), "[]");
+    guardarDatos();
+    
+    const sc = $("syncCount");
+    if (sc) sc.innerText = 0;
+    $("modalCierre").classList.remove("open");
+    render();
+    toast("✔ Mes cerrado: " + label + " - Historial guardado");
 }
 
-function renderCharts(){ /* Versión simplificada para mantener funcionalidad */ 
-  const saldos=calcSaldos(); let ing=0,gas=0,cats={};
-  data.forEach(x=>{const m=Number(x.Monto)||0;if(x.Tipo==="Ingreso")ing+=m;else if(x.Tipo==="Gasto"){gas+=m;cats[x.Categoría]=(cats[x.Categoría]||0)+m}});
-  [c1,c2,c3,c4,c5,c6].forEach(c=>{if(c)c.destroy()});
-  const ctx6=$("chart6");if(ctx6&&cuentas.length)c6=new Chart(ctx6,{type:"bar",data:{labels:cuentas.map(c=>c.icon+" "+c.nombre),datasets:[{data:cuentas.map(c=>saldos[c.id]||0),backgroundColor:cuentas.map((_,i)=>ACC_COLORS[i%ACC_COLORS.length])}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:false}}}});
-  const ctx1=$("chart1");if(ctx1&&Object.keys(cats).length)c1=new Chart(ctx1,{type:"doughnut",data:{labels:Object.keys(cats),datasets:[{data:Object.values(cats)}]}});
-  const ctx2=$("chart2");if(ctx2)c2=new Chart(ctx2,{type:"bar",data:{labels:["Ingresos","Gastos"],datasets:[{data:[ing,gas],backgroundColor:["#22c55e","#ef4444"]}]}});
-  const dias={};let s=0;[...data].sort((a,b)=>new Date(a.Fecha)-new Date(b.Fecha)).forEach(x=>{const m=Number(x.Monto)||0;if(x.Tipo==="Ingreso")s+=m;else if(x.Tipo==="Gasto")s-=m;dias[x.Fecha]=s});
-  const ctx3=$("chart3");if(ctx3&&Object.keys(dias).length)c3=new Chart(ctx3,{type:"line",data:{labels:Object.keys(dias),datasets:[{data:Object.values(dias),fill:false,tension:0.3,borderColor:"#3b82f6",pointRadius:2}]}});
-  const w=[0,0,0,0,0,0,0];data.forEach(x=>{if(x.Tipo==="Gasto")w[new Date(x.Fecha+"T00:00:00").getDay()]+=Number(x.Monto)||0});
-  const ctx4=$("chart4");if(ctx4)c4=new Chart(ctx4,{type:"bar",data:{labels:["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"],datasets:[{data:w,backgroundColor:"#f59e0b"}]}});
-  const fm={};data.forEach(x=>{if(x.Tipo==="Gasto")fm[x.Descripción]=(fm[x.Descripción]||0)+(Number(x.Monto)||0)});
-  const tf=Object.entries(fm).sort((a,b)=>b[1]-a[1]).slice(0,5);
-  const ctx5=$("chart5");if(ctx5&&tf.length)c5=new Chart(ctx5,{type:"bar",data:{labels:tf.map(x=>x[0].length>20?x[0].slice(0,18)+"…":x[0]),datasets:[{data:tf.map(x=>x[1]),backgroundColor:"#ef4444"}]},options:{indexAxis:"y"}});
-  renderComparativa();
+// ═══ FUNCIONES PARA VER HISTORIAL COMPLETO ═══
+function verHistorialCompleto() {
+    if (historial.length === 0) {
+        toast("📭 No hay meses cerrados aún");
+        return;
+    }
+    
+    let html = `<div class="modal" style="max-width: 500px;"><h3>📆 Historial de Meses Cerrados</h3><div style="max-height: 60vh; overflow-y: auto;">`;
+    historial.forEach((mes, i) => {
+        html += `
+            <div class="item" style="margin-bottom: 8px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="font-weight: 700;">📅 ${mes.label}</span>
+                    <span class="small">${mes.fecha || ''}</span>
+                </div>
+                <div class="grid2" style="margin-top: 6px;">
+                    <div class="kpi"><span>💵 Ingresos</span><strong style="color: var(--ok)">${money(mes.ing)}</strong></div>
+                    <div class="kpi"><span>💸 Gastos</span><strong style="color: var(--bad)">${money(mes.gas)}</strong></div>
+                    <div class="kpi"><span>⚖️ Balance</span><strong>${money(mes.balance)}</strong></div>
+                    <div class="kpi"><span>📊 Movimientos</span><strong>${mes.movimientos?.length || 0}</strong></div>
+                </div>
+                <button class="small-btn" style="margin-top: 6px;" onclick="verDetalleMes(${i})">🔍 Ver detalles</button>
+                <button class="small-btn warn-btn" style="margin-top: 6px;" onclick="exportarMes(${i})">📥 Exportar CSV</button>
+            </div>
+        `;
+    });
+    html += `</div><div class="modal-btns" style="margin-top: 12px;"><button class="primary" onclick="this.closest('.modal-overlay').classList.remove('open')">Cerrar</button></div></div>`;
+    
+    let modal = document.getElementById('modalHistorial');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'modalHistorial';
+        modal.className = 'modal-overlay';
+        document.body.appendChild(modal);
+    }
+    modal.innerHTML = html;
+    modal.classList.add('open');
+}
+
+function verDetalleMes(index) {
+    const mes = historial[index];
+    if (!mes) return;
+    
+    let html = `
+        <div class="modal">
+            <h3>📅 ${mes.label}</h3>
+            <div class="grid2" style="margin-bottom: 12px;">
+                <div class="kpi"><span>💰 Ingresos</span><strong style="color:var(--ok)">${money(mes.ing)}</strong></div>
+                <div class="kpi"><span>💸 Gastos</span><strong style="color:var(--bad)">${money(mes.gas)}</strong></div>
+                <div class="kpi"><span>⚖️ Balance</span><strong>${money(mes.balance)}</strong></div>
+                <div class="kpi"><span>🏦 Ahorro</span><strong>${mes.ing > 0 ? ((mes.ing - mes.gas) / mes.ing * 100).toFixed(0) : 0}%</strong></div>
+            </div>
+            <div class="title" style="font-size: 14px;">🏦 Saldos de cierre</div>
+            ${mes.cuentas?.map(c => `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--line);"><span>${c.icon} ${c.nombre}</span><span class="${c.saldoFinal >= 0 ? 'positive' : 'negative'}">${money(c.saldoFinal)}</span></div>`).join('') || ''}
+            <div class="modal-btns" style="margin-top: 12px;">
+                <button class="secondary" onclick="this.closest('.modal-overlay').classList.remove('open')">Cerrar</button>
+            </div>
+        </div>
+    `;
+    
+    let modal = document.getElementById('modalDetalleMes');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'modalDetalleMes';
+        modal.className = 'modal-overlay';
+        document.body.appendChild(modal);
+    }
+    modal.innerHTML = html;
+    modal.classList.add('open');
+}
+
+function exportarMes(index) {
+    const mes = historial[index];
+    if (!mes) return;
+    
+    const dataExport = mes.movimientos.map(x => [x.Fecha || "", x.Tipo || "", x.Categoría || "", x.Descripción || "", x.Monto || 0, x.Cuenta || ""]);
+    const csv = "Fecha,Tipo,Categoría,Descripción,Monto,Cuenta\n" + dataExport.map(r => r.join(",")).join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `mes_${mes.label.replace(/\s/g, "_")}.csv`;
+    a.click();
+    toast(`📥 Exportado: ${mes.label}`);
+}
+
+function renderCharts(){ 
+    const saldos=calcSaldos(); let ing=0,gas=0,cats={};
+    data.forEach(x=>{const m=Number(x.Monto)||0;if(x.Tipo==="Ingreso")ing+=m;else if(x.Tipo==="Gasto"){gas+=m;cats[x.Categoría]=(cats[x.Categoría]||0)+m}});
+    [c1,c2,c3,c4,c5,c6].forEach(c=>{if(c)c.destroy()});
+    const ctx6=$("chart6");if(ctx6&&cuentas.length)c6=new Chart(ctx6,{type:"bar",data:{labels:cuentas.map(c=>c.icon+" "+c.nombre),datasets:[{data:cuentas.map(c=>saldos[c.id]||0),backgroundColor:cuentas.map((_,i)=>ACC_COLORS[i%ACC_COLORS.length])}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:false}}}});
+    const ctx1=$("chart1");if(ctx1&&Object.keys(cats).length)c1=new Chart(ctx1,{type:"doughnut",data:{labels:Object.keys(cats),datasets:[{data:Object.values(cats)}]}});
+    const ctx2=$("chart2");if(ctx2)c2=new Chart(ctx2,{type:"bar",data:{labels:["Ingresos","Gastos"],datasets:[{data:[ing,gas],backgroundColor:["#22c55e","#ef4444"]}]}});
+    const dias={};let s=0;[...data].sort((a,b)=>new Date(a.Fecha)-new Date(b.Fecha)).forEach(x=>{const m=Number(x.Monto)||0;if(x.Tipo==="Ingreso")s+=m;else if(x.Tipo==="Gasto")s-=m;dias[x.Fecha]=s});
+    const ctx3=$("chart3");if(ctx3&&Object.keys(dias).length)c3=new Chart(ctx3,{type:"line",data:{labels:Object.keys(dias),datasets:[{data:Object.values(dias),fill:false,tension:0.3,borderColor:"#3b82f6",pointRadius:2}]}});
+    const w=[0,0,0,0,0,0,0];data.forEach(x=>{if(x.Tipo==="Gasto")w[new Date(x.Fecha+"T00:00:00").getDay()]+=Number(x.Monto)||0});
+    const ctx4=$("chart4");if(ctx4)c4=new Chart(ctx4,{type:"bar",data:{labels:["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"],datasets:[{data:w,backgroundColor:"#f59e0b"}]}});
+    const fm={};data.forEach(x=>{if(x.Tipo==="Gasto")fm[x.Descripción]=(fm[x.Descripción]||0)+(Number(x.Monto)||0)});
+    const tf=Object.entries(fm).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    const ctx5=$("chart5");if(ctx5&&tf.length)c5=new Chart(ctx5,{type:"bar",data:{labels:tf.map(x=>x[0].length>20?x[0].slice(0,18)+"…":x[0]),datasets:[{data:tf.map(x=>x[1]),backgroundColor:"#ef4444"}]},options:{indexAxis:"y"}});
+    renderComparativa();
 }
 function renderComparativa(){const el=$("compareContent");if(!el)return;const meses=[];historial.slice(0,5).forEach(m=>meses.push({label:m.label,ing:m.ing,gas:m.gas}));const ingA=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gasA=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0);meses.unshift({label:"Este mes",ing:ingA,gas:gasA,actual:true});const maxV=Math.max(...meses.map(m=>Math.max(m.ing,m.gas)),1);el.innerHTML=meses.map(m=>`<div style="margin-bottom:10px;padding:10px;background:var(--cardBg);border-radius:12px;border:1px solid ${m.actual?"var(--primary)":"var(--line)"}"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-weight:700;font-size:12px">${m.label}${m.actual?' <span class="badge">actual</span>':""}</span><span style="font-size:11px;color:${m.ing-m.gas>=0?"var(--ok)":"var(--bad)"}">Bal: ${money(m.ing-m.gas)}</span></div><div class="compare-bar-wrap"><div class="compare-label">💰 Ing: ${money(m.ing)}</div><div class="compare-bar-bg"><div class="compare-bar-fill" style="width:${(m.ing/maxV*100).toFixed(1)}%;background:var(--ok)"></div></div></div><div class="compare-bar-wrap"><div class="compare-label">💸 Gas: ${money(m.gas)}</div><div class="compare-bar-bg"><div class="compare-bar-fill" style="width:${(m.gas/maxV*100).toFixed(1)}%;background:var(--bad)"></div></div></div></div>`).join("")}
 function mostrarFormInversion(){$("formInversion").style.display=$("formInversion").style.display==="none"?"block":"none"}
@@ -1180,9 +1343,9 @@ window.renderPrestamos=renderPrestamos;window.toggleMes=toggleMes;window.exporta
 window.limpiarCache=limpiarCache;window.diag=diag;window.aplicarTema=aplicarTema;
 window.toggleNotiDiaria=toggleNotiDiaria;window.cambiarHora=cambiarHora;window.probarNoti=probarNoti;
 window.eliminarMesHistorial=eliminarMesHistorial;window.renderHistorialAdmin=renderHistorialAdmin;
+window.verHistorialCompleto=verHistorialCompleto;window.verDetalleMes=verDetalleMes;window.exportarMes=exportarMes;
 
-console.log("✅ Banking PRO AI v29 - COMPLETO con Coach Potente y Offline Robusto");
+console.log("✅ Banking PRO AI v30 - COMPLETO con Historial por Meses y Offline Robusto");
 </script>
 </body>
 </html>
-
