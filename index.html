@@ -865,7 +865,7 @@
 <div class="modal-overlay" id="modalEditar"><div class="modal"><h3>✏️ Editar movimiento</h3><input type="date" id="editFecha"><select id="editCategoria"></select><input type="text" id="editDescripcion" placeholder="Descripción"><input type="text" id="editMonto" placeholder="Monto"><select id="editCuenta"></select><input type="text" id="editNota" placeholder="Nota"><div class="modal-btns"><button class="secondary" onclick="$('modalEditar').classList.remove('open')">Cancelar</button><button class="primary" onclick="confirmarEdicion()">✔ Guardar</button></div></div></div>
 
 <script>
-// ═══════════════ BANKING PRO AI v27 - SINCRONIZADO FIREBASE ═══════════════
+// ═══════════════ BANKING PRO AI v27 - CIERRE AUTOMÁTICO ═══════════════
 const $=id=>document.getElementById(id);
 const ACC_COLORS=["#3b82f6","#22c55e","#f59e0b","#ec4899","#a78bfa","#14b8a6"];
 
@@ -898,6 +898,7 @@ let goals=[],modoActual="ingreso",historial=[],cuentas=[],categorias=[];
 let c1,c2,c3,c4,c5,c6,cInv,filtroTipo="todos",editandoId=null,recognition=null,isListening=false;
 let inversiones=JSON.parse(localStorage.getItem("inversiones")||"[]"),temaActual=localStorage.getItem("tema")||"dark";
 let prestamos=JSON.parse(localStorage.getItem("prestamos")||"[]"),prestamoFiltro="todos";
+let timerCierreAutomatico = null;
 
 function uid(){return window.currentUser?.uid||localStorage.getItem("uid")||"guest"}
 function keyFor(b){const s=contexto==="negocio"?"Negocio":"";return uid()+"_"+s+b}
@@ -915,6 +916,92 @@ function labelDay(f){
   return new Date(f+"T00:00:00").toLocaleDateString("es-CO",{day:"numeric",month:"short"});
 }
 
+// ══ CIERRE DE MES AUTOMÁTICO ══
+function programarCierreAutomatico() {
+  if (timerCierreAutomatico) clearTimeout(timerCierreAutomatico);
+  
+  const ahora = new Date();
+  const ultimoDia = new Date(ahora.getFullYear(), ahora.getMonth() + 1, 0).getDate();
+  const diaActual = ahora.getDate();
+  
+  let target;
+  if (diaActual === ultimoDia) {
+    target = new Date(ahora);
+    target.setHours(23, 55, 0, 0);
+    if (target <= ahora) {
+      ejecutarCierreAutomatico();
+      return;
+    }
+  } else {
+    target = new Date(ahora.getFullYear(), ahora.getMonth() + 1, 0);
+    target.setHours(23, 55, 0, 0);
+  }
+  
+  const msRestantes = target.getTime() - ahora.getTime();
+  if (msRestantes > 0) {
+    console.log("⏰ Cierre automático programado para:", target.toLocaleString("es-CO"));
+    timerCierreAutomatico = setTimeout(() => {
+      ejecutarCierreAutomatico();
+      programarCierreAutomatico();
+    }, msRestantes);
+  }
+}
+
+function ejecutarCierreAutomatico() {
+  if (!window.currentUser) return;
+  console.log("🔒 Ejecutando cierre de mes automático...");
+  
+  const hoy = hoyColombia();
+  const mesActual = hoy.toLocaleDateString("es-CO", {month: "long", year: "numeric"});
+  const yaCerrado = historial.some(h => h.label === mesActual);
+  
+  if (yaCerrado) {
+    console.log("⚠️ Este mes ya fue cerrado");
+    return;
+  }
+  
+  if (data.length === 0) {
+    console.log("⚠️ Sin movimientos para cerrar");
+    return;
+  }
+  
+  const s = calcSaldos();
+  const ing = data.filter(x => x.Tipo === "Ingreso").reduce((a, x) => a + Number(x.Monto || 0), 0);
+  const gas = data.filter(x => x.Tipo === "Gasto").reduce((a, x) => a + Number(x.Monto || 0), 0);
+  
+  historial.unshift({
+    label: mesActual,
+    ing,
+    gas,
+    saldosCierre: {...s},
+    movimientos: [...data]
+  });
+  
+  localStorage.setItem(keyFor("historialMeses"), JSON.stringify(historial));
+  cuentas = cuentas.map(c => ({...c, saldoInicial: s[c.id] || 0}));
+  guardarDatos();
+  
+  data = [];
+  pending = [];
+  localStorage.setItem(keyFor("dataCache"), "[]");
+  localStorage.setItem(keyFor("pendingQueue"), "[]");
+  
+  const sc = $("syncCount"); if (sc) sc.innerText = 0;
+  const pc = $("pendingCount"); if (pc) pc.innerText = 0;
+  
+  render();
+  
+  if (Notification.permission === "granted") {
+    new Notification("🔒 Banking PRO AI", {
+      body: "Cierre de mes automático: " + mesActual,
+      icon: "💳"
+    });
+  }
+  
+  toast("🔒 Cierre automático: " + mesActual);
+  console.log("✅ Cierre automático completado:", mesActual);
+}
+
 document.addEventListener("DOMContentLoaded",()=>{
   $("today").innerText=hoyColombia().toLocaleDateString("es-CO",{weekday:"long",day:"numeric",month:"long"});
   $("fecha").value = fechaParaInput();
@@ -925,6 +1012,8 @@ document.addEventListener("DOMContentLoaded",()=>{
   $("toggleDiario").checked=localStorage.getItem("notiDiaria")==="1";
   $("horaRecordatorio").value=localStorage.getItem("horaNoti")||"20";
   checkFB();
+  programarCierreAutomatico();
+  setInterval(programarCierreAutomatico, 3600000);
 });
 
 function checkFB(){if(window.firebaseReady){window.onUserChanged=onUserChanged;if(window.auth?.currentUser)onUserChanged(window.auth.currentUser)}else setTimeout(checkFB,300);}
@@ -935,7 +1024,6 @@ async function iniciarSesion(){const e=$("loginEmail").value.trim(),p=$("loginPa
 async function registrarUsuario(){const n=$("regName").value.trim(),e=$("regEmail").value.trim(),p=$("regPass").value;if(!n||!e||!p||p.length<6){showError("Completa (mín. 6)");return}$("loginError").classList.remove("visible");$("registerBtn").disabled=true;$("registerBtn").textContent="⏳...";try{const cred=await window.fbRegister(e,p);await window.fbUpdateProfile(cred.user,{displayName:n});try{await window.fbAddDoc(window.fbCollection(window.db,"users"),{uid:cred.user.uid,email:e,displayName:n,createdAt:fechaHoyColombia()})}catch(ex){}}catch(err){$("registerBtn").disabled=false;$("registerBtn").textContent="Crear cuenta →";showError("Error: "+err.message)}}
 async function cerrarSesion(){if(!confirm("¿Cerrar sesión?"))return;await window.fbLogout()}
 
-// ══ SINCRONIZACIÓN CON FIREBASE ══
 async function cargarDesdeFirebase(){
   if(!window.db||!window.auth?.currentUser)return;
   const colName = contexto==="negocio"?"movimientos_negocio":"movimientos_personal";
@@ -943,7 +1031,6 @@ async function cargarDesdeFirebase(){
     const snap = await window.fbGetDocs(window.fbCollection(window.db,"users",window.auth.currentUser.uid,colName));
     const fbData = [];
     snap.forEach(doc => fbData.push({...doc.data(), ID: doc.id}));
-    // Mezclar con datos locales
     const localData = JSON.parse(localStorage.getItem(keyFor("dataCache"))||"[]");
     const fbIds = new Set(fbData.map(d=>d.ID));
     const soloLocales = localData.filter(d=>!fbIds.has(d.ID)||String(d.ID).startsWith("local_"));
@@ -967,6 +1054,7 @@ function onUserChanged(user){
     cargarTodo();
     renderInversiones();
     renderPrestamos();
+    programarCierreAutomatico();
   } else {
     $("loginScreen").classList.remove("oculto");
     $("appContent").classList.remove("visible");
@@ -984,10 +1072,7 @@ async function cargarTodo(){
   cuentas=JSON.parse(localStorage.getItem(keyFor("cuentas"))||JSON.stringify(defC[contexto]||defC.personal));cuentas=cuentas.map(c=>({saldoInicial:0,...c}));
   const defCat={personal:[{id:"ingreso",nombre:"Ingreso",icon:"💰",tipo:"ingreso"},{id:"comida",nombre:"Comida",icon:"🍔",tipo:"gasto"},{id:"vivienda",nombre:"Vivienda",icon:"🏠",tipo:"gasto"},{id:"transporte",nombre:"Transporte",icon:"🚗",tipo:"gasto"},{id:"servicios",nombre:"Servicios",icon:"💡",tipo:"gasto"},{id:"entretenimiento",nombre:"Entretenimiento",icon:"🎮",tipo:"gasto"},{id:"ahorro",nombre:"Ahorro",icon:"🏦",tipo:"ambos"}],negocio:[{id:"ventas",nombre:"Ventas",icon:"💰",tipo:"ingreso"},{id:"inventario",nombre:"Inventario",icon:"📦",tipo:"gasto"},{id:"nomina",nombre:"Nómina",icon:"👷",tipo:"gasto"},{id:"servicios_pub",nombre:"Servicios",icon:"💡",tipo:"gasto"}]};
   categorias=JSON.parse(localStorage.getItem(keyFor("categorias"))||JSON.stringify(defCat[contexto]||defCat.personal));
-  
-  // Intentar cargar desde Firebase primero
   await cargarDesdeFirebase();
-  
   pending=JSON.parse(localStorage.getItem(keyFor("pendingQueue"))||"[]");
   historial=JSON.parse(localStorage.getItem(keyFor("historialMeses"))||"[]");
   goals=JSON.parse(localStorage.getItem(keyFor("goals"))||"[]");
@@ -997,7 +1082,7 @@ async function cargarTodo(){
   const pc=$("pendingCount");if(pc)pc.innerText=pending.length;
   poblarSelects();actualizarLabels();
   render();
-  console.log("✅ Datos cargados. UID:", uid(), "Movimientos:", data.length, "Saldo:", $("saldoTop").innerText);
+  console.log("✅ Datos cargados. UID:", uid(), "Movimientos:", data.length);
 }
 
 function poblarSelects(){
@@ -1015,17 +1100,22 @@ function actualizarLabels(){const l=contexto==="negocio"?{c:"negocio",t:"Negocio
 
 function calcSaldos(){const s={};cuentas.forEach(c=>{s[c.id]=c.saldoInicial||0});const todos=[...data,...pending].sort((a,b)=>new Date(a.Fecha||0)-new Date(b.Fecha||0));todos.forEach(x=>{const m=Number(x.Monto)||0;if(x.Tipo==="Transferencia"){if(x.CuentaOrigen&&s[x.CuentaOrigen]!==undefined)s[x.CuentaOrigen]-=m;if(x.CuentaDestino&&s[x.CuentaDestino]!==undefined)s[x.CuentaDestino]+=m}else if(x.Tipo==="TraspasoSalida"){if(x.Cuenta)s[x.Cuenta]-=m}else if(x.Tipo==="TraspasoEntrada"){if(x.Cuenta)s[x.Cuenta]+=m}else{const cid=x.Cuenta||"";if(s[cid]===undefined)s[cid]=0;if(x.Tipo==="Ingreso")s[cid]+=m;else if(x.Tipo==="Gasto")s[cid]-=m}});return s}
 
-// ══ GUARDAR EN FIREBASE ══
 async function guardarEnFirebase(datos){
   if(!window.db||!window.auth?.currentUser)return null;
   try{
     const colName = contexto==="negocio"?"movimientos_negocio":"movimientos_personal";
     const ref = await window.fbAddDoc(window.fbCollection(window.db,"users",window.auth.currentUser.uid,colName),datos);
     return ref.id;
-  }catch(e){
-    console.log("Error guardando en Firebase:",e);
-    return null;
-  }
+  }catch(e){return null;}
+}
+
+async function guardarEnFirebaseCtx(datos,ctx){
+  if(!window.db||!window.auth?.currentUser)return null;
+  try{
+    const colName = ctx==="negocio"?"movimientos_negocio":"movimientos_personal";
+    const ref = await window.fbAddDoc(window.fbCollection(window.db,"users",window.auth.currentUser.uid,colName),datos);
+    return ref.id;
+  }catch(e){return null;}
 }
 
 async function guardar(){
@@ -1043,12 +1133,12 @@ async function guardar(){
     datos={Fecha:$("fecha").value,Tipo:modoActual==="ingreso"?"Ingreso":"Gasto",Cuenta:$("cuentaSel").value,Categoría:$("categoria").value,Descripción:$("descripcion").value.trim(),Monto:m,Nota:$("notaInput").value.trim(),Contexto:contexto};
     $("descripcion").value=$("montoInput").value=$("notaInput").value="";
   }
-  // Guardar en Firebase
   const fbId = await guardarEnFirebase(datos);
   datos.ID=fbId||"local_"+Date.now();
   data.push(datos);guardarDatos();
   $("fecha").value = fechaParaInput();
-  render();toast("✔ Guardado"+(fbId?" ☁":"")); const sc=$("syncCount");if(sc)sc.innerText=data.length;
+  render();toast("✔ Guardado"+(fbId?" ☁":""));
+  const sc=$("syncCount");if(sc)sc.innerText=data.length;
 }
 
 async function guardarTraspaso(){
@@ -1057,7 +1147,6 @@ async function guardarTraspaso(){
   const ctxO=dir==="p2n"?"personal":"negocio",ctxD=dir==="p2n"?"negocio":"personal";
   const rO={Fecha:f,Tipo:"TraspasoSalida",Cuenta:co,Categoría:"🔀 Traspaso",Descripción:desc+" → "+(ctxD==="negocio"?"🏪":"👤"),Monto:m,Contexto:ctxO};
   const rD={Fecha:f,Tipo:"TraspasoEntrada",Cuenta:cd,Categoría:"🔀 Traspaso",Descripción:desc+" ← "+(ctxO==="negocio"?"🏪":"👤"),Monto:m,Contexto:ctxD};
-  // Intentar guardar en Firebase
   const fbIdO = await guardarEnFirebaseCtx(rO,ctxO);
   const fbIdD = await guardarEnFirebaseCtx(rD,ctxD);
   rO.ID=fbIdO||"local_"+Date.now(); rD.ID=fbIdD||"local_"+Date.now();
@@ -1070,18 +1159,8 @@ async function guardarTraspaso(){
   render();toast("✔ Traspaso: "+money(m));
 }
 
-async function guardarEnFirebaseCtx(datos,ctx){
-  if(!window.db||!window.auth?.currentUser)return null;
-  try{
-    const colName = ctx==="negocio"?"movimientos_negocio":"movimientos_personal";
-    const ref = await window.fbAddDoc(window.fbCollection(window.db,"users",window.auth.currentUser.uid,colName),datos);
-    return ref.id;
-  }catch(e){return null;}
-}
-
 function guardarDatos(){localStorage.setItem(keyFor("dataCache"),JSON.stringify(data));localStorage.setItem(keyFor("cuentas"),JSON.stringify(cuentas));localStorage.setItem(keyFor("categorias"),JSON.stringify(categorias));localStorage.setItem(keyFor("goals"),JSON.stringify(goals));localStorage.setItem("prestamos",JSON.stringify(prestamos));localStorage.setItem("inversiones",JSON.stringify(inversiones))}
 
-// ══ RESTO DE FUNCIONES (idénticas a la versión anterior funcional) ══
 function renderCoach(ing,gas,ah,cats,saldos){
   const bal=ing-gas;
   const hoy=hoyColombia();
@@ -1159,12 +1238,11 @@ function renderLista(){
 }
 async function borrar(id){if(!confirm("¿Eliminar?"))return;const x=data.find(d=>String(d.ID)===String(id));const ctx=x?x.Contexto||contexto:contexto;data=data.filter(d=>String(d.ID)!==String(id));guardarDatos();render();if(window.db&&window.auth?.currentUser&&!String(id).startsWith("local_")){try{const colName=ctx==="negocio"?"movimientos_negocio":"movimientos_personal";await window.fbDeleteDoc(window.fbDoc(window.db,"users",window.auth.currentUser.uid,colName,String(id)))}catch(e){}}toast("🗑️ Eliminado")}
 function abrirEditar(id){const x=data.find(d=>String(d.ID)===String(id));if(!x||x.Tipo==="Transferencia"||x.Tipo?.includes("Traspaso")){toast("No editable");return}editandoId=String(id);const ec=$("editCategoria");ec.innerHTML="";const modo=x.Tipo==="Ingreso"?"ingreso":"gasto";categorias.filter(c=>c.tipo==="ambos"||c.tipo===modo).forEach(c=>{const o=document.createElement("option");o.value=c.icon+" "+c.nombre;o.textContent=c.icon+" "+c.nombre;if(o.value===x.Categoría)o.selected=true;ec.appendChild(o)});const ecu=$("editCuenta");ecu.innerHTML="";cuentas.forEach(c=>{const o=document.createElement("option");o.value=c.id;o.textContent=c.icon+" "+c.nombre;if(c.id===x.Cuenta)o.selected=true;ecu.appendChild(o)});$("editFecha").value=x.Fecha||"";$("editDescripcion").value=x.Descripción||"";$("editMonto").value=Number(x.Monto||0).toLocaleString("es-CO");$("editNota").value=x.Nota||"";$("modalEditar").classList.add("open")}
-async function confirmarEdicion(){const x=data.find(d=>String(d.ID)===String(editandoId));if(!x){$("modalEditar").classList.remove("open");return}const m=parseMonto($("editMonto").value);if(!$("editDescripcion").value.trim()||m<=0){toast("Completa");return}x.Fecha=$("editFecha").value;x.Categoría=$("editCategoria").value;x.Descripción=$("editDescripcion").value.trim();x.Monto=m;x.Cuenta=$("editCuenta").value;x.Nota=$("editNota").value.trim();guardarDatos();$("modalEditar").classList.remove("open");if(window.db&&window.auth?.currentUser&&!String(editandoId).startsWith("local_")){try{const ctx=x.Contexto||contexto;const colName=ctx==="negocio"?"movimientos_negocio":"movimientos_personal";await window.fbUpdateDoc(window.fbDoc(window.db,"users",window.auth.currentUser.uid,colName,String(editandoId)),{Fecha:x.Fecha,Categoría:x.Categoría,Descripción:x.Descripción,Monto:x.Monto,Cuenta:x.Cuenta,Nota:x.Nota})}catch(e){}}
-  render();editandoId=null;toast("✔ Actualizado"+(" ☁"||""))}
+async function confirmarEdicion(){const x=data.find(d=>String(d.ID)===String(editandoId));if(!x){$("modalEditar").classList.remove("open");return}const m=parseMonto($("editMonto").value);if(!$("editDescripcion").value.trim()||m<=0){toast("Completa");return}x.Fecha=$("editFecha").value;x.Categoría=$("editCategoria").value;x.Descripción=$("editDescripcion").value.trim();x.Monto=m;x.Cuenta=$("editCuenta").value;x.Nota=$("editNota").value.trim();guardarDatos();$("modalEditar").classList.remove("open");if(window.db&&window.auth?.currentUser&&!String(editandoId).startsWith("local_")){try{const ctx=x.Contexto||contexto;const colName=ctx==="negocio"?"movimientos_negocio":"movimientos_personal";await window.fbUpdateDoc(window.fbDoc(window.db,"users",window.auth.currentUser.uid,colName,String(editandoId)),{Fecha:x.Fecha,Categoría:x.Categoría,Descripción:x.Descripción,Monto:x.Monto,Cuenta:x.Cuenta,Nota:x.Nota})}catch(e){}}render();editandoId=null;toast("✔ Actualizado")}
 function renderHistorial(){if(!historial.length){$("historialCard").style.display="none";return}$("historialCard").style.display="block";$("historialLista").innerHTML=historial.map((m,i)=>`<div class="item" style="cursor:pointer" onclick="toggleMes(${i})"><div style="display:flex;justify-content:space-between"><span style="font-weight:700">📅 ${m.label}</span><span id="ma${i}">▶</span></div><div class="small">Ing: ${money(m.ing)} · Gas: ${money(m.gas)} · Bal: ${money(m.ing-m.gas)}</div><div style="display:none;margin-top:6px" id="mb${i}">${m.movimientos?.length?m.movimientos.map(x=>`<div>${x.Categoría||""} - ${x.Descripción||""}: ${money(x.Monto)}</div>`).join(""):'<div class="small">Sin datos</div>'}</div></div>`).join("")}
 function toggleMes(i){const b=$("mb"+i),a=$("ma"+i);b.style.display=b.style.display==="none"?"block":"none";a.textContent=b.style.display==="none"?"▶":"▼"}
 function abrirCierre(){const s=calcSaldos(),ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gas=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0);let h=`<div class="grid2" style="margin-bottom:8px"><div class="kpi"><span>Ingresos</span><strong style="color:var(--ok)">${money(ing)}</strong></div><div class="kpi"><span>Gastos</span><strong style="color:var(--bad)">${money(gas)}</strong></div></div>`;cuentas.forEach(c=>{h+=`<div style="font-size:12px;margin-bottom:3px">${c.icon} ${c.nombre}: ${money(s[c.id]||0)}</div>`});$("modalResumen").innerHTML=h;$("modalCierre").classList.add("open")}
-function confirmarCierre(){const s=calcSaldos(),ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gas=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0),label=hoyColombia().toLocaleDateString("es-CO",{month:"long",year:"numeric"});historial.unshift({label,ing,gas,saldosCierre:{...s},movimientos:[...data]});localStorage.setItem(keyFor("historialMeses"),JSON.stringify(historial));cuentas=cuentas.map(c=>({...c,saldoInicial:s[c.id]||0}));guardarDatos();data=[];pending=[];localStorage.setItem(keyFor("dataCache"),"[]");localStorage.setItem(keyFor("pendingQueue"),"[]");const sc=$("syncCount");if(sc)sc.innerText=0;$("modalCierre").classList.remove("open");render();toast("✔ Mes cerrado")}
+function confirmarCierre(){const s=calcSaldos(),ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gas=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0),label=hoyColombia().toLocaleDateString("es-CO",{month:"long",year:"numeric"});historial.unshift({label,ing,gas,saldosCierre:{...s},movimientos:[...data]});localStorage.setItem(keyFor("historialMeses"),JSON.stringify(historial));cuentas=cuentas.map(c=>({...c,saldoInicial:s[c.id]||0}));guardarDatos();data=[];pending=[];localStorage.setItem(keyFor("dataCache"),"[]");localStorage.setItem(keyFor("pendingQueue"),"[]");const sc=$("syncCount");if(sc)sc.innerText=0;$("modalCierre").classList.remove("open");render();toast("✔ Mes cerrado");programarCierreAutomatico();}
 
 function renderCharts(){
   const saldos=calcSaldos();let ing=0,gas=0,cats={};data.forEach(x=>{const m=Number(x.Monto)||0;if(x.Tipo==="Ingreso")ing+=m;else if(x.Tipo==="Gasto"){gas+=m;cats[x.Categoría]=(cats[x.Categoría]||0)+m}});
@@ -1302,9 +1380,10 @@ window.mostrarFormPrestamo=mostrarFormPrestamo;window.switchPrestamoTab=switchPr
 window.toggleMes=toggleMes;window.exportarCSV=exportarCSV;window.limpiarCache=limpiarCache;window.diag=diag;
 window.aplicarTema=aplicarTema;window.toggleNotiDiaria=toggleNotiDiaria;window.cambiarHora=cambiarHora;window.probarNoti=probarNoti;
 
-console.log("✅ Banking PRO AI v27 - Sincronizado con Firebase ☁");
+console.log("✅ Banking PRO AI v27 - Sincronizado con Firebase ☁ + Cierre Automático 🔒");
 console.log("📅 Fecha:", fechaHoyColombia());
 console.log("☁ Los datos se sincronizan entre dispositivos");
+console.log("🔒 El cierre de mes se ejecuta automáticamente el último día a las 23:55");
 </script>
 </body>
 </html>
