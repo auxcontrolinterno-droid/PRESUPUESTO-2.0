@@ -860,7 +860,7 @@
 <div class="modal-overlay" id="modalEditar"><div class="modal"><h3>✏️ Editar movimiento</h3><input type="date" id="editFecha"><select id="editCategoria"></select><input type="text" id="editDescripcion" placeholder="Descripción"><input type="text" id="editMonto" placeholder="Monto"><select id="editCuenta"></select><input type="text" id="editNota" placeholder="Nota"><div class="modal-btns"><button class="secondary" onclick="$('modalEditar').classList.remove('open')">Cancelar</button><button class="primary" onclick="confirmarEdicion()">✔ Guardar</button></div></div></div>
 
 <script>
-// ═══════════════ BANKING PRO AI v27 - HOME CORREGIDO ═══════════════
+// ═══════════════ BANKING PRO AI v27 - SOLUCIÓN DEFINITIVA ═══════════════
 const $=id=>document.getElementById(id);
 const ACC_COLORS=["#3b82f6","#22c55e","#f59e0b","#ec4899","#a78bfa","#14b8a6"];
 
@@ -930,14 +930,23 @@ async function iniciarSesion(){const e=$("loginEmail").value.trim(),p=$("loginPa
 async function registrarUsuario(){const n=$("regName").value.trim(),e=$("regEmail").value.trim(),p=$("regPass").value;if(!n||!e||!p||p.length<6){showError("Completa (mín. 6)");return}$("loginError").classList.remove("visible");$("registerBtn").disabled=true;$("registerBtn").textContent="⏳...";try{const cred=await window.fbRegister(e,p);await window.fbUpdateProfile(cred.user,{displayName:n});try{await window.fbAddDoc(window.fbCollection(window.db,"users"),{uid:cred.user.uid,email:e,displayName:n,createdAt:fechaHoyColombia()})}catch(ex){}}catch(err){$("registerBtn").disabled=false;$("registerBtn").textContent="Crear cuenta →";showError("Error: "+err.message)}}
 async function cerrarSesion(){if(!confirm("¿Cerrar sesión?"))return;await window.fbLogout()}
 
+// ══ SOLUCIÓN DEFINITIVA: MÚLTIPLES RENDERS ══
 function onUserChanged(user){
   if(user){
     localStorage.setItem("uid",user.uid);window.currentUser=user;
-    $("loginScreen").classList.add("oculto");$("appContent").classList.add("visible");
+    $("loginScreen").classList.add("oculto");
+    $("appContent").classList.add("visible");
     actualizarUI(user);
     cargarTodo();
     renderInversiones();
     renderPrestamos();
+    
+    // Render a los 100ms
+    setTimeout(() => { console.log("🔄 Render 100ms"); render(); }, 100);
+    
+    // Render a los 500ms
+    setTimeout(() => { console.log("🔄 Render 500ms"); render(); }, 500);
+    
   } else {
     $("loginScreen").classList.remove("oculto");
     $("appContent").classList.remove("visible");
@@ -950,7 +959,6 @@ function onUserChanged(user){
 
 function actualizarUI(user){const dn=user.displayName||(user.email||"").split("@")[0],ini=dn.split(/[\s._-]+/).filter(Boolean).map(w=>w[0]).join("").toUpperCase().slice(0,2)||"U";$("userAvatar").textContent=ini;$("userName").textContent=dn.split(" ")[0];$("userInfoBlock").innerHTML='<div style="display:flex;align-items:center;gap:10px"><div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff">'+ini+'</div><div><div style="font-weight:700">'+dn+'</div><div class="small">'+(user.email||"")+'</div></div></div>';}
 
-// ══ SOLUCIÓN: Forzar home activo y render ══
 function cargarTodo(){
   const defC={personal:[{id:"nequi",nombre:"Nequi",icon:"📱"},{id:"davivienda",nombre:"Davivienda",icon:"🏦"},{id:"efectivo",nombre:"Efectivo",icon:"💵"}],negocio:[{id:"caja_neg",nombre:"Caja",icon:"🏪"},{id:"banco_neg",nombre:"Banco Neg.",icon:"🏦"}]};
   cuentas=JSON.parse(localStorage.getItem(keyFor("cuentas"))||JSON.stringify(defC[contexto]||defC.personal));cuentas=cuentas.map(c=>({saldoInicial:0,...c}));
@@ -961,19 +969,8 @@ function cargarTodo(){
   inversiones=JSON.parse(localStorage.getItem("inversiones")||"[]");prestamos=JSON.parse(localStorage.getItem("prestamos")||"[]");
   $("syncCount").innerText=data.length;$("pendingCount").innerText=pending.length;
   poblarSelects();actualizarLabels();
-  
-  // ══ SOLUCIÓN: Forzar home activo ══
-  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
-  const tabHome = $("tab-home");
-  if(tabHome) tabHome.classList.add("active");
-  
-  // Restaurar botón home en nav
-  document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));
-  const navBtns = document.querySelectorAll(".nav button");
-  if(navBtns[0]) navBtns[0].classList.add("active");
-  
   render();
-  console.log("✅ Home cargado con", data.length, "movimientos");
+  console.log("✅ Datos cargados:", data.length, "movimientos");
 }
 
 function poblarSelects(){
@@ -1076,22 +1073,35 @@ function render(){
   let ing=0,gas=0,ah=0,cats={};
   [...data].sort((a,b)=>new Date(b.Fecha)-new Date(a.Fecha)).forEach(x=>{const m=Number(x.Monto)||0;if(x.Tipo==="Ingreso")ing+=m;else if(x.Tipo==="Gasto"){gas+=m;cats[x.Categoría]=(cats[x.Categoría]||0)+m}if(String(x.Categoría||"").includes("Ahorro"))ah+=m});
   const saldos=calcSaldos(),total=Object.values(saldos).reduce((a,b)=>a+b,0);
-  $("saldoTop").innerText=money(total);
+  
+  // Saldo disponible
+  const st=$("saldoTop");if(st)st.innerText=money(total);
+  
+  // Cuentas
   $("cuentasResumen").innerHTML=$("distBar").innerHTML=$("distLegend").innerHTML="";
   const tp=cuentas.reduce((a,c)=>a+Math.max(saldos[c.id]||0,0),0)||1;
   cuentas.forEach((c,i)=>{const s=saldos[c.id]||0,color=ACC_COLORS[i%ACC_COLORS.length];$("cuentasResumen").innerHTML+=`<div class="cuenta-card"><div class="cuenta-left"><div class="cuenta-icon">${c.icon}</div><div class="cuenta-name">${c.nombre}</div></div><div class="cuenta-saldo ${s>=0?"positive":"negative"}">${money(s)}</div></div>`;$("distBar").innerHTML+=`<div class="dist-seg" style="width:${Math.max(s,0)/tp*100}%;background:${color}"></div>`;$("distLegend").innerHTML+=`<div class="dist-item"><div class="dist-dot" style="background:${color}"></div>${c.icon} ${c.nombre}</div>`});
+  
+  // Cockpit
   const hoy=hoyColombia(),ts=hoy.getFullYear()+"-"+String(hoy.getMonth()+1).padStart(2,"0")+"-"+String(hoy.getDate()).padStart(2,"0");
   const hoyG=data.filter(x=>x.Fecha===ts&&x.Tipo==="Gasto").reduce((a,b)=>a+Number(b.Monto||0),0);
   $("cockpit").innerHTML=`<div class="grid2"><div class="kpi"><span>Hoy gastado</span><strong>${money(hoyG)}</strong></div><div class="kpi"><span>Balance</span><strong>${money(ing-gas)}</strong></div><div class="kpi"><span>Ahorro</span><strong>${money(ah)}</strong></div><div class="kpi"><span>Disp./día</span><strong>${money(Math.max((ing-gas)/Math.max(hoy.getDate(),1),0))}</strong></div></div>`;
+  
+  // Coach
   renderCoach(ing,gas,ah,cats,saldos);
+  
+  // Favoritos
   const favs={};data.forEach(x=>{if(x.Tipo==="Transferencia"||x.Tipo?.includes("Traspaso"))return;const k=x.Categoría+"|"+x.Descripción+"|"+x.Monto+"|"+(x.Cuenta||"");if(!favs[k])favs[k]={cat:x.Categoría,des:x.Descripción,monto:x.Monto,cuenta:x.Cuenta,count:0};favs[k].count++});
   const topFavs=Object.values(favs).sort((a,b)=>b.count-a.count).slice(0,4);
   $("favList").innerHTML=topFavs.length?topFavs.map(f=>`<button class="secondary" onclick="usarFav('${f.cat}','${f.des}',${f.monto},'${f.cuenta||""}')" style="font-size:11px">${f.cat}<br><small>${f.des}</small><br><small>${money(f.monto)}</small></button>`).join(""):'<div class="small">Sin favoritos</div>';
+  
+  // Metas
   $("goalList").innerHTML=goals.length?goals.map((g,i)=>{const p=Math.min((ah/g.valor)*100,100);return`<div class="item"><div style="font-weight:700">${g.nombre}</div><div class="small">${money(ah)} / ${money(g.valor)}</div><div class="progress"><div class="bar" style="width:${p}%"></div></div><button class="small-btn" onclick="delGoal(${i})">🗑️</button></div>`}).join(""):'<div class="alert mid">Sin metas</div>';
+  
+  console.log("🎨 Render completado - Saldo:", money(total));
 }
 
 function usarFav(cat,des,monto,cuenta){setMode("gasto",document.querySelectorAll(".mode-tab")[1]);$("categoria").value=cat;$("descripcion").value=des;$("montoInput").value=Number(monto).toLocaleString("es-CO");if(cuenta)$("cuentaSel").value=cuenta;toast("Cargado")}
-
 function setFiltro(tipo,btn){filtroTipo=tipo;document.querySelectorAll(".filter-chip").forEach(c=>c.classList.remove("active"));btn.classList.add("active");renderLista()}
 function renderLista(){
   const busq=($("searchInput")?.value||"").toLowerCase().trim(),cf=$("filterCuentaSel")?.value||"",orden=$("filterOrden")?.value||"fecha_desc";
@@ -1102,7 +1112,6 @@ function renderLista(){
   let ld="";f.forEach(x=>{const m=Number(x.Monto)||0,cls=x.Tipo==="Ingreso"?"ingreso":x.Tipo==="Gasto"?"gasto":x.Tipo==="Transferencia"?"transferencia":"traspaso";if(orden.startsWith("fecha")&&x.Fecha!==ld){$("lista").innerHTML+=`<div class="timeline-day">${labelDay(x.Fecha)}</div>`;ld=x.Fecha}let cl="";if(x.Tipo==="Transferencia"){const o=cuentas.find(c=>c.id===x.CuentaOrigen),d=cuentas.find(c=>c.id===x.CuentaDestino);cl=`<span class="badge">🔄 ${o?.icon||""} → ${d?.icon||""}</span>`}else if(x.Cuenta){const c=cuentas.find(cu=>cu.id===x.Cuenta);if(c)cl=`<span class="badge">${c.icon} ${c.nombre}</span>`}
   $("lista").innerHTML+=`<div class="item ${cls}"><div>${x.Categoría||""} - ${x.Descripción||""}${cl}</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px"><b>${money(m)}</b><div style="display:flex;gap:4px">${(x.Tipo==="Ingreso"||x.Tipo==="Gasto")?`<button class="warn-btn" onclick="abrirEditar('${x.ID}')">✏️</button>`:""}<button class="small-btn" onclick="borrar('${x.ID}')">🗑️</button></div></div></div>`});
 }
-
 async function borrar(id){if(!confirm("¿Eliminar?"))return;data=data.filter(d=>String(d.ID)!==String(id));guardarDatos();render();toast("🗑️ Eliminado")}
 function abrirEditar(id){const x=data.find(d=>String(d.ID)===String(id));if(!x||x.Tipo==="Transferencia"||x.Tipo?.includes("Traspaso")){toast("No editable");return}editandoId=String(id);const ec=$("editCategoria");ec.innerHTML="";const modo=x.Tipo==="Ingreso"?"ingreso":"gasto";categorias.filter(c=>c.tipo==="ambos"||c.tipo===modo).forEach(c=>{const o=document.createElement("option");o.value=c.icon+" "+c.nombre;o.textContent=c.icon+" "+c.nombre;if(o.value===x.Categoría)o.selected=true;ec.appendChild(o)});const ecu=$("editCuenta");ecu.innerHTML="";cuentas.forEach(c=>{const o=document.createElement("option");o.value=c.id;o.textContent=c.icon+" "+c.nombre;if(c.id===x.Cuenta)o.selected=true;ecu.appendChild(o)});$("editFecha").value=x.Fecha||"";$("editDescripcion").value=x.Descripción||"";$("editMonto").value=Number(x.Monto||0).toLocaleString("es-CO");$("editNota").value=x.Nota||"";$("modalEditar").classList.add("open")}
 function confirmarEdicion(){const x=data.find(d=>String(d.ID)===String(editandoId));if(!x){$("modalEditar").classList.remove("open");return}const m=parseMonto($("editMonto").value);if(!$("editDescripcion").value.trim()||m<=0){toast("Completa");return}x.Fecha=$("editFecha").value;x.Categoría=$("editCategoria").value;x.Descripción=$("editDescripcion").value.trim();x.Monto=m;x.Cuenta=$("editCuenta").value;x.Nota=$("editNota").value.trim();guardarDatos();$("modalEditar").classList.remove("open");render();editandoId=null;toast("✔ Actualizado")}
@@ -1247,9 +1256,9 @@ window.mostrarFormPrestamo=mostrarFormPrestamo;window.switchPrestamoTab=switchPr
 window.toggleMes=toggleMes;window.exportarCSV=exportarCSV;window.limpiarCache=limpiarCache;window.diag=diag;
 window.aplicarTema=aplicarTema;window.toggleNotiDiaria=toggleNotiDiaria;window.cambiarHora=cambiarHora;window.probarNoti=probarNoti;
 
-console.log("✅ Banking PRO AI v27 - Home corregido");
-console.log("📅 Fecha Colombia:", fechaHoyColombia());
-console.log("🏠 Home forzado como activo al cargar");
+console.log("✅ Banking PRO AI v27 - Solución definitiva");
+console.log("📅 Fecha:", fechaHoyColombia());
+console.log("🔄 Triple render: inmediato + 100ms + 500ms");
 </script>
 </body>
 </html>
