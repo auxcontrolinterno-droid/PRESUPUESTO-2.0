@@ -636,6 +636,7 @@
       color:var(--text);
     }
     .modal h3{font-size:16px;font-weight:800;margin-bottom:8px}
+    .modal p{color:var(--muted);margin-bottom:12px}
     .modal-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
     
     .notification-settings{background:var(--cardBg);border-radius:14px;padding:10px;margin-top:8px}
@@ -734,11 +735,9 @@
     </div>
   </div>
 
-  <!-- HOME -->
+  <!-- HOME - FORMULARIO DE REGISTRO PRIMERO -->
   <section class="tab active" id="tab-home">
-    <div id="ultimosLogros" style="margin-bottom:10px"></div>
-    <div class="card"><div class="title" id="cuentasTitle">🏦 Mis cuentas</div><div id="cuentasResumen"></div><div class="dist-bar" id="distBar"></div><div class="dist-legend" id="distLegend"></div></div>
-    <div class="card"><div class="title">🎛️ Centro de mando</div><div id="cockpit"></div></div>
+    <!-- REGISTRAR MOVIMIENTO - AHORA ES LO PRIMERO -->
     <div class="card">
       <div class="title">➕ Registrar <span class="ctx-label personal" id="movCtxLabel">Personal</span></div>
       <div class="mode-tabs">
@@ -773,7 +772,20 @@
       <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">🎤 Voz</button>
       <div class="voice-feedback" id="voiceFeedback"></div>
     </div>
+
+    <!-- LOGROS RECIENTES -->
+    <div id="ultimosLogros" style="margin-bottom:10px"></div>
+    
+    <!-- CUENTAS -->
+    <div class="card"><div class="title" id="cuentasTitle">🏦 Mis cuentas</div><div id="cuentasResumen"></div><div class="dist-bar" id="distBar"></div><div class="dist-legend" id="distLegend"></div></div>
+    
+    <!-- CENTRO DE MANDO -->
+    <div class="card"><div class="title">🎛️ Centro de mando</div><div id="cockpit"></div></div>
+    
+    <!-- FAVORITOS -->
     <div class="card"><div class="title">⭐ Favoritos</div><div class="grid2" id="favList"></div></div>
+    
+    <!-- COACH -->
     <div class="card"><div class="title">🧠 Coach Financiero</div><div id="coach"></div></div>
   </section>
 
@@ -901,13 +913,11 @@
 </div>
 
 <div class="toast" id="toast"></div>
-<div class="modal-overlay" id="modalCierre"><div class="modal"><h3>🔒 Cerrar mes</h3><p style="color:var(--muted);margin-bottom:12px">Archivará movimientos y actualizará saldos.</p><div id="modalResumen" style="margin-bottom:12px"></div><div class="modal-btns"><button class="secondary" onclick="$('modalCierre').classList.remove('open')">Cancelar</button><button class="primary" onclick="confirmarCierre()">✔ Confirmar</button></div></div></div>
+<div class="modal-overlay" id="modalCierre"><div class="modal"><h3>🔒 Cerrar mes</h3><p>Archivará movimientos y actualizará saldos.</p><div id="modalResumen" style="margin-bottom:12px"></div><div class="modal-btns"><button class="secondary" onclick="$('modalCierre').classList.remove('open')">Cancelar</button><button class="primary" onclick="confirmarCierre()">✔ Confirmar</button></div></div></div>
 <div class="modal-overlay" id="modalEditar"><div class="modal"><h3>✏️ Editar movimiento</h3><input type="date" id="editFecha"><select id="editCategoria"></select><input type="text" id="editDescripcion" placeholder="Descripción"><input type="text" id="editMonto" placeholder="Monto"><select id="editCuenta"></select><input type="text" id="editNota" placeholder="Nota"><div class="modal-btns"><button class="secondary" onclick="$('modalEditar').classList.remove('open')">Cancelar</button><button class="primary" onclick="confirmarEdicion()">✔ Guardar</button></div></div></div>
 
 <script>
-// ═══════════════════════════════════════════
-// BANKING PRO AI v26 - SCRIPT COMPLETO
-// ═══════════════════════════════════════════
+// ═══════════════ BANKING PRO AI v26 - SCRIPT COMPLETO ═══════════════
 const $=id=>document.getElementById(id);
 const ACC_COLORS=["#3b82f6","#22c55e","#f59e0b","#ec4899","#a78bfa","#14b8a6"];
 
