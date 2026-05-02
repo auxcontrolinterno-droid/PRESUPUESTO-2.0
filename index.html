@@ -5,12 +5,12 @@
   <meta name="theme-color" content="#0f172a">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-  <title>Banking PRO AI v28 - Offline Robust</title>
+  <title>Banking PRO AI v29 - Coach Potente</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, getDoc, deleteDoc, doc, updateDoc, query, where, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, writeBatch } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
     const firebaseConfig = {
       apiKey: "AIzaSyABzhwIZkis5OykXxDHXVKCaP0k1qKTZcY",
@@ -24,10 +24,8 @@
     const db = getFirestore(app); const auth = getAuth(app);
     window.db = db; window.auth = auth;
     window.fbCollection = collection; window.fbAddDoc = addDoc;
-    window.fbGetDocs = getDocs; window.fbGetDoc = getDoc;
-    window.fbDeleteDoc = deleteDoc; window.fbDoc = doc;
-    window.fbUpdateDoc = updateDoc; window.fbQuery = query;
-    window.fbWhere = where; window.fbOnSnapshot = onSnapshot;
+    window.fbGetDocs = getDocs; window.fbDeleteDoc = deleteDoc;
+    window.fbDoc = doc; window.fbUpdateDoc = updateDoc;
     window.fbWriteBatch = writeBatch;
     window.fbRegister = (e,p) => createUserWithEmailAndPassword(auth,e,p);
     window.fbLogin = (e,p) => signInWithEmailAndPassword(auth,e,p);
@@ -56,9 +54,9 @@
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
     .grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px}
-    .kpi{background:var(--cardBg);padding:10px;border-radius:12px;text-align:center;border:1px solid var(--line)}
-    .kpi span{display:block;font-size:11px;color:var(--muted);margin-bottom:4px}
-    .kpi strong{font-size:16px;font-weight:800;color:var(--text)}
+    .kpi{background:var(--cardBg);padding:8px;border-radius:12px;text-align:center;border:1px solid var(--line)}
+    .kpi span{display:block;font-size:10px;color:var(--muted);margin-bottom:3px}
+    .kpi strong{font-size:14px;font-weight:800;color:var(--text)}
     input,select,button{width:100%;border:none;outline:none;border-radius:12px;font-family:inherit;font-size:14px}
     input,select{padding:12px;background:var(--inputBg);color:var(--inputText);font-weight:500;margin-bottom:8px;border:1px solid var(--inputBorder)}
     input::placeholder{color:var(--muted);opacity:0.7}
@@ -79,7 +77,7 @@
     .inversion-card{background:rgba(6,182,212,.06);border:1px solid rgba(6,182,212,.15);border-radius:14px;padding:12px;margin-bottom:8px}
     .inversion-card div{color:var(--text)}
     .tabs-mini{display:flex;gap:4px;margin-bottom:8px}
-    .tab-mini{flex:1;padding:8px 4px;text-align:center;font-size:11px;font-weight:600;background:var(--cardBg);border-radius:8px;cursor:pointer;color:var(--muted);border:1px solid var(--line)}
+    .tab-mini{flex:1;padding:6px 2px;text-align:center;font-size:10px;font-weight:600;background:var(--cardBg);border-radius:8px;cursor:pointer;color:var(--muted);border:1px solid var(--line)}
     .tab-mini.active{background:rgba(59,130,246,.2);color:var(--primary);border-color:var(--primary)}
     .tema-preview{width:100%;height:60px;border-radius:12px;cursor:pointer;border:2px solid transparent;transition:.2s;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
     .tema-preview:hover{transform:scale(1.03)}
@@ -118,18 +116,18 @@
     .mode-tab.active{background:rgba(59,130,246,.2);color:var(--primary);border-color:var(--primary)}
     .form-section{display:none}
     .form-section.active{display:block}
-    .cuenta-card{display:flex;align-items:center;justify-content:space-between;padding:10px;background:var(--cardBg);border-radius:12px;margin-bottom:6px;border:1px solid var(--line)}
+    .cuenta-card{display:flex;align-items:center;justify-content:space-between;padding:8px;background:var(--cardBg);border-radius:12px;margin-bottom:6px;border:1px solid var(--line)}
     .cuenta-left{display:flex;align-items:center;gap:8px}
-    .cuenta-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;background:rgba(255,255,255,.08)}
-    .cuenta-name{font-weight:600;font-size:13px;color:var(--text)}
-    .cuenta-saldo{font-weight:700;font-size:15px}
+    .cuenta-icon{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;background:rgba(255,255,255,.08)}
+    .cuenta-name{font-weight:600;font-size:12px;color:var(--text)}
+    .cuenta-saldo{font-weight:700;font-size:13px}
     .cuenta-saldo.positive{color:var(--ok)}
     .cuenta-saldo.negative{color:var(--bad)}
-    .prestamo-card{background:var(--cardBg);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:8px}
+    .prestamo-card{background:var(--cardBg);border:1px solid var(--line);border-radius:14px;padding:10px;margin-bottom:8px}
     .prestamo-card.prestamo-recibido{border-left:3px solid var(--bad)}
     .prestamo-card.prestamo-otorgado{border-left:3px solid var(--ok)}
     .prestamo-card div{color:var(--text)}
-    .prestamo-status{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
+    .prestamo-status{display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700}
     .prestamo-status.pendiente{background:rgba(245,158,11,.2);color:var(--warn)}
     .prestamo-status.pagado{background:rgba(34,197,94,.2);color:var(--ok)}
     .prestamo-status.atrasado{background:rgba(239,68,68,.2);color:var(--bad)}
@@ -141,34 +139,33 @@
     .tab{display:none}
     .tab.active{display:block}
     .list{display:flex;flex-direction:column;gap:6px}
-    .item{background:var(--cardBg);padding:10px;border-radius:12px;border-left:3px solid transparent}
-    .item div{color:var(--text)}
+    .item{background:var(--cardBg);padding:8px;border-radius:12px;border-left:3px solid transparent}
+    .item div{color:var(--text);font-size:12px}
     .item b{color:var(--text)}
     .ingreso{border-left-color:var(--ok)}
     .gasto{border-left-color:var(--bad)}
     .transferencia{border-left-color:#a78bfa}
     .traspaso{border-left-color:#ec4899}
-    .alert{padding:8px;border-radius:10px;font-size:12px;margin-top:6px;line-height:1.4}
-    .good{background:rgba(34,197,94,.1);color:var(--ok)}
-    .bad{background:rgba(239,68,68,.1);color:var(--bad)}
-    .mid{background:rgba(245,158,11,.1);color:var(--warn)}
-    .info{background:rgba(59,130,246,.1);color:var(--primary)}
-    .progress{height:8px;background:rgba(255,255,255,.08);border-radius:10px;overflow:hidden;margin-top:6px}
+    .alert{padding:8px;border-radius:10px;font-size:11px;margin-top:6px;line-height:1.4}
+    .good{background:rgba(34,197,94,.12);color:var(--ok)}
+    .bad{background:rgba(239,68,68,.12);color:var(--bad)}
+    .mid{background:rgba(245,158,11,.12);color:var(--warn)}
+    .info{background:rgba(59,130,246,.12);color:var(--primary)}
+    .progress{height:6px;background:rgba(255,255,255,.08);border-radius:10px;overflow:hidden;margin-top:6px}
     .bar{height:100%;background:linear-gradient(90deg,#22c55e,#4ade80);width:0%;transition:width .3s}
     .nav{position:fixed;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:8px 10px;background:var(--navBg);backdrop-filter:blur(16px);border-top:1px solid var(--line);max-width:820px;margin:auto;z-index:100}
     .nav button{padding:6px 2px;font-size:20px;background:transparent;color:var(--muted);border-radius:10px;transition:.2s;border:none}
     .nav button.active{background:rgba(255,255,255,.1);color:var(--text)}
     .toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 14px;border-radius:12px;font-size:12px;font-weight:700;display:none;z-index:999;white-space:nowrap;max-width:85vw;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.5)}
-    .timeline-day{font-size:11px;color:var(--muted);font-weight:700;margin:8px 0 4px}
-    .badge{display:inline-block;padding:1px 6px;border-radius:10px;font-size:9px;font-weight:700;background:rgba(167,139,250,.15);color:#a78bfa;margin-left:4px}
-    .badge.cross-badge{background:rgba(236,72,153,.15);color:#ec4899}
+    .timeline-day{font-size:10px;color:var(--muted);font-weight:700;margin:6px 0 3px}
+    .badge{display:inline-block;padding:1px 5px;border-radius:10px;font-size:8px;font-weight:700;background:rgba(167,139,250,.15);color:#a78bfa;margin-left:4px}
     .filter-chips{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
-    .filter-chip{padding:4px 10px;border-radius:14px;font-size:11px;font-weight:600;background:var(--cardBg);color:var(--muted);cursor:pointer;border:1px solid var(--line)}
+    .filter-chip{padding:4px 8px;border-radius:14px;font-size:10px;font-weight:600;background:var(--cardBg);color:var(--muted);cursor:pointer;border:1px solid var(--line)}
     .filter-chip.active{background:rgba(59,130,246,.2);color:var(--primary);border-color:var(--primary)}
     .user-chip{display:flex;align-items:center;gap:5px;background:var(--cardBg);border:1px solid var(--line);border-radius:16px;padding:4px 8px 4px 4px;cursor:pointer}
     .user-chip-avatar{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff}
     .user-chip-name{font-size:11px;font-weight:600;max-width:80px;overflow:hidden;color:var(--text)}
-    canvas{margin-top:8px;background:var(--cardBg);padding:6px;border-radius:12px}
+    canvas{margin-top:8px;background:var(--cardBg);padding:6px;border-radius:12px;max-height:200px}
     .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;align-items:center;justify-content:center;padding:20px}
     .modal-overlay.open{display:flex}
     .modal{background:var(--modalBg);border:1px solid var(--line);border-radius:20px;padding:20px;max-width:400px;width:100%;max-height:85vh;overflow-y:auto;color:var(--text)}
@@ -178,7 +175,7 @@
     .notification-settings{background:var(--cardBg);border-radius:14px;padding:10px;margin-top:8px}
     .notification-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)}
     .notification-row:last-child{border-bottom:none}
-    .notification-row div div:first-child{color:var(--text)}
+    .notification-row div div:first-child{color:var(--text);font-size:12px}
     .toggle-switch{position:relative;width:44px;height:24px;display:inline-block}
     .toggle-switch input{opacity:0;width:0;height:0;margin:0}
     .toggle-slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,.15);transition:.3s;border-radius:24px}
@@ -189,30 +186,30 @@
     .cat-chip button{width:auto;padding:0 3px;background:transparent;color:var(--bad);font-size:12px;border:none;cursor:pointer}
     .compare-bar-wrap{margin-bottom:4px}
     .compare-label{font-size:10px;color:var(--muted);margin-bottom:2px}
-    .compare-bar-bg{height:14px;background:var(--cardBg);border-radius:7px;overflow:hidden}
-    .compare-bar-fill{height:100%;border-radius:7px;transition:width .3s}
+    .compare-bar-bg{height:12px;background:var(--cardBg);border-radius:6px;overflow:hidden}
+    .compare-bar-fill{height:100%;border-radius:6px;transition:width .3s}
     label{color:var(--muted);font-size:11px;font-weight:600;display:block;margin-bottom:4px}
-    .coach-section{background:var(--cardBg);border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:8px}
-    .coach-header{font-weight:700;font-size:13px;margin-bottom:6px;color:var(--primary);display:flex;align-items:center;gap:6px}
-    .coach-item{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--line);font-size:12px}
+    .coach-section{background:var(--cardBg);border:1px solid var(--line);border-radius:14px;padding:10px;margin-top:8px}
+    .coach-header{font-weight:700;font-size:12px;margin-bottom:6px;color:var(--primary);display:flex;align-items:center;gap:6px}
+    .coach-item{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--line);font-size:11px}
     .coach-item:last-child{border-bottom:none}
-    .coach-label{color:var(--muted)}
-    .coach-value{font-weight:600}
+    .coach-label{color:var(--muted);font-size:10px}
+    .coach-value{font-weight:600;font-size:11px}
     .coach-value.good{color:var(--ok)}
     .coach-value.bad{color:var(--bad)}
     .coach-value.warn{color:var(--warn)}
-    #statusBar{position:fixed;top:8px;right:8px;z-index:9999;font-size:11px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:4px 10px;display:flex;align-items:center;gap:4px;font-weight:600;backdrop-filter:blur(10px)}
+    #statusBar{position:fixed;top:8px;right:8px;z-index:9999;font-size:10px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:3px 8px;display:flex;align-items:center;gap:4px;font-weight:600;backdrop-filter:blur(10px)}
     #statusBar.online{background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.3)}
     #statusBar.offline{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.3)}
-    .status-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+    .status-dot{width:7px;height:7px;border-radius:50%;display:inline-block}
     .status-dot.online{background:var(--ok);box-shadow:0 0 6px var(--ok)}
     .status-dot.offline{background:var(--bad);box-shadow:0 0 6px var(--bad)}
-    .sync-badge{padding:2px 6px;border-radius:10px;font-size:9px;font-weight:700;background:rgba(59,130,246,.2);color:var(--primary)}
+    .sync-badge{padding:1px 5px;border-radius:10px;font-size:8px;font-weight:700;background:rgba(59,130,246,.2);color:var(--primary);margin-left:3px}
   </style>
 </head>
 <body>
 
-<div id="statusBar" class="online"><span class="status-dot online"></span> En línea <span id="syncBadge" class="sync-badge" style="margin-left:4px"></span></div>
+<div id="statusBar" class="online"><span class="status-dot online"></span> En línea <span id="syncBadge" class="sync-badge"></span></div>
 
 <div id="loginScreen">
   <div class="login-box">
@@ -239,7 +236,7 @@
 <div id="appContent">
   <div class="header">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-      <div><div class="small">Banking PRO AI v28 <span style="color:var(--ok)">●</span></div><div class="small" id="today"></div></div>
+      <div><div class="small">Banking PRO AI v29 <span style="color:var(--ok)">●</span></div><div class="small" id="today"></div></div>
       <div class="user-chip" onclick="goTab('settings')"><div class="user-chip-avatar" id="userAvatar">?</div><div class="user-chip-name" id="userName">—</div></div>
     </div>
     <div class="ctx-wrap">
@@ -269,7 +266,7 @@
     <div class="card"><div class="title" id="cuentasTitle">🏦 Mis cuentas</div><div id="cuentasResumen"></div><div class="dist-bar" id="distBar"></div><div class="dist-legend" id="distLegend"></div></div>
     <div class="card"><div class="title">🎛️ Centro de mando</div><div id="cockpit"></div></div>
     <div class="card"><div class="title">⭐ Favoritos</div><div class="grid2" id="favList"></div></div>
-    <div class="card"><div class="title">🧠 Coach Financiero</div><div id="coach"></div></div>
+    <div class="card"><div class="title" style="margin-bottom:4px">🧠 Coach Financiero AI</div><div id="coach"></div></div>
   </section>
 
   <section class="tab" id="tab-dashboard">
@@ -362,15 +359,14 @@
 <div class="modal-overlay" id="modalEditar"><div class="modal"><h3>✏️ Editar movimiento</h3><input type="date" id="editFecha"><select id="editCategoria"></select><input type="text" id="editDescripcion" placeholder="Descripción"><input type="text" id="editMonto" placeholder="Monto"><select id="editCuenta"></select><input type="text" id="editNota" placeholder="Nota"><div class="modal-btns"><button class="secondary" onclick="document.getElementById('modalEditar').classList.remove('open')">Cancelar</button><button class="primary" onclick="confirmarEdicion()">✔ Guardar</button></div></div></div>
 
 <script>
-// ═══════════════ BANKING PRO AI v28 - COMPLETO ═══════════════
+// ═══════════════ BANKING PRO AI v29 - SCRIPT PRINCIPAL ═══════════════
 const $=id=>document.getElementById(id);
 const ACC_COLORS=["#3b82f6","#22c55e","#f59e0b","#ec4899","#a78bfa","#14b8a6"];
-
 function hoyColombia(){const a=new Date();return new Date(a.getFullYear(),a.getMonth(),a.getDate())}
 function fechaHoyColombia(){const a=new Date();return a.getFullYear()+"-"+String(a.getMonth()+1).padStart(2,"0")+"-"+String(a.getDate()).padStart(2,"0")}
 function fechaParaInput(){const a=new Date();return a.getFullYear()+"-"+String(a.getMonth()+1).padStart(2,"0")+"-"+String(a.getDate()).padStart(2,"0")}
 
-let contexto=localStorage.getItem("contexto")||"personal",data=[],pending=[],hidden=localStorage.getItem("hideMoney")==="1";
+let contexto=localStorage.getItem("contexto")||"personal",data=[],hidden=localStorage.getItem("hideMoney")==="1";
 let goals=[],modoActual="ingreso",historial=[],cuentas=[],categorias=[];
 let c1,c2,c3,c4,c5,c6,cInv,filtroTipo="todos",editandoId=null,recognition=null,isListening=false;
 let inversiones=JSON.parse(localStorage.getItem("inversiones")||"[]"),temaActual=localStorage.getItem("tema")||"dark";
@@ -446,7 +442,7 @@ async function actualizarContadorPendientes(){
   const sb=$("syncBadge");
   if(sb){
     if(cola.length>0){
-      sb.innerText=`📤 ${cola.length}`;
+      sb.innerText=`📤${cola.length}`;
       sb.style.background="rgba(245,158,11,.2)";
       sb.style.color="var(--warn)";
     }else{
@@ -467,11 +463,8 @@ async function sincronizarPendientes(){
   syncInProgress=true;
   try{
     const cola=await obtenerCola();
-    if(cola.length===0){
-      syncInProgress=false;
-      return;
-    }
-    toast(`🔄 Sincronizando ${cola.length} pendientes...`);
+    if(cola.length===0){syncInProgress=false;return;}
+    toast(`🔄 Sincronizando ${cola.length}...`);
     for(const item of cola){
       try{
         const colName=item.contexto==="negocio"?"movimientos_negocio":"movimientos_personal";
@@ -487,15 +480,15 @@ async function sincronizarPendientes(){
           localStorage.setItem(keyForCtx("dataCache",item.contexto),JSON.stringify(nuevaOtra));
         }
         await eliminarDeCola(item.id);
-      }catch(e){console.error("Error sincronizando:",e);}
+      }catch(e){console.error("Error:",e);}
     }
     guardarDatos();
     render();
-    toast(`✅ Sincronización completa`);
+    toast(`✅ Sincronizado`);
     actualizarContadorPendientes();
     await cargarDesdeFirebase();
     render();
-  }catch(e){console.error("Error en sincronización:",e);}
+  }catch(e){console.error("Error:",e);}
   finally{syncInProgress=false;}
 }
 
@@ -527,12 +520,12 @@ async function guardarConOffline(datos,ctx){
       return fbId;
     }catch(e){
       await guardarEnCola({idLocal,datos,contexto:ctx});
-      toast("📡 Sin conexión: pendiente guardado localmente");
+      toast("📡 Pendiente");
       return idLocal;
     }
   }else{
     await guardarEnCola({idLocal,datos,contexto:ctx});
-    toast("📡 Sin conexión: pendiente guardado localmente");
+    toast("📡 Pendiente");
     return idLocal;
   }
 }
@@ -570,12 +563,12 @@ function actualizarStatusBar(){
   if(!sb)return;
   if(navigator.onLine){
     sb.className="online";
-    sb.innerHTML='<span class="status-dot online"></span> En línea ☁ <span id="syncBadge" class="sync-badge" style="margin-left:4px"></span>';
+    sb.innerHTML='<span class="status-dot online"></span> En línea <span id="syncBadge" class="sync-badge"></span>';
     actualizarContadorPendientes();
     sincronizarPendientes();
   }else{
     sb.className="offline";
-    sb.innerHTML='<span class="status-dot offline"></span> Sin conexión 📵 <span id="syncBadge" class="sync-badge" style="margin-left:4px"></span>';
+    sb.innerHTML='<span class="status-dot offline"></span> Offline <span id="syncBadge" class="sync-badge"></span>';
     actualizarContadorPendientes();
   }
 }
@@ -631,8 +624,6 @@ async function registrarUsuario(){
   try{
     const cred=await window.fbRegister(e,p);
     await window.fbUpdateProfile(cred.user,{displayName:n});
-    try{await window.fbAddDoc(window.fbCollection(window.db,"users"),{uid:cred.user.uid,email:e,displayName:n,createdAt:fechaHoyColombia()});}
-    catch(ex){}
   }catch(err){$("registerBtn").disabled=false;$("registerBtn").textContent="Crear cuenta →";showError("Error: "+err.message);}
 }
 
@@ -798,7 +789,7 @@ async function guardar(){
   }
   const idGuardado=await guardarConOffline(datos,contexto);
   if(!String(idGuardado).startsWith("local_")) toast("✔ Guardado ☁");
-  else toast("📡 Guardado local (pendiente)");
+  else toast("📡 Pendiente");
   $("fecha").value=fechaParaInput();
   const seen=new Set();
   data=data.filter(d=>{const id=String(d.ID);if(seen.has(id))return false;seen.add(id);return true});
@@ -834,6 +825,109 @@ function guardarDatos(){
   localStorage.setItem("inversiones",JSON.stringify(inversiones));
 }
 
+// ═══════════════ COACH FINANCIERO V3 MEJORADO ═══════════════
+function renderCoach(ing, gas, ah, cats, saldos) {
+    const bal = ing - gas;
+    const hoy = hoyColombia();
+    const hoyStr = hoy.getFullYear() + "-" + String(hoy.getMonth() + 1).padStart(2,"0") + "-" + String(hoy.getDate()).padStart(2,"0");
+    const hoyG = data.filter(x => x.Fecha === hoyStr && x.Tipo === "Gasto").reduce((a, b) => a + (Number(b.Monto) || 0), 0);
+    const diasDelMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).getDate();
+    const diaActual = hoy.getDate();
+    const diasRestantes = diasDelMes - diaActual;
+    const gastoPromedioUltimaSemana = (()=>{
+      const fechaSemana = new Date(hoy); fechaSemana.setDate(hoy.getDate() - 7);
+      const gastosSemana = data.filter(x => x.Tipo === "Gasto" && new Date(x.Fecha) >= fechaSemana);
+      return gastosSemana.reduce((a, x) => a + (Number(x.Monto) || 0), 0) / 7 || gas / Math.max(diaActual, 1);
+    })();
+    const proyeccionRealista = ing - (gas + (gastoPromedioUltimaSemana * diasRestantes));
+    const budgets = JSON.parse(localStorage.getItem(keyFor("budgets")) || "{}");
+    let alerts = [], presupuestosExcedidos = [];
+    Object.entries(budgets).forEach(([cat, lim]) => {
+        const gastado = cats[cat] || 0;
+        const porcentaje = (gastado / lim) * 100;
+        const porcentajeDia = (gastado / lim) * (diaActual / diasDelMes) * 100;
+        if (porcentaje >= 100) { presupuestosExcedidos.push({ cat, gastado, lim, exceso: gastado - lim }); alerts.push({ level: "danger", msg: `❌ ${cat}: Excedido por ${money(gastado - lim)}` }); }
+        else if (porcentaje >= 85 && porcentajeDia > 100) { alerts.push({ level: "warning", msg: `⚠️ ${cat}: ${porcentaje.toFixed(0)}% usado` }); }
+        else if (porcentaje >= 70 && porcentajeDia > 120) { alerts.push({ level: "info", msg: `📌 ${cat}: ${porcentaje.toFixed(0)}% usado` }); }
+    });
+    const tasaAhorro = ing > 0 ? (ah / ing * 100) : 0;
+    const gastoVsIngreso = ing > 0 ? (gas / ing * 100) : 0;
+    const diasAutonomia = gas > 0 ? ah / (gas / 30) : 0;
+    let saludGeneral = "", saludColor = "";
+    let puntosSalud = 100;
+    if (bal < 0) { saludGeneral = "CRÍTICO"; saludColor = "var(--bad)"; puntosSalud -= 40; }
+    else if (tasaAhorro < 5) { saludGeneral = "PRECARIO"; saludColor = "var(--bad)"; puntosSalud -= 30; }
+    else if (tasaAhorro < 10) { saludGeneral = "REGULAR"; saludColor = "var(--warn)"; puntosSalud -= 15; }
+    else if (tasaAhorro < 20) { saludGeneral = "BUENO"; saludColor = "var(--ok)"; puntosSalud -= 5; }
+    else { saludGeneral = "EXCELENTE"; saludColor = "var(--ok)"; }
+    if (gastoVsIngreso > 80) puntosSalud -= 15;
+    if (Object.keys(budgets).length > 0) puntosSalud += 10;
+    if (goals.length > 0) puntosSalud += 5;
+    if (ah > 0) puntosSalud += Math.min(10, Math.floor(ah / (ing / 100)));
+    puntosSalud = Math.max(0, Math.min(100, puntosSalud));
+    
+    let metasHtml = "";
+    if (goals.length > 0) {
+        const metaPrincipal = goals.reduce((a, b) => a.valor > b.valor ? a : b);
+        metasHtml = `<div class="coach-section"><div class="coach-header">🎯 Progreso de Metas</div><div class="coach-item"><span class="coach-label">Principal</span><span class="coach-value">${metaPrincipal.nombre}: ${money(ah)} / ${money(metaPrincipal.valor)}</span></div></div>`;
+    }
+    let inversionesHtml = "";
+    if (inversiones.length > 0) {
+        const totalInv = inversiones.reduce((a, i) => a + (i.monto || 0), 0);
+        const rentaProm = inversiones.reduce((a, i) => a + (i.rentabilidad || 0), 0) / inversiones.length;
+        inversionesHtml = `<div class="coach-section"><div class="coach-header">📈 Inversiones</div><div class="coach-item"><span class="coach-label">Total</span><span class="coach-value good">${money(totalInv)}</span></div><div class="coach-item"><span class="coach-label">Rentabilidad</span><span class="coach-value">${rentaProm.toFixed(1)}% anual</span></div></div>`;
+    }
+    let prestamosHtml = "";
+    const prestamosActivos = prestamos.filter(p => p.estado !== "pagado");
+    const prestamosRecibidos = prestamosActivos.filter(p => p.tipo === "recibido");
+    if (prestamosActivos.length > 0) {
+        const totalDebo = prestamosRecibidos.reduce((a, p) => a + (p.monto - (p.pagos?.reduce((s, x) => s + x.monto, 0) || 0)), 0);
+        prestamosHtml = `<div class="coach-section"><div class="coach-header">💳 Préstamos</div><div class="coach-item"><span class="coach-label">Debes</span><span class="coach-value ${totalDebo > 0 ? 'bad' : 'good'}">${money(totalDebo)}</span></div></div>`;
+    }
+    const recurrentes = JSON.parse(localStorage.getItem(keyFor("recurrentes")) || "[]");
+    let recurrentesHtml = "";
+    if (recurrentes.length > 0) {
+        const totalRec = recurrentes.reduce((a, r) => a + (r.monto || 0), 0);
+        const impacto = ing > 0 ? (totalRec / ing * 100) : 0;
+        recurrentesHtml = `<div class="coach-section"><div class="coach-header">🔄 Gastos Fijos</div><div class="coach-item"><span class="coach-label">Total mensual</span><span class="coach-value ${impacto > 50 ? 'bad' : 'mid'}">${money(totalRec)} (${impacto.toFixed(0)}%)</span></div></div>`;
+    }
+    let comparativaMesHtml = "";
+    if (historial.length > 0 && historial[0]) {
+        const mesPasado = historial[0];
+        const varIng = mesPasado.ing > 0 ? ((ing - mesPasado.ing) / mesPasado.ing * 100) : 0;
+        comparativaMesHtml = `<div class="coach-section"><div class="coach-header">📊 Vs Mes Anterior</div><div class="coach-item"><span class="coach-label">Ingresos</span><span class="coach-value ${varIng >= 0 ? 'good' : 'bad'}">${varIng >= 0 ? '↑' : '↓'} ${Math.abs(varIng).toFixed(0)}%</span></div></div>`;
+    }
+    let consejos = [];
+    if (bal < 0) consejos.push(`🔴 Gastas más de lo que ganas`);
+    else if (tasaAhorro < 5) consejos.push(`🟠 Ahorras solo el ${tasaAhorro.toFixed(0)}%. Reduce gastos`);
+    else if (tasaAhorro >= 20) consejos.push(`🟢 ¡Excelente ahorro! Considera invertir`);
+    if (presupuestosExcedidos.length > 0) consejos.push(`❌ Te excediste en: ${presupuestosExcedidos.map(p=>p.cat).join(", ")}`);
+    if (gastoVsIngreso >= 85) consejos.push(`💥 ¡URGENTE! Gastas el ${gastoVsIngreso.toFixed(0)}% de ingresos`);
+    if (diasAutonomia > 0 && diasAutonomia < 15) consejos.push(`⚠️ Ahorro solo cubre ${Math.floor(diasAutonomia)} días`);
+    if (recurrentes.length > 0 && (totalRec/ing*100) > 50) consejos.push(`📋 Tus gastos fijos son el ${(totalRec/ing*100).toFixed(0)}% de ingresos`);
+    
+    const topCats = Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,3);
+    let topCatsHtml = "";
+    if (topCats.length > 0) {
+        topCatsHtml = `<div class="coach-section"><div class="coach-header">📂 Top Gastos</div>`;
+        topCats.forEach(([cat, monto], i) => {
+            const pct = gas > 0 ? (monto / gas * 100) : 0;
+            topCatsHtml += `<div class="coach-item"><span class="coach-label">${i===0?'🔴':i===1?'🟡':'🟢'} ${cat}</span><span class="coach-value ${pct>40?'bad':pct>25?'warn':'good'}">${money(monto)} (${pct.toFixed(0)}%)</span></div>`;
+        });
+        topCatsHtml += `</div>`;
+    }
+    
+    let html = `<div style="background:linear-gradient(135deg,rgba(59,130,246,.12),rgba(139,92,246,.06));border-radius:14px;padding:10px;margin-bottom:8px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><div class="coach-header" style="margin-bottom:0;">🧠 Coach AI</div><div style="text-align:right;"><div style="font-size:9px;color:var(--muted);">Salud</div><div style="font-size:16px;font-weight:800;color:${saludColor};">${puntosSalud}%</div></div></div><div class="progress" style="height:4px;margin:0;"><div class="bar" style="width:${puntosSalud}%;background:linear-gradient(90deg,${saludColor});"></div></div><div class="small" style="margin-top:4px;color:${saludColor};">${saludGeneral}</div></div>
+    <div class="grid2" style="margin-bottom:8px;"><div class="kpi"><span>💰 Balance</span><strong style="color:${bal>=0?'var(--ok)':'var(--bad)'}">${money(bal)}</strong></div><div class="kpi"><span>💸 Ahorro</span><strong>${tasaAhorro.toFixed(0)}%</strong></div><div class="kpi"><span>📊 Ing/Gas</span><strong>${money(ing)}/${money(gas)}</strong></div><div class="kpi"><span>🏦 Autonomía</span><strong>${Math.floor(diasAutonomia)}d</strong></div></div>`;
+    if (proyeccionRealista < 0) html += `<div class="alert bad" style="margin-bottom:6px;padding:6px;">🔴 Proyección fin de mes: ${money(Math.abs(proyeccionRealista))} en déficit</div>`;
+    else if (proyeccionRealista < ing*0.1) html += `<div class="alert mid" style="margin-bottom:6px;padding:6px;">🟡 Proyección fin de mes: ${money(proyeccionRealista)} restantes</div>`;
+    else if (proyeccionRealista >= ing*0.1) html += `<div class="alert good" style="margin-bottom:6px;padding:6px;">🟢 Proyección fin de mes: Te sobrarán ${money(proyeccionRealista)}</div>`;
+    if (alerts.length > 0) { html += `<div class="coach-section"><div class="coach-header">⚠️ Alertas</div>`; alerts.slice(0,2).forEach(a=>{html+=`<div class="alert ${a.level==='danger'?'bad':a.level==='warning'?'mid':'info'}" style="margin-top:3px;padding:5px;font-size:10px;">${a.msg}</div>`;}); html+=`</div>`; }
+    if (consejos.length > 0) { html += `<div class="coach-section"><div class="coach-header">💡 Recomendaciones</div>`; consejos.slice(0,3).forEach(c=>{html+=`<div class="coach-item"><span class="coach-label">📌</span><span class="coach-value" style="font-size:10px;">${c}</span></div>`;}); html+=`</div>`; }
+    html += topCatsHtml + metasHtml + inversionesHtml + prestamosHtml + recurrentesHtml + comparativaMesHtml;
+    $("coach").innerHTML = html;
+}
+
 function render(){
   let ing=0,gas=0,ah=0,cats={};
   [...data].sort((a,b)=>new Date(b.Fecha)-new Date(a.Fecha)).forEach(x=>{
@@ -854,7 +948,7 @@ function render(){
   });
   const hoy=hoyColombia(),ts=hoy.getFullYear()+"-"+String(hoy.getMonth()+1).padStart(2,"0")+"-"+String(hoy.getDate()).padStart(2,"0");
   const hoyG=data.filter(x=>x.Fecha===ts&&x.Tipo==="Gasto").reduce((a,b)=>a+Number(b.Monto||0),0);
-  $("cockpit").innerHTML=`<div class="grid2"><div class="kpi"><span>Hoy gastado</span><strong>${money(hoyG)}</strong></div><div class="kpi"><span>Balance</span><strong>${money(ing-gas)}</strong></div><div class="kpi"><span>Ahorro</span><strong>${money(ah)}</strong></div><div class="kpi"><span>Disp./día</span><strong>${money(Math.max((ing-gas)/Math.max(hoy.getDate(),1),0))}</strong></div></div>`;
+  $("cockpit").innerHTML=`<div class="grid2"><div class="kpi"><span>Hoy</span><strong>${money(hoyG)}</strong></div><div class="kpi"><span>Balance</span><strong>${money(ing-gas)}</strong></div><div class="kpi"><span>Ahorro</span><strong>${money(ah)}</strong></div><div class="kpi"><span>Disp/día</span><strong>${money(Math.max((ing-gas)/Math.max(hoy.getDate(),1),0))}</strong></div></div>`;
   renderCoach(ing,gas,ah,cats,saldos);
   const favs={};
   data.forEach(x=>{
@@ -864,59 +958,9 @@ function render(){
     favs[k].count++;
   });
   const topFavs=Object.values(favs).sort((a,b)=>b.count-a.count).slice(0,4);
-  $("favList").innerHTML=topFavs.length?topFavs.map(f=>`<button class="secondary" onclick="usarFav('${f.cat}','${f.des}',${f.monto},'${f.cuenta||""}')" style="font-size:11px">${f.cat}<br><small>${f.des}</small><br><small>${money(f.monto)}</small></button>`).join(""):'<div class="small">Sin favoritos</div>';
-  $("goalList").innerHTML=goals.length?goals.map((g,i)=>{const p=Math.min((ah/g.valor)*100,100);return`<div class="item"><div style="font-weight:700">${g.nombre}</div><div class="small">${money(ah)} / ${money(g.valor)}</div><div class="progress"><div class="bar" style="width:${p}%"></div></div><button class="small-btn" onclick="delGoal(${i})">🗑️</button></div>`}).join(""):'<div class="alert mid">Sin metas</div>';
+  $("favList").innerHTML=topFavs.length?topFavs.map(f=>`<button class="secondary" onclick="usarFav('${f.cat}','${f.des}',${f.monto},'${f.cuenta||""}')" style="font-size:10px;padding:6px">${f.cat}<br><small>${f.des}</small><br><small>${money(f.monto)}</small></button>`).join(""):'<div class="small">Sin favoritos</div>';
+  $("goalList").innerHTML=goals.length?goals.map((g,i)=>{const p=Math.min((ah/g.valor)*100,100);return`<div class="item"><div style="font-weight:700;font-size:12px">${g.nombre}</div><div class="small">${money(ah)} / ${money(g.valor)}</div><div class="progress"><div class="bar" style="width:${p}%"></div></div><button class="small-btn" onclick="delGoal(${i})">🗑️</button></div>`}).join(""):'<div class="alert mid">Sin metas</div>';
   actualizarContadorPendientes();
-}
-
-function renderCoach(ing,gas,ah,cats,saldos){
-  const bal=ing-gas;
-  const hoy=hoyColombia();
-  const ts=hoy.getFullYear()+"-"+String(hoy.getMonth()+1).padStart(2,"0")+"-"+String(hoy.getDate()).padStart(2,"0");
-  const hoyG=data.filter(x=>x.Fecha===ts&&x.Tipo==="Gasto").reduce((a,b)=>a+Number(b.Monto||0),0);
-  const diasDelMes=new Date(hoy.getFullYear(),hoy.getMonth()+1,0).getDate();
-  const diaActual=hoy.getDate();
-  const promDiario=gas/Math.max(diaActual,1);
-  const proyMes=promDiario*diasDelMes;
-  const topCats=Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,3);
-  const catCara=topCats[0];
-  const gastosPorDia={};
-  data.filter(x=>x.Tipo==="Gasto").forEach(x=>{gastosPorDia[x.Fecha]=(gastosPorDia[x.Fecha]||0)+Number(x.Monto||0)});
-  const diaMayor=Object.entries(gastosPorDia).sort((a,b)=>b[1]-a[1])[0];
-  const cuentaMenor=cuentas.reduce((a,c)=>((saldos[c.id]||0)<(saldos[a.id]||0)?c:a),cuentas[0]);
-  const tasaAhorro=ing>0?(ah/ing*100):0;
-  const budgets=JSON.parse(localStorage.getItem(keyFor("budgets"))||"{}");
-  let alertasPresupuesto="";
-  Object.entries(budgets).forEach(([cat,lim])=>{
-    const g=cats[cat]||0;
-    const pct=g/lim*100;
-    if(pct>=90)alertasPresupuesto+=`<div class="alert bad" style="margin-top:4px">⚠️ <b>${cat}</b>: ${pct.toFixed(0)}% (${money(g)}/${money(lim)})</div>`;
-    else if(pct>=70)alertasPresupuesto+=`<div class="alert mid" style="margin-top:4px">⚡ <b>${cat}</b>: ${pct.toFixed(0)}% (${money(g)}/${money(lim)})</div>`;
-  });
-  const prestamosPend=prestamos.filter(p=>p.estado!=="pagado");
-  const totalDebo=prestamosPend.filter(p=>p.tipo==="recibido").reduce((a,p)=>{const meses=(hoy.getFullYear()-new Date(p.fecha).getFullYear())*12+(hoy.getMonth()-new Date(p.fecha).getMonth());return a+Math.max(p.monto*(1+(p.interes/100)*Math.max(meses,1))-p.pagos.reduce((s,x)=>s+x.monto,0),0)},0);
-  let html='';
-  if(bal>0&&tasaAhorro>=20){html+=`<div class="alert good" style="font-size:13px;font-weight:600">🟢 ¡Excelente! Balance: <b>${money(bal)}</b>. Ahorro: <b>${tasaAhorro.toFixed(0)}%</b></div>`}
-  else if(bal>0&&tasaAhorro>=10){html+=`<div class="alert good" style="font-size:13px;font-weight:600">🟢 Bien. Balance: <b>${money(bal)}</b>. Ahorro: <b>${tasaAhorro.toFixed(0)}%</b></div>`}
-  else if(bal>0&&tasaAhorro<10){html+=`<div class="alert mid" style="font-size:13px;font-weight:600">🟡 Balance: <b>${money(bal)}</b>. Ahorro bajo (${tasaAhorro.toFixed(0)}%)</div>`}
-  else if(bal<0){html+=`<div class="alert bad" style="font-size:13px;font-weight:600">🔴 Déficit: <b>${money(Math.abs(bal))}</b></div>`}
-  else{html+=`<div class="alert mid" style="font-size:13px;font-weight:600">🟡 Equilibrio: <b>${money(bal)}</b></div>`}
-  html+=`<div class="grid2" style="margin-top:10px;margin-bottom:6px"><div class="kpi"><span>Hoy</span><strong>${money(hoyG)}</strong></div><div class="kpi"><span>Proy. mes</span><strong style="color:${proyMes>ing?'var(--bad)':'var(--ok)'}">${money(proyMes)}</strong></div><div class="kpi"><span>Ahorro</span><strong style="color:${tasaAhorro>=10?'var(--ok)':'var(--warn)'}">${tasaAhorro.toFixed(0)}%</strong></div><div class="kpi"><span>Deudas</span><strong style="color:${totalDebo>0?'var(--bad)':'var(--ok)'}">${money(totalDebo)}</strong></div></div>`;
-  html+=`<div class="coach-section"><div class="coach-header">📊 Análisis detallado</div>`;
-  if(diaMayor&&diaMayor[1]>0)html+=`<div class="coach-item"><span class="coach-label">📆 Día mayor gasto</span><span class="coach-value">${labelDay(diaMayor[0])} · ${money(diaMayor[1])}</span></div>`;
-  if(catCara){const pctCat=((catCara[1]/Math.max(gas,1))*100).toFixed(0);html+=`<div class="coach-item"><span class="coach-label">📌 Mayor categoría</span><span class="coach-value warn">${catCara[0]} · ${pctCat}%</span></div>`}
-  html+=`<div class="coach-item"><span class="coach-label">📉 Promedio diario</span><span class="coach-value">${money(promDiario)}</span></div>`;
-  html+=`<div class="coach-item"><span class="coach-label">🏦 Cuenta más baja</span><span class="coach-value ${(saldos[cuentaMenor?.id]||0)<0?'bad':'good'}">${cuentaMenor?.icon||''} ${cuentaMenor?.nombre||'—'} · ${money(saldos[cuentaMenor?.id]||0)}</span></div>`;
-  html+=`</div>`;
-  if(alertasPresupuesto)html+=`<div style="margin-top:8px"><div style="font-weight:700;font-size:12px;margin-bottom:4px">⚠️ Alertas</div>${alertasPresupuesto}</div>`;
-  html+=`<div class="coach-section" style="margin-top:8px"><div class="coach-header">💡 Recomendaciones</div>`;
-  if(bal<0)html+=`<div class="coach-item"><span class="coach-label">🔴 Urgente</span><span class="coach-value bad">Reduce gastos en ${catCara?catCara[0]:'categorías'}</span></div>`;
-  if(tasaAhorro<10)html+=`<div class="coach-item"><span class="coach-label">🐷 Meta</span><span class="coach-value">Ahorra al menos 10% (${money(ing*0.1)}/mes)</span></div>`;
-  if(proyMes>ing)html+=`<div class="coach-item"><span class="coach-label">📉 Proyección</span><span class="coach-value bad">Gastarás ${money(proyMes-ing)} más</span></div>`;
-  if(totalDebo>0)html+=`<div class="coach-item"><span class="coach-label">💳 Deudas</span><span class="coach-value warn">Debes ${money(totalDebo)}</span></div>`;
-  if(gas>0&&ing>0&&(gas/ing)<0.5)html+=`<div class="coach-item"><span class="coach-label">🎉 Extra</span><span class="coach-value good">Sobra ${money(ing-gas)}</span></div>`;
-  html+=`</div>`;
-  $("coach").innerHTML=html;
 }
 
 function usarFav(cat,des,monto,cuenta){setMode("gasto",document.querySelectorAll(".mode-tab")[1]);$("categoria").value=cat;$("descripcion").value=des;$("montoInput").value=Number(monto).toLocaleString("es-CO");if(cuenta)$("cuentaSel").value=cuenta;toast("Cargado");}
@@ -947,9 +991,9 @@ function renderLista(){
     const m=Number(x.Monto)||0,cls=x.Tipo==="Ingreso"?"ingreso":x.Tipo==="Gasto"?"gasto":x.Tipo==="Transferencia"?"transferencia":"traspaso";
     if(orden.startsWith("fecha")&&x.Fecha!==ld){$("lista").innerHTML+=`<div class="timeline-day">${labelDay(x.Fecha)}</div>`;ld=x.Fecha}
     let cl="";
-    if(x.Tipo==="Transferencia"){const o=cuentas.find(c=>c.id===x.CuentaOrigen),d=cuentas.find(c=>c.id===x.CuentaDestino);cl=`<span class="badge">🔄 ${o?.icon||""} → ${d?.icon||""}</span>`}
+    if(x.Tipo==="Transferencia"){const o=cuentas.find(c=>c.id===x.CuentaOrigen),d=cuentas.find(c=>c.id===x.CuentaDestino);cl=`<span class="badge">🔄 ${o?.icon||""}→${d?.icon||""}</span>`}
     else if(x.Cuenta){const c=cuentas.find(cu=>cu.id===x.Cuenta);if(c)cl=`<span class="badge">${c.icon} ${c.nombre}</span>`}
-    $("lista").innerHTML+=`<div class="item ${cls}"><div>${x.Categoría||""} - ${x.Descripción||""}${cl}</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px"><b>${money(m)}</b><div style="display:flex;gap:4px">${(x.Tipo==="Ingreso"||x.Tipo==="Gasto")?`<button class="warn-btn" onclick="abrirEditar('${x.ID}')">✏️</button>`:""}<button class="small-btn" onclick="borrar('${x.ID}')">🗑️</button></div></div></div>`;
+    $("lista").innerHTML+=`<div class="item ${cls}"><div>${x.Categoría||""} - ${x.Descripción||""}${cl}</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px"><b>${money(m)}</b><div style="display:flex;gap:4px">${(x.Tipo==="Ingreso"||x.Tipo==="Gasto")?`<button class="warn-btn" onclick="abrirEditar('${x.ID}')" style="padding:3px 6px;font-size:9px">✏️</button>`:""}<button class="small-btn" onclick="borrar('${x.ID}')" style="padding:3px 6px;font-size:9px">🗑️</button></div></div></div>`;
   });
 }
 
@@ -1024,9 +1068,9 @@ async function confirmarEdicion(){
   toast("✔ Actualizado");
 }
 
-function renderHistorial(){if(!historial.length){$("historialCard").style.display="none";return}$("historialCard").style.display="block";$("historialLista").innerHTML=historial.map((m,i)=>`<div class="item" style="cursor:pointer" onclick="toggleMes(${i})"><div style="display:flex;justify-content:space-between"><span style="font-weight:700">📅 ${m.label}</span><span id="ma${i}">▶</span></div><div class="small">Ing: ${money(m.ing)} · Gas: ${money(m.gas)} · Bal: ${money(m.ing-m.gas)}</div><div style="display:none;margin-top:6px" id="mb${i}">${m.movimientos?.length?m.movimientos.map(x=>`<div>${x.Categoría||""} - ${x.Descripción||""}: ${money(x.Monto)}</div>`).join(""):'<div class="small">Sin datos</div>'}</div></div>`).join("")}
+function renderHistorial(){if(!historial.length){$("historialCard").style.display="none";return}$("historialCard").style.display="block";$("historialLista").innerHTML=historial.map((m,i)=>`<div class="item" style="cursor:pointer" onclick="toggleMes(${i})"><div style="display:flex;justify-content:space-between"><span style="font-weight:700">📅 ${m.label}</span><span id="ma${i}">▶</span></div><div class="small">Ing: ${money(m.ing)} · Gas: ${money(m.gas)} · Bal: ${money(m.ing-m.gas)}</div><div style="display:none;margin-top:4px" id="mb${i}">${m.movimientos?.slice(0,3).map(x=>`<div>${x.Categoría||""} - ${x.Descripción||""}: ${money(x.Monto)}</div>`).join("")}</div></div>`).join("")}
 function toggleMes(i){const b=$("mb"+i),a=$("ma"+i);b.style.display=b.style.display==="none"?"block":"none";a.textContent=b.style.display==="none"?"▶":"▼";}
-function abrirCierre(){const s=calcSaldos(),ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gas=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0);let h=`<div class="grid2" style="margin-bottom:8px"><div class="kpi"><span>Ingresos</span><strong style="color:var(--ok)">${money(ing)}</strong></div><div class="kpi"><span>Gastos</span><strong style="color:var(--bad)">${money(gas)}</strong></div></div>`;cuentas.forEach(c=>{h+=`<div style="font-size:12px;margin-bottom:3px">${c.icon} ${c.nombre}: ${money(s[c.id]||0)}</div>`});$("modalResumen").innerHTML=h;$("modalCierre").classList.add("open");}
+function abrirCierre(){const s=calcSaldos(),ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gas=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0);let h=`<div class="grid2" style="margin-bottom:8px"><div class="kpi"><span>Ingresos</span><strong style="color:var(--ok)">${money(ing)}</strong></div><div class="kpi"><span>Gastos</span><strong style="color:var(--bad)">${money(gas)}</strong></div></div>`;cuentas.forEach(c=>{h+=`<div style="font-size:11px;margin-bottom:3px">${c.icon} ${c.nombre}: ${money(s[c.id]||0)}</div>`});$("modalResumen").innerHTML=h;$("modalCierre").classList.add("open");}
 async function confirmarCierre(){
   const s=calcSaldos(),ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gas=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0),label=hoyColombia().toLocaleDateString("es-CO",{month:"long",year:"numeric"});
   historial.unshift({label,ing,gas,saldosCierre:{...s},movimientos:[...data]});
@@ -1038,27 +1082,17 @@ async function confirmarCierre(){
     try{
       const snapPersonal=await window.fbGetDocs(window.fbCollection(window.db,"users",window.auth.currentUser.uid,colNamePersonal));
       const snapNegocio=await window.fbGetDocs(window.fbCollection(window.db,"users",window.auth.currentUser.uid,colNameNegocio));
-      const batchPersonal=window.fbWriteBatch(window.db);
-      const batchNegocio=window.fbWriteBatch(window.db);
-      snapPersonal.forEach(doc=>batchPersonal.delete(window.fbDoc(window.db,"users",window.auth.currentUser.uid,colNamePersonal,doc.id)));
-      snapNegocio.forEach(doc=>batchNegocio.delete(window.fbDoc(window.db,"users",window.auth.currentUser.uid,colNameNegocio,doc.id)));
-      await batchPersonal.commit();
-      await batchNegocio.commit();
+      for(const doc of snapPersonal.docs) await window.fbDeleteDoc(window.fbDoc(window.db,"users",window.auth.currentUser.uid,colNamePersonal,doc.id));
+      for(const doc of snapNegocio.docs) await window.fbDeleteDoc(window.fbDoc(window.db,"users",window.auth.currentUser.uid,colNameNegocio,doc.id));
     }catch(e){}
   }
-  data=[];
-  await limpiarCola();
-  localStorage.setItem(keyFor("dataCache"),"[]");
-  guardarDatos();
-  const sc=$("syncCount");if(sc)sc.innerText=0;
-  $("modalCierre").classList.remove("open");
-  render();
-  toast("✔ Mes cerrado y datos sincronizados: "+label);
+  data=[]; await limpiarCola(); localStorage.setItem(keyFor("dataCache"),"[]"); guardarDatos();
+  if($("syncCount"))$("syncCount").innerText=0;
+  $("modalCierre").classList.remove("open"); render(); toast("✔ Mes cerrado: "+label);
 }
 
-function renderCharts(){
-  const saldos=calcSaldos();
-  let ing=0,gas=0,cats={};
+function renderCharts(){ /* Versión simplificada para mantener funcionalidad */ 
+  const saldos=calcSaldos(); let ing=0,gas=0,cats={};
   data.forEach(x=>{const m=Number(x.Monto)||0;if(x.Tipo==="Ingreso")ing+=m;else if(x.Tipo==="Gasto"){gas+=m;cats[x.Categoría]=(cats[x.Categoría]||0)+m}});
   [c1,c2,c3,c4,c5,c6].forEach(c=>{if(c)c.destroy()});
   const ctx6=$("chart6");if(ctx6&&cuentas.length)c6=new Chart(ctx6,{type:"bar",data:{labels:cuentas.map(c=>c.icon+" "+c.nombre),datasets:[{data:cuentas.map(c=>saldos[c.id]||0),backgroundColor:cuentas.map((_,i)=>ACC_COLORS[i%ACC_COLORS.length])}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:false}}}});
@@ -1081,16 +1115,15 @@ function renderInversiones(){const totalInv=inversiones.reduce((a,i)=>a+(i.monto
 function mostrarFormPrestamo(){$("formPrestamo").style.display=$("formPrestamo").style.display==="none"?"block":"none";if($("formPrestamo").style.display==="block"){const sel=$("prestamoCuenta");sel.innerHTML="";cuentas.forEach(c=>{sel.innerHTML+=`<option value="${c.id}">${c.icon} ${c.nombre}</option>`})}}
 function switchPrestamoTab(tipo,btn){prestamoFiltro=tipo;document.querySelectorAll("#dash-prestamos .tab-mini").forEach(t=>t.classList.remove("active"));btn.classList.add("active");renderPrestamos()}
 function agregarPrestamo(){const tipo=$("prestamoTipo").value,persona=$("prestamoPersona").value.trim(),monto=parseMonto($("prestamoMonto").value),cuenta=$("prestamoCuenta").value,vencimiento=$("prestamoVencimiento").value,nota=$("prestamoNota").value.trim(),interes=parseFloat(($("prestamoInteres").value||"0").replace(",","."))||0;if(!persona||monto<=0||!vencimiento){toast("Completa persona, monto y fecha");return}prestamos.push({id:"prestamo_"+Date.now(),tipo,persona,monto,cuenta,vencimiento,nota,interes,fecha:fechaHoyColombia(),pagos:[],estado:"pendiente"});localStorage.setItem("prestamos",JSON.stringify(prestamos));$("prestamoPersona").value=$("prestamoMonto").value=$("prestamoNota").value=$("prestamoInteres").value="";$("formPrestamo").style.display="none";renderPrestamos();toast("💳 Préstamo registrado")}
-function registrarPagoPrestamo(id){const p=prestamos.find(x=>x.id===id);if(!p)return;const monto=parseFloat(prompt("Monto del pago:","0")||"0");if(monto<=0)return;p.pagos.push({monto,fecha:fechaHoyColombia()});const hoy=hoyColombia(),meses=(hoy.getFullYear()-new Date(p.fecha).getFullYear())*12+(hoy.getMonth()-new Date(p.fecha).getMonth()),totalConInteres=p.monto*(1+(p.interes/100)*Math.max(meses,1));const totalPagado=p.pagos.reduce((a,x)=>a+x.monto,0);if(totalPagado>=totalConInteres)p.estado="pagado";else if(new Date(p.vencimiento)<hoy&&totalPagado<totalConInteres)p.estado="atrasado";localStorage.setItem("prestamos",JSON.stringify(prestamos));renderPrestamos()}
+function registrarPagoPrestamo(id){const p=prestamos.find(x=>x.id===id);if(!p)return;const monto=parseFloat(prompt("Monto del pago:","0")||"0");if(monto<=0)return;p.pagos.push({monto,fecha:fechaHoyColombia()});const totalPagado=p.pagos.reduce((a,x)=>a+x.monto,0);if(totalPagado>=p.monto)p.estado="pagado";else if(new Date(p.vencimiento)<hoyColombia())p.estado="atrasado";localStorage.setItem("prestamos",JSON.stringify(prestamos));renderPrestamos()}
 function eliminarPrestamo(id){if(!confirm("¿Eliminar?"))return;prestamos=prestamos.filter(p=>p.id!==id);localStorage.setItem("prestamos",JSON.stringify(prestamos));renderPrestamos()}
-function renderPrestamos(){let filtrados=prestamos;if(prestamoFiltro==="recibidos")filtrados=prestamos.filter(p=>p.tipo==="recibido");else if(prestamoFiltro==="otorgados")filtrados=prestamos.filter(p=>p.tipo==="otorgado");const hoy=hoyColombia();$("prestamosLista").innerHTML=filtrados.length?filtrados.map(p=>{const totalPagado=p.pagos.reduce((a,x)=>a+x.monto,0),meses=(hoy.getFullYear()-new Date(p.fecha).getFullYear())*12+(hoy.getMonth()-new Date(p.fecha).getMonth()),totalConInteres=p.monto*(1+(p.interes/100)*Math.max(meses,1)),restante=Math.max(totalConInteres-totalPagado,0),pct=Math.min((totalPagado/totalConInteres)*100,100);return`<div class="prestamo-card prestamo-${p.tipo==="recibido"?"recibido":"otorgado"}"><div style="display:flex;justify-content:space-between;align-items:start"><div><div style="font-weight:700;font-size:13px">${p.tipo==="recibido"?"📥":"📤"} ${p.persona}</div><div class="small">${money(p.monto)} · ${p.interes>0?`Interés: ${p.interes}%`:'Sin interés'}</div><div class="small">Vence: ${new Date(p.vencimiento+'T00:00:00').toLocaleDateString("es-CO")}</div>${p.nota?`<div class="small">📝 ${p.nota}</div>`:''}<div class="small">Total: ${money(totalConInteres)} | Restante: ${money(restante)} | ${p.pagos.length} pagos: ${money(totalPagado)}</div><span class="prestamo-status ${p.estado}">${p.estado==="pendiente"?"Pendiente":p.estado==="pagado"?"Pagado":"Atrasado"}</span></div><div style="display:flex;flex-direction:column;gap:4px">${p.estado!=="pagado"?`<button class="success-btn" onclick="registrarPagoPrestamo('${p.id}')">💵 Pagar</button>`:''}<button class="small-btn" onclick="eliminarPrestamo('${p.id}')">🗑️</button></div></div><div class="progress" style="margin-top:6px"><div class="bar" style="width:${pct}%;background:${pct>=100?'var(--ok)':'var(--warn)'}"></div></div><div class="small" style="text-align:right;margin-top:2px">${pct.toFixed(0)}% pagado</div></div>`}).join(""):'<div class="alert mid">Sin préstamos</div>';const rec=prestamos.filter(p=>p.tipo==="recibido"&&p.estado!=="pagado"),ot=prestamos.filter(p=>p.tipo==="otorgado"&&p.estado!=="pagado");const totalRec=rec.reduce((a,p)=>{const meses=(hoy.getFullYear()-new Date(p.fecha).getFullYear())*12+(hoy.getMonth()-new Date(p.fecha).getMonth());const r=p.monto*(1+(p.interes/100)*Math.max(meses,1))-p.pagos.reduce((s,x)=>s+x.monto,0);return a+Math.max(r,0)},0);const totalOt=ot.reduce((a,p)=>{const meses=(hoy.getFullYear()-new Date(p.fecha).getFullYear())*12+(hoy.getMonth()-new Date(p.fecha).getMonth());const r=p.monto*(1+(p.interes/100)*Math.max(meses,1))-p.pagos.reduce((s,x)=>s+x.monto,0);return a+Math.max(r,0)},0);$("prestamosResumen").innerHTML=`<div class="grid2"><div class="kpi"><span>Debes</span><strong style="color:var(--bad)">${money(totalRec)}</strong></div><div class="kpi"><span>Te deben</span><strong style="color:var(--ok)">${money(totalOt)}</strong></div><div class="kpi"><span>Balance neto</span><strong style="color:${totalOt-totalRec>=0?'var(--ok)':'var(--bad)'}">${money(totalOt-totalRec)}</strong></div><div class="kpi"><span>⚠️ Atrasados</span><strong style="color:var(--bad)">${prestamos.filter(p=>p.estado==="atrasado").length}</strong></div></div>`}
+function renderPrestamos(){let filtrados=prestamos;if(prestamoFiltro==="recibidos")filtrados=prestamos.filter(p=>p.tipo==="recibido");else if(prestamoFiltro==="otorgados")filtrados=prestamos.filter(p=>p.tipo==="otorgado");$("prestamosLista").innerHTML=filtrados.length?filtrados.map(p=>{const totalPagado=p.pagos.reduce((a,x)=>a+x.monto,0),restante=p.monto-totalPagado,pct=Math.min((totalPagado/p.monto)*100,100);return`<div class="prestamo-card prestamo-${p.tipo==="recibido"?"recibido":"otorgado"}"><div style="display:flex;justify-content:space-between;align-items:start"><div><div style="font-weight:700;font-size:13px">${p.tipo==="recibido"?"📥":"📤"} ${p.persona}</div><div class="small">${money(p.monto)} · ${p.interes>0?`Interés: ${p.interes}%`:'Sin interés'}</div><div class="small">Vence: ${new Date(p.vencimiento+'T00:00:00').toLocaleDateString("es-CO")}</div><div class="small">Restante: ${money(restante)}</div><span class="prestamo-status ${p.estado}">${p.estado==="pendiente"?"Pendiente":p.estado==="pagado"?"Pagado":"Atrasado"}</span></div><div style="display:flex;flex-direction:column;gap:4px">${p.estado!=="pagado"?`<button class="success-btn" onclick="registrarPagoPrestamo('${p.id}')">💵 Pagar</button>`:''}<button class="small-btn" onclick="eliminarPrestamo('${p.id}')">🗑️</button></div></div><div class="progress" style="margin-top:6px"><div class="bar" style="width:${pct}%;background:${pct>=100?'var(--ok)':'var(--warn)'}"></div></div><div class="small" style="text-align:right;margin-top:2px">${pct.toFixed(0)}% pagado</div></div>`}).join(""):'<div class="alert mid">Sin préstamos</div>';const totalDebe=prestamos.filter(p=>p.tipo==="recibido"&&p.estado!=="pagado").reduce((a,p)=>a+(p.monto-p.pagos.reduce((s,x)=>s+x.monto,0)),0);const totalLeDeben=prestamos.filter(p=>p.tipo==="otorgado"&&p.estado!=="pagado").reduce((a,p)=>a+(p.monto-p.pagos.reduce((s,x)=>s+x.monto,0)),0);$("prestamosResumen").innerHTML=`<div class="grid2"><div class="kpi"><span>Debes</span><strong style="color:var(--bad)">${money(totalDebe)}</strong></div><div class="kpi"><span>Te deben</span><strong style="color:var(--ok)">${money(totalLeDeben)}</strong></div><div class="kpi"><span>Balance neto</span><strong style="color:${totalLeDeben-totalDebe>=0?'var(--ok)':'var(--bad)'}">${money(totalLeDeben-totalDebe)}</strong></div><div class="kpi"><span>⚠️ Atrasados</span><strong style="color:var(--bad)">${prestamos.filter(p=>p.estado==="atrasado").length}</strong></div></div>`}
 
 function goTab(tab,btn){
   document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
   $("tab-"+tab).classList.add("active");
   document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));
   if(btn)btn.classList.add("active");
-  else{const idx={home:0,dashboard:1,goals:2,list:3,settings:4};document.querySelectorAll(".nav button")[idx[tab]]?.classList.add("active")}
   if(tab==="list"){renderHistorial();renderLista()}
   if(tab==="settings"){renderCuentasAdmin();renderCatsAdmin();renderHistorialAdmin()}
   if(tab==="dashboard"){setTimeout(renderCharts,400);renderInversiones();renderPrestamos()}
@@ -1124,7 +1157,7 @@ function cambiarHora(){localStorage.setItem("horaNoti",$("horaRecordatorio").val
 function probarNoti(){if(Notification.permission==="granted"){new Notification("🔔 Prueba",{body:"¡Funciona!"});toast("✅ Enviada")}else if(Notification.permission==="default"){Notification.requestPermission().then(p=>{if(p==="granted")probarNoti();else toast("❌ Denegado")})}else toast("❌ Bloqueadas")}
 function limpiarCache(ctx){if(!confirm("¿Limpiar "+ctx+"?"))return;localStorage.removeItem(keyForCtx("dataCache",ctx));if(ctx===contexto){data=[];render()}toast("✔ Limpiado")}
 function exportarCSV(){const f=data.map(x=>[x.Fecha||"",x.Tipo||"",x.Categoría||"",(x.Descripción||"").replace(/,/g,";"),x.Monto||0,x.Cuenta||x.CuentaOrigen||"",x.Nota||""]);const csv="Fecha,Tipo,Categoría,Descripción,Monto,Cuenta,Nota\n"+f.map(r=>r.join(",")).join("\n");const b=new Blob(["\uFEFF"+csv]),url=URL.createObjectURL(b),a=document.createElement("a");a.href=url;a.download="movimientos_"+fechaHoyColombia().slice(0,7)+".csv";a.click();toast("📥 CSV exportado")}
-function diag(){$("diagContent").innerHTML="✅ Firebase: "+(window.db?"OK":"NO")+"<br>👤 "+(window.auth?.currentUser?.email||"Sin sesión")+"<br>💾 "+data.length+" movimientos<br>📡 "+(navigator.onLine?"Online":"Offline")+"<br>🎨 Tema: "+temaActual+"<br>📈 Inv: "+inversiones.length+"<br>💳 Prest: "+prestamos.length+"<br>📅 Hoy: "+fechaHoyColombia()}
+function diag(){$("diagContent").innerHTML="✅ Firebase: "+(window.db?"OK":"NO")+"<br>👤 "+(window.auth?.currentUser?.email||"Sin sesión")+"<br>💾 "+data.length+" movimientos<br>📡 "+(navigator.onLine?"Online":"Offline")+"<br>🎨 Tema: "+temaActual+"<br>📈 Inv: "+inversiones.length+"<br>💳 Prest: "+prestamos.length}
 function aplicarTema(tema){temaActual=tema;localStorage.setItem("tema",tema);document.body.className=document.body.className.replace(/tema-\w+/g,"");document.body.classList.add("tema-"+tema);document.querySelectorAll(".tema-preview").forEach(t=>t.classList.remove("activo"));const p=$("tema"+tema.charAt(0).toUpperCase()+tema.slice(1));if(p)p.classList.add("activo");if(contexto==="negocio")document.body.classList.add("modo-negocio");toast("🎨 Tema "+tema)}
 function renderHistorialAdmin(){const el=$("historialAdminLista");if(!el)return;if(!historial.length){el.innerHTML='<div class="alert mid">No hay meses cerrados en el historial</div>';return}el.innerHTML=historial.map((m,i)=>`<div class="item" style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:700;font-size:13px">📅 ${m.label}</div><div class="small">Ing: ${money(m.ing)} · Gas: ${money(m.gas)} · Bal: ${money(m.ing-m.gas)}</div><div class="small">${m.movimientos?.length||0} movimientos</div></div><button class="small-btn" onclick="eliminarMesHistorial(${i})" style="width:auto;background:rgba(239,68,68,.15);color:var(--bad)">🗑️</button></div>`).join("")}
 function eliminarMesHistorial(index){const mes=historial[index];if(!confirm(`¿Eliminar "${mes.label}" del historial?`))return;historial.splice(index,1);localStorage.setItem(keyFor("historialMeses"),JSON.stringify(historial));renderHistorialAdmin();toast("🗑️ Mes eliminado: "+mes.label)}
@@ -1148,7 +1181,8 @@ window.limpiarCache=limpiarCache;window.diag=diag;window.aplicarTema=aplicarTema
 window.toggleNotiDiaria=toggleNotiDiaria;window.cambiarHora=cambiarHora;window.probarNoti=probarNoti;
 window.eliminarMesHistorial=eliminarMesHistorial;window.renderHistorialAdmin=renderHistorialAdmin;
 
-console.log("✅ Banking PRO AI v28 - COMPLETO con offline robusto y multi-dispositivo");
+console.log("✅ Banking PRO AI v29 - COMPLETO con Coach Potente y Offline Robusto");
 </script>
 </body>
 </html>
+
