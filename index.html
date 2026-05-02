@@ -240,7 +240,7 @@
   <div class="header">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
       <div><div class="small">Banking PRO AI v28 <span style="color:var(--ok)">●</span></div><div class="small" id="today"></div></div>
-      <div class="user-chip" onclick="goTab('settings',4)"><div class="user-chip-avatar" id="userAvatar">?</div><div class="user-chip-name" id="userName">—</div></div>
+      <div class="user-chip" onclick="goTab('settings')"><div class="user-chip-avatar" id="userAvatar">?</div><div class="user-chip-name" id="userName">—</div></div>
     </div>
     <div class="ctx-wrap">
       <div class="ctx-btn ctx-active" id="ctxPersonal" onclick="setContexto('personal')">👤 Personal</div>
@@ -358,33 +358,34 @@
 </div>
 
 <div class="toast" id="toast"></div>
-<div class="modal-overlay" id="modalCierre"><div class="modal"><h3>🔒 Cerrar mes</h3><p>Se archivará todo y se limpiará Firebase.</p><div id="modalResumen" style="margin-bottom:12px"></div><div class="modal-btns"><button class="secondary" onclick="$('modalCierre').classList.remove('open')">Cancelar</button><button class="primary" onclick="confirmarCierre()">✔ Confirmar</button></div></div></div>
-<div class="modal-overlay" id="modalEditar"><div class="modal"><h3>✏️ Editar movimiento</h3><input type="date" id="editFecha"><select id="editCategoria"></select><input type="text" id="editDescripcion" placeholder="Descripción"><input type="text" id="editMonto" placeholder="Monto"><select id="editCuenta"></select><input type="text" id="editNota" placeholder="Nota"><div class="modal-btns"><button class="secondary" onclick="$('modalEditar').classList.remove('open')">Cancelar</button><button class="primary" onclick="confirmarEdicion()">✔ Guardar</button></div></div></div>
+<div class="modal-overlay" id="modalCierre"><div class="modal"><h3>🔒 Cerrar mes</h3><p>Se archivará todo y se limpiará Firebase.</p><div id="modalResumen" style="margin-bottom:12px"></div><div class="modal-btns"><button class="secondary" onclick="document.getElementById('modalCierre').classList.remove('open')">Cancelar</button><button class="primary" onclick="confirmarCierre()">✔ Confirmar</button></div></div></div>
+<div class="modal-overlay" id="modalEditar"><div class="modal"><h3>✏️ Editar movimiento</h3><input type="date" id="editFecha"><select id="editCategoria"></select><input type="text" id="editDescripcion" placeholder="Descripción"><input type="text" id="editMonto" placeholder="Monto"><select id="editCuenta"></select><input type="text" id="editNota" placeholder="Nota"><div class="modal-btns"><button class="secondary" onclick="document.getElementById('modalEditar').classList.remove('open')">Cancelar</button><button class="primary" onclick="confirmarEdicion()">✔ Guardar</button></div></div></div>
 
 <script>
-// ═══════════════ BANKING PRO AI v28 - OFFLINE ROBUSTO + SYNCMULTI ═══════════════
+// ═══════════════ BANKING PRO AI v28 - COMPLETO ═══════════════
 const $=id=>document.getElementById(id);
 const ACC_COLORS=["#3b82f6","#22c55e","#f59e0b","#ec4899","#a78bfa","#14b8a6"];
 
-// ═══ FUNCIONES AUXILIARES ═══
 function hoyColombia(){const a=new Date();return new Date(a.getFullYear(),a.getMonth(),a.getDate())}
 function fechaHoyColombia(){const a=new Date();return a.getFullYear()+"-"+String(a.getMonth()+1).padStart(2,"0")+"-"+String(a.getDate()).padStart(2,"0")}
 function fechaParaInput(){const a=new Date();return a.getFullYear()+"-"+String(a.getMonth()+1).padStart(2,"0")+"-"+String(a.getDate()).padStart(2,"0")}
+
 let contexto=localStorage.getItem("contexto")||"personal",data=[],pending=[],hidden=localStorage.getItem("hideMoney")==="1";
 let goals=[],modoActual="ingreso",historial=[],cuentas=[],categorias=[];
 let c1,c2,c3,c4,c5,c6,cInv,filtroTipo="todos",editandoId=null,recognition=null,isListening=false;
 let inversiones=JSON.parse(localStorage.getItem("inversiones")||"[]"),temaActual=localStorage.getItem("tema")||"dark";
 let prestamos=JSON.parse(localStorage.getItem("prestamos")||"[]"),prestamoFiltro="todos";
 let syncInProgress=false;
+
 function uid(){return window.currentUser?.uid||localStorage.getItem("uid")||"guest"}
 function keyFor(b){const s=contexto==="negocio"?"Negocio":"";return uid()+"_"+s+b}
 function keyForCtx(b,c){const s=c==="negocio"?"Negocio":"";return uid()+"_"+s+b}
 function toast(m){const t=$("toast");t.innerText=m;t.style.display="block";clearTimeout(t._timeout);t._timeout=setTimeout(()=>t.style.display="none",2400)}
 function money(n){if(hidden)return"••••••";return"$"+Number(n).toLocaleString("es-CO")}
 function parseMonto(s){return Number(String(s).replace(/\./g,"").replace(",","."))||0}
-function labelDay(f){const n=hoyColombia();const t=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0")+"-"+String(n.getDate()).padStart(2,"0");const a=new Date(n);a.setDate(n.getDate()-1);const y=a.getFullYear()+"-"+String(a.getMonth()+1).padStart(2,"0")+"-"+String(a.getDate()).padStart(2,"0");if(f===t)return"HOY";if(f===y)return"AYER";return new Date(f+"T00:00:00").toLocaleDateString("es-CO",{day:"numeric",month:"short"})}
+function labelDay(f){const n=hoyColombia();const t=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0")+"-"+String(n.getDate()).padStart(2,"0");if(f===t)return"HOY";return new Date(f+"T00:00:00").toLocaleDateString("es-CO",{day:"numeric",month:"short"})}
 
-// ═══ GESTIÓN DE COLA DE PENDIENTES (IndexedDB para mayor robustez) ═══
+// ═══ INDEXEDDB PARA OFFLINE ═══
 let dbPromise=null;
 function initIndexedDB(){
   return new Promise((resolve,reject)=>{
@@ -457,7 +458,7 @@ async function actualizarContadorPendientes(){
   return cola.length;
 }
 
-// ═══ SINCRONIZACIÓN AUTOMÁTICA ═══
+// ═══ SINCRONIZACIÓN ═══
 async function sincronizarPendientes(){
   if(syncInProgress) return;
   if(!window.db||!window.auth?.currentUser) return;
@@ -470,59 +471,37 @@ async function sincronizarPendientes(){
       syncInProgress=false;
       return;
     }
-    
     toast(`🔄 Sincronizando ${cola.length} pendientes...`);
-    
     for(const item of cola){
       try{
         const colName=item.contexto==="negocio"?"movimientos_negocio":"movimientos_personal";
         const ref=await window.fbAddDoc(window.fbCollection(window.db,"users",window.auth.currentUser.uid,colName),item.datos);
-        
-        // Guardar también en data local con el ID real
         const datosConId={...item.datos,ID:ref.id};
-        
-        // Actualizar data según contexto
-        const ctxActual=contexto;
-        if(item.contexto===ctxActual){
+        if(item.contexto===contexto){
           data=data.filter(d=>String(d.ID)!==String(item.idLocal));
           data.push(datosConId);
         }else{
-          // Actualizar cache del otro contexto
           const otraData=JSON.parse(localStorage.getItem(keyForCtx("dataCache",item.contexto))||"[]");
           const nuevaOtra=otraData.filter(d=>String(d.ID)!==String(item.idLocal));
           nuevaOtra.push(datosConId);
           localStorage.setItem(keyForCtx("dataCache",item.contexto),JSON.stringify(nuevaOtra));
         }
-        
         await eliminarDeCola(item.id);
-      }catch(e){
-        console.error("Error sincronizando item:",e);
-      }
+      }catch(e){console.error("Error sincronizando:",e);}
     }
-    
-    // Guardar data actualizada
     guardarDatos();
     render();
-    
     toast(`✅ Sincronización completa`);
     actualizarContadorPendientes();
-    
-    // Recargar desde Firebase para asegurar consistencia
     await cargarDesdeFirebase();
     render();
-    
-  }catch(e){
-    console.error("Error en sincronización:",e);
-  }finally{
-    syncInProgress=false;
-  }
+  }catch(e){console.error("Error en sincronización:",e);}
+  finally{syncInProgress=false;}
 }
 
 async function guardarConOffline(datos,ctx){
   const idLocal="local_"+Date.now()+"_"+Math.random().toString(36).substr(2,8);
   const datosConId={...datos,ID:idLocal};
-  
-  // Guardar en data actual
   if(ctx===contexto){
     data.push(datosConId);
     guardarDatos();
@@ -531,13 +510,10 @@ async function guardarConOffline(datos,ctx){
     otraData.push(datosConId);
     localStorage.setItem(keyForCtx("dataCache",ctx),JSON.stringify(otraData));
   }
-  
-  // Si hay conexión, intentar guardar en Firebase y remover pendiente
   if(navigator.onLine && window.db && window.auth?.currentUser){
     try{
       const colName=ctx==="negocio"?"movimientos_negocio":"movimientos_personal";
       const fbId=await window.fbAddDoc(window.fbCollection(window.db,"users",window.auth.currentUser.uid,colName),datos);
-      // Actualizar el ID local con el de Firebase
       if(ctx===contexto){
         const idx=data.findIndex(d=>String(d.ID)===idLocal);
         if(idx!==-1)data[idx].ID=fbId;
@@ -550,49 +526,29 @@ async function guardarConOffline(datos,ctx){
       }
       return fbId;
     }catch(e){
-      // Falló Firebase, guardar en cola
       await guardarEnCola({idLocal,datos,contexto:ctx});
       toast("📡 Sin conexión: pendiente guardado localmente");
       return idLocal;
     }
   }else{
-    // Sin conexión, guardar en cola
     await guardarEnCola({idLocal,datos,contexto:ctx});
     toast("📡 Sin conexión: pendiente guardado localmente");
     return idLocal;
   }
 }
 
-// ═══ CARGA DESDE FIREBASE (multi-dispositivo) ═══
 async function cargarDesdeFirebase(){
   if(!window.db||!window.auth?.currentUser) return false;
-  
   const colNamePersonal="movimientos_personal";
   const colNameNegocio="movimientos_negocio";
-  
   try{
-    // Cargar movimientos personales
     const snapPersonal=await window.fbGetDocs(window.fbCollection(window.db,"users",window.auth.currentUser.uid,colNamePersonal));
-    const fbPersonal=[];
-    snapPersonal.forEach(doc=>fbPersonal.push({...doc.data(),ID:doc.id}));
-    
-    // Cargar movimientos de negocio
+    const fbPersonal=[]; snapPersonal.forEach(doc=>fbPersonal.push({...doc.data(),ID:doc.id}));
     const snapNegocio=await window.fbGetDocs(window.fbCollection(window.db,"users",window.auth.currentUser.uid,colNameNegocio));
-    const fbNegocio=[];
-    snapNegocio.forEach(doc=>fbNegocio.push({...doc.data(),ID:doc.id}));
-    
-    // Guardar en localStorage
+    const fbNegocio=[]; snapNegocio.forEach(doc=>fbNegocio.push({...doc.data(),ID:doc.id}));
     localStorage.setItem(keyForCtx("dataCache","personal"),JSON.stringify(fbPersonal));
     localStorage.setItem(keyForCtx("dataCache","negocio"),JSON.stringify(fbNegocio));
-    
-    // Actualizar data actual según contexto
-    if(contexto==="personal"){
-      data=fbPersonal;
-    }else{
-      data=fbNegocio;
-    }
-    
-    // Cargar pendientes y fusionar
+    if(contexto==="personal") data=fbPersonal; else data=fbNegocio;
     const pendientes=await obtenerCola();
     const pendientesPorContexto=pendientes.filter(p=>p.contexto===contexto);
     for(const p of pendientesPorContexto){
@@ -600,23 +556,15 @@ async function cargarDesdeFirebase(){
         data.push({...p.datos,ID:p.idLocal});
       }
     }
-    
     guardarDatos();
-    console.log("✅ Cargados:",fbPersonal.length,"personales,",fbNegocio.length,"negocio");
     return true;
   }catch(e){
-    console.error("Error cargando desde Firebase:",e);
-    // Fallback a localStorage
-    if(contexto==="personal"){
-      data=JSON.parse(localStorage.getItem(keyForCtx("dataCache","personal"))||"[]");
-    }else{
-      data=JSON.parse(localStorage.getItem(keyForCtx("dataCache","negocio"))||"[]");
-    }
+    if(contexto==="personal") data=JSON.parse(localStorage.getItem(keyForCtx("dataCache","personal"))||"[]");
+    else data=JSON.parse(localStorage.getItem(keyForCtx("dataCache","negocio"))||"[]");
     return false;
   }
 }
 
-// ═══ EVENTOS DE CONEXIÓN ═══
 function actualizarStatusBar(){
   const sb=$("statusBar");
   if(!sb)return;
@@ -624,38 +572,17 @@ function actualizarStatusBar(){
     sb.className="online";
     sb.innerHTML='<span class="status-dot online"></span> En línea ☁ <span id="syncBadge" class="sync-badge" style="margin-left:4px"></span>';
     actualizarContadorPendientes();
-    sincronizarPendientes(); // Intentar sincronizar al volver online
+    sincronizarPendientes();
   }else{
     sb.className="offline";
     sb.innerHTML='<span class="status-dot offline"></span> Sin conexión 📵 <span id="syncBadge" class="sync-badge" style="margin-left:4px"></span>';
     actualizarContadorPendientes();
   }
-  const syncBadgeNuevo=$("syncBadge");
-  if(syncBadgeNuevo && navigator.onLine){
-    obtenerCola().then(cola=>{
-      if(cola.length>0){
-        syncBadgeNuevo.innerText=`📤 ${cola.length}`;
-        syncBadgeNuevo.style.background="rgba(245,158,11,.2)";
-        syncBadgeNuevo.style.color="var(--warn)";
-      }else{
-        syncBadgeNuevo.innerText="✓";
-        syncBadgeNuevo.style.background="rgba(34,197,94,.2)";
-        syncBadgeNuevo.style.color="var(--ok)";
-      }
-    });
-  }else if(syncBadgeNuevo){
-    syncBadgeNuevo.innerText="📡";
-  }
 }
 
-window.addEventListener("online",()=>{
-  actualizarStatusBar();
-  sincronizarPendientes();
-  cargarDesdeFirebase().then(()=>render());
-});
+window.addEventListener("online",()=>{actualizarStatusBar(); sincronizarPendientes(); cargarDesdeFirebase().then(()=>render());});
 window.addEventListener("offline",actualizarStatusBar);
 
-// ═══ FUNCIONES PRINCIPALES ═══
 document.addEventListener("DOMContentLoaded",()=>{
   initIndexedDB();
   $("today").innerText=hoyColombia().toLocaleDateString("es-CO",{weekday:"long",day:"numeric",month:"long"});
@@ -691,13 +618,8 @@ async function iniciarSesion(){
   $("loginError").classList.remove("visible");
   $("loginBtn").disabled=true;
   $("loginBtn").textContent="⏳...";
-  try{
-    await window.fbLogin(e,p);
-  }catch(err){
-    $("loginBtn").disabled=false;
-    $("loginBtn").textContent="Entrar →";
-    showError("Error: "+err.message);
-  }
+  try{await window.fbLogin(e,p);}
+  catch(err){$("loginBtn").disabled=false;$("loginBtn").textContent="Entrar →";showError("Error: "+err.message);}
 }
 
 async function registrarUsuario(){
@@ -709,14 +631,9 @@ async function registrarUsuario(){
   try{
     const cred=await window.fbRegister(e,p);
     await window.fbUpdateProfile(cred.user,{displayName:n});
-    try{
-      await window.fbAddDoc(window.fbCollection(window.db,"users"),{uid:cred.user.uid,email:e,displayName:n,createdAt:fechaHoyColombia()});
-    }catch(ex){}
-  }catch(err){
-    $("registerBtn").disabled=false;
-    $("registerBtn").textContent="Crear cuenta →";
-    showError("Error: "+err.message);
-  }
+    try{await window.fbAddDoc(window.fbCollection(window.db,"users"),{uid:cred.user.uid,email:e,displayName:n,createdAt:fechaHoyColombia()});}
+    catch(ex){}
+  }catch(err){$("registerBtn").disabled=false;$("registerBtn").textContent="Crear cuenta →";showError("Error: "+err.message);}
 }
 
 async function cerrarSesion(){
@@ -731,9 +648,7 @@ function onUserChanged(user){
     $("loginScreen").classList.add("oculto");
     $("appContent").classList.add("visible");
     actualizarUI(user);
-    cargarTodo().then(()=>{
-      sincronizarPendientes();
-    });
+    cargarTodo().then(()=>{sincronizarPendientes();});
     actualizarStatusBar();
   }else{
     $("loginScreen").classList.remove("oculto");
@@ -758,25 +673,17 @@ async function cargarTodo(){
   cuentas=cuentas.map(c=>({saldoInicial:0,...c}));
   const defCat={personal:[{id:"ingreso",nombre:"Ingreso",icon:"💰",tipo:"ingreso"},{id:"comida",nombre:"Comida",icon:"🍔",tipo:"gasto"},{id:"vivienda",nombre:"Vivienda",icon:"🏠",tipo:"gasto"},{id:"transporte",nombre:"Transporte",icon:"🚗",tipo:"gasto"},{id:"servicios",nombre:"Servicios",icon:"💡",tipo:"gasto"},{id:"entretenimiento",nombre:"Entretenimiento",icon:"🎮",tipo:"gasto"},{id:"ahorro",nombre:"Ahorro",icon:"🏦",tipo:"ambos"}],negocio:[{id:"ventas",nombre:"Ventas",icon:"💰",tipo:"ingreso"},{id:"inventario",nombre:"Inventario",icon:"📦",tipo:"gasto"},{id:"nomina",nombre:"Nómina",icon:"👷",tipo:"gasto"},{id:"servicios_pub",nombre:"Servicios",icon:"💡",tipo:"gasto"}]};
   categorias=JSON.parse(localStorage.getItem(keyFor("categorias"))||JSON.stringify(defCat[contexto]||defCat.personal));
-  
   await cargarDesdeFirebase();
-  
-  // Actualizar contador de pendientes
   await actualizarContadorPendientes();
-  
   historial=JSON.parse(localStorage.getItem(keyFor("historialMeses"))||"[]");
   goals=JSON.parse(localStorage.getItem(keyFor("goals"))||"[]");
   inversiones=JSON.parse(localStorage.getItem("inversiones")||"[]");
   prestamos=JSON.parse(localStorage.getItem("prestamos")||"[]");
-  
   poblarSelects();
   actualizarLabels();
   render();
-  
   const sc=$("syncCount");
   if(sc)sc.innerText=data.length;
-  
-  console.log("✅ Datos cargados:",data.length,"movimientos");
 }
 
 function poblarSelects(){
@@ -784,31 +691,23 @@ function poblarSelects(){
     const s=$(id);
     if(!s)return;
     s.innerHTML="";
-    cuentas.forEach(c=>{
-      s.innerHTML+='<option value="'+c.id+'">'+c.icon+' '+c.nombre+'</option>';
-    });
+    cuentas.forEach(c=>{s.innerHTML+='<option value="'+c.id+'">'+c.icon+' '+c.nombre+'</option>';});
   });
   poblarCat("ingreso");
   const fs=$("filterCuentaSel");
   if(fs){
     fs.innerHTML='<option value="">Todas</option>';
-    cuentas.forEach(c=>{
-      fs.innerHTML+='<option value="'+c.id+'">'+c.icon+' '+c.nombre+'</option>';
-    });
+    cuentas.forEach(c=>{fs.innerHTML+='<option value="'+c.id+'">'+c.icon+' '+c.nombre+'</option>';});
   }
   const bs=$("budgetCatSel");
   if(bs){
     bs.innerHTML="";
-    categorias.filter(c=>c.tipo==="gasto"||c.tipo==="ambos").forEach(c=>{
-      bs.innerHTML+='<option value="'+c.icon+' '+c.nombre+'">'+c.icon+' '+c.nombre+'</option>';
-    });
+    categorias.filter(c=>c.tipo==="gasto"||c.tipo==="ambos").forEach(c=>{bs.innerHTML+='<option value="'+c.icon+' '+c.nombre+'">'+c.icon+' '+c.nombre+'</option>';});
   }
   const rs=$("recCatSel");
   if(rs){
     rs.innerHTML="";
-    categorias.filter(c=>c.tipo==="gasto"||c.tipo==="ambos").forEach(c=>{
-      rs.innerHTML+='<option value="'+c.icon+' '+c.nombre+'">'+c.icon+' '+c.nombre+'</option>';
-    });
+    categorias.filter(c=>c.tipo==="gasto"||c.tipo==="ambos").forEach(c=>{rs.innerHTML+='<option value="'+c.icon+' '+c.nombre+'">'+c.icon+' '+c.nombre+'</option>';});
   }
 }
 
@@ -816,9 +715,7 @@ function poblarCat(modo){
   const s=$("categoria");
   if(!s)return;
   s.innerHTML="";
-  categorias.filter(c=>c.tipo==="ambos"||c.tipo===modo).forEach(c=>{
-    s.innerHTML+='<option value="'+c.icon+' '+c.nombre+'">'+c.icon+' '+c.nombre+'</option>';
-  });
+  categorias.filter(c=>c.tipo==="ambos"||c.tipo===modo).forEach(c=>{s.innerHTML+='<option value="'+c.icon+' '+c.nombre+'">'+c.icon+' '+c.nombre+'</option>';});
 }
 
 function poblarTraspaso(){
@@ -878,7 +775,6 @@ function calcSaldos(){
   return s;
 }
 
-// ═══ GUARDAR USANDO OFFLINE FIRST ═══
 async function guardar(){
   if(modoActual==="traspaso"){
     await guardarTraspaso();
@@ -900,16 +796,9 @@ async function guardar(){
     datos={Fecha:$("fecha").value,Tipo:modoActual==="ingreso"?"Ingreso":"Gasto",Cuenta:$("cuentaSel").value,Categoría:$("categoria").value,Descripción:$("descripcion").value.trim(),Monto:m,Nota:$("notaInput").value.trim(),Contexto:contexto};
     $("descripcion").value=$("montoInput").value=$("notaInput").value="";
   }
-  
   const idGuardado=await guardarConOffline(datos,contexto);
-  if(!String(idGuardado).startsWith("local_")){
-    // Éxito en Firebase
-    toast("✔ Guardado ☁");
-  }else{
-    // Guardado local pendiente
-    toast("📡 Guardado local (pendiente)");
-  }
-  
+  if(!String(idGuardado).startsWith("local_")) toast("✔ Guardado ☁");
+  else toast("📡 Guardado local (pendiente)");
   $("fecha").value=fechaParaInput();
   const seen=new Set();
   data=data.filter(d=>{const id=String(d.ID);if(seen.has(id))return false;seen.add(id);return true});
@@ -925,20 +814,10 @@ async function guardarTraspaso(){
   const ctxO=dir==="p2n"?"personal":"negocio",ctxD=dir==="p2n"?"negocio":"personal";
   const rO={Fecha:f,Tipo:"TraspasoSalida",Cuenta:co,Categoría:"🔀 Traspaso",Descripción:desc+" → "+(ctxD==="negocio"?"🏪":"👤"),Monto:m,Contexto:ctxO};
   const rD={Fecha:f,Tipo:"TraspasoEntrada",Cuenta:cd,Categoría:"🔀 Traspaso",Descripción:desc+" ← "+(ctxO==="negocio"?"🏪":"👤"),Monto:m,Contexto:ctxD};
-  
   await guardarConOffline(rO,ctxO);
   await guardarConOffline(rD,ctxD);
-  
-  // Actualizar data actual si corresponde
-  if(ctxO===contexto){
-    data=data.filter(d=>String(d.ID)!==String(rO.ID));
-    data.push({...rO,ID:rO.ID});
-  }
-  if(ctxD===contexto){
-    data=data.filter(d=>String(d.ID)!==String(rD.ID));
-    data.push({...rD,ID:rD.ID});
-  }
-  
+  if(ctxO===contexto) data=data.filter(d=>String(d.ID)!==String(rO.ID));
+  if(ctxD===contexto) data=data.filter(d=>String(d.ID)!==String(rD.ID));
   guardarDatos();
   $("montoTrspaso").value=$("descTrspaso").value="";
   $("fecha").value=fechaParaInput();
@@ -955,7 +834,41 @@ function guardarDatos(){
   localStorage.setItem("inversiones",JSON.stringify(inversiones));
 }
 
-// ═══ FUNCIONES DE RENDER Y COACH ═══ (igual que antes, se mantienen)
+function render(){
+  let ing=0,gas=0,ah=0,cats={};
+  [...data].sort((a,b)=>new Date(b.Fecha)-new Date(a.Fecha)).forEach(x=>{
+    const m=Number(x.Monto)||0;
+    if(x.Tipo==="Ingreso")ing+=m;
+    else if(x.Tipo==="Gasto"){gas+=m;cats[x.Categoría]=(cats[x.Categoría]||0)+m}
+    if(String(x.Categoría||"").includes("Ahorro"))ah+=m;
+  });
+  const saldos=calcSaldos(),total=Object.values(saldos).reduce((a,b)=>a+b,0);
+  $("saldoTop").innerText=money(total);
+  $("cuentasResumen").innerHTML=$("distBar").innerHTML=$("distLegend").innerHTML="";
+  const tp=cuentas.reduce((a,c)=>a+Math.max(saldos[c.id]||0,0),1)||1;
+  cuentas.forEach((c,i)=>{
+    const s=saldos[c.id]||0,color=ACC_COLORS[i%ACC_COLORS.length];
+    $("cuentasResumen").innerHTML+=`<div class="cuenta-card"><div class="cuenta-left"><div class="cuenta-icon">${c.icon}</div><div class="cuenta-name">${c.nombre}</div></div><div class="cuenta-saldo ${s>=0?"positive":"negative"}">${money(s)}</div></div>`;
+    $("distBar").innerHTML+=`<div class="dist-seg" style="width:${Math.max(s,0)/tp*100}%;background:${color}"></div>`;
+    $("distLegend").innerHTML+=`<div class="dist-item"><div class="dist-dot" style="background:${color}"></div>${c.icon} ${c.nombre}</div>`;
+  });
+  const hoy=hoyColombia(),ts=hoy.getFullYear()+"-"+String(hoy.getMonth()+1).padStart(2,"0")+"-"+String(hoy.getDate()).padStart(2,"0");
+  const hoyG=data.filter(x=>x.Fecha===ts&&x.Tipo==="Gasto").reduce((a,b)=>a+Number(b.Monto||0),0);
+  $("cockpit").innerHTML=`<div class="grid2"><div class="kpi"><span>Hoy gastado</span><strong>${money(hoyG)}</strong></div><div class="kpi"><span>Balance</span><strong>${money(ing-gas)}</strong></div><div class="kpi"><span>Ahorro</span><strong>${money(ah)}</strong></div><div class="kpi"><span>Disp./día</span><strong>${money(Math.max((ing-gas)/Math.max(hoy.getDate(),1),0))}</strong></div></div>`;
+  renderCoach(ing,gas,ah,cats,saldos);
+  const favs={};
+  data.forEach(x=>{
+    if(x.Tipo==="Transferencia"||x.Tipo?.includes("Traspaso"))return;
+    const k=x.Categoría+"|"+x.Descripción+"|"+x.Monto+"|"+(x.Cuenta||"");
+    if(!favs[k])favs[k]={cat:x.Categoría,des:x.Descripción,monto:x.Monto,cuenta:x.Cuenta,count:0};
+    favs[k].count++;
+  });
+  const topFavs=Object.values(favs).sort((a,b)=>b.count-a.count).slice(0,4);
+  $("favList").innerHTML=topFavs.length?topFavs.map(f=>`<button class="secondary" onclick="usarFav('${f.cat}','${f.des}',${f.monto},'${f.cuenta||""}')" style="font-size:11px">${f.cat}<br><small>${f.des}</small><br><small>${money(f.monto)}</small></button>`).join(""):'<div class="small">Sin favoritos</div>';
+  $("goalList").innerHTML=goals.length?goals.map((g,i)=>{const p=Math.min((ah/g.valor)*100,100);return`<div class="item"><div style="font-weight:700">${g.nombre}</div><div class="small">${money(ah)} / ${money(g.valor)}</div><div class="progress"><div class="bar" style="width:${p}%"></div></div><button class="small-btn" onclick="delGoal(${i})">🗑️</button></div>`}).join(""):'<div class="alert mid">Sin metas</div>';
+  actualizarContadorPendientes();
+}
+
 function renderCoach(ing,gas,ah,cats,saldos){
   const bal=ing-gas;
   const hoy=hoyColombia();
@@ -1006,41 +919,6 @@ function renderCoach(ing,gas,ah,cats,saldos){
   $("coach").innerHTML=html;
 }
 
-function render(){
-  let ing=0,gas=0,ah=0,cats={};
-  [...data].sort((a,b)=>new Date(b.Fecha)-new Date(a.Fecha)).forEach(x=>{
-    const m=Number(x.Monto)||0;
-    if(x.Tipo==="Ingreso")ing+=m;
-    else if(x.Tipo==="Gasto"){gas+=m;cats[x.Categoría]=(cats[x.Categoría]||0)+m}
-    if(String(x.Categoría||"").includes("Ahorro"))ah+=m;
-  });
-  const saldos=calcSaldos(),total=Object.values(saldos).reduce((a,b)=>a+b,0);
-  $("saldoTop").innerText=money(total);
-  $("cuentasResumen").innerHTML=$("distBar").innerHTML=$("distLegend").innerHTML="";
-  const tp=cuentas.reduce((a,c)=>a+Math.max(saldos[c.id]||0,0),1);
-  cuentas.forEach((c,i)=>{
-    const s=saldos[c.id]||0,color=ACC_COLORS[i%ACC_COLORS.length];
-    $("cuentasResumen").innerHTML+=`<div class="cuenta-card"><div class="cuenta-left"><div class="cuenta-icon">${c.icon}</div><div class="cuenta-name">${c.nombre}</div></div><div class="cuenta-saldo ${s>=0?"positive":"negative"}">${money(s)}</div></div>`;
-    $("distBar").innerHTML+=`<div class="dist-seg" style="width:${Math.max(s,0)/tp*100}%;background:${color}"></div>`;
-    $("distLegend").innerHTML+=`<div class="dist-item"><div class="dist-dot" style="background:${color}"></div>${c.icon} ${c.nombre}</div>`;
-  });
-  const hoy=hoyColombia(),ts=hoy.getFullYear()+"-"+String(hoy.getMonth()+1).padStart(2,"0")+"-"+String(hoy.getDate()).padStart(2,"0");
-  const hoyG=data.filter(x=>x.Fecha===ts&&x.Tipo==="Gasto").reduce((a,b)=>a+Number(b.Monto||0),0);
-  $("cockpit").innerHTML=`<div class="grid2"><div class="kpi"><span>Hoy gastado</span><strong>${money(hoyG)}</strong></div><div class="kpi"><span>Balance</span><strong>${money(ing-gas)}</strong></div><div class="kpi"><span>Ahorro</span><strong>${money(ah)}</strong></div><div class="kpi"><span>Disp./día</span><strong>${money(Math.max((ing-gas)/Math.max(hoy.getDate(),1),0))}</strong></div></div>`;
-  renderCoach(ing,gas,ah,cats,saldos);
-  const favs={};
-  data.forEach(x=>{
-    if(x.Tipo==="Transferencia"||x.Tipo?.includes("Traspaso"))return;
-    const k=x.Categoría+"|"+x.Descripción+"|"+x.Monto+"|"+(x.Cuenta||"");
-    if(!favs[k])favs[k]={cat:x.Categoría,des:x.Descripción,monto:x.Monto,cuenta:x.Cuenta,count:0};
-    favs[k].count++;
-  });
-  const topFavs=Object.values(favs).sort((a,b)=>b.count-a.count).slice(0,4);
-  $("favList").innerHTML=topFavs.length?topFavs.map(f=>`<button class="secondary" onclick="usarFav('${f.cat}','${f.des}',${f.monto},'${f.cuenta||""}')" style="font-size:11px">${f.cat}<br><small>${f.des}</small><br><small>${money(f.monto)}</small></button>`).join(""):'<div class="small">Sin favoritos</div>';
-  $("goalList").innerHTML=goals.length?goals.map((g,i)=>{const p=Math.min((ah/g.valor)*100,100);return`<div class="item"><div style="font-weight:700">${g.nombre}</div><div class="small">${money(ah)} / ${money(g.valor)}</div><div class="progress"><div class="bar" style="width:${p}%"></div></div><button class="small-btn" onclick="delGoal(${i})">🗑️</button></div>`}).join(""):'<div class="alert mid">Sin metas</div>';
-}
-
-// Funciones auxiliares adicionales (usarFav, setFiltro, renderLista, etc. se mantienen igual que el original)
 function usarFav(cat,des,monto,cuenta){setMode("gasto",document.querySelectorAll(".mode-tab")[1]);$("categoria").value=cat;$("descripcion").value=des;$("montoInput").value=Number(monto).toLocaleString("es-CO");if(cuenta)$("cuentaSel").value=cuenta;toast("Cargado");}
 function setFiltro(tipo,btn){filtroTipo=tipo;document.querySelectorAll(".filter-chip").forEach(c=>c.classList.remove("active"));btn.classList.add("active");renderLista();}
 function renderLista(){
@@ -1075,10 +953,80 @@ function renderLista(){
   });
 }
 
-// Resto de funciones (borrar, abrirEditar, confirmarEdicion, renderHistorial, toggleMes, abrirCierre, confirmarCierre, renderCharts, renderComparativa, mostrarFormInversion, agregarInversion, eliminarInversion, renderInversiones, mostrarFormPrestamo, switchPrestamoTab, agregarPrestamo, registrarPagoPrestamo, eliminarPrestamo, renderPrestamos, goTab, switchDashTab, setMode, toggleHide, addCuenta, delCuenta, renderCuentasAdmin, addCategoria, delCategoria, renderCatsAdmin, getBudgets, addBudget, delBudget, renderBudgets, addRecurrente, delRec, renderRecList, aplicarRecurrentes, addGoal, delGoal, toggleVoice, startVoice, stopVoice, toggleNotiDiaria, programarNoti, cambiarHora, probarNoti, limpiarCache, exportarCSV, diag, aplicarTema, renderHistorialAdmin, eliminarMesHistorial)
-// Se mantienen igual que en el código original...
+async function borrar(id){
+  if(!confirm("¿Eliminar?"))return;
+  const x=data.find(d=>String(d.ID)===String(id));
+  const ctx=x?x.Contexto||contexto:contexto;
+  data=data.filter(d=>String(d.ID)!==String(id));
+  guardarDatos();
+  render();
+  if(window.db&&window.auth?.currentUser&&!String(id).startsWith("local_")){
+    try{
+      const colName=ctx==="negocio"?"movimientos_negocio":"movimientos_personal";
+      await window.fbDeleteDoc(window.fbDoc(window.db,"users",window.auth.currentUser.uid,colName,String(id)));
+    }catch(e){}
+  }
+  toast("🗑️ Eliminado");
+}
 
-// ══ CIERRE MANUAL QUE LIMPIA FIREBASE ══
+function abrirEditar(id){
+  const x=data.find(d=>String(d.ID)===String(id));
+  if(!x||x.Tipo==="Transferencia"||x.Tipo?.includes("Traspaso")){toast("No editable");return}
+  editandoId=String(id);
+  const ec=$("editCategoria");
+  ec.innerHTML="";
+  const modo=x.Tipo==="Ingreso"?"ingreso":"gasto";
+  categorias.filter(c=>c.tipo==="ambos"||c.tipo===modo).forEach(c=>{
+    const o=document.createElement("option");
+    o.value=c.icon+" "+c.nombre;
+    o.textContent=c.icon+" "+c.nombre;
+    if(o.value===x.Categoría)o.selected=true;
+    ec.appendChild(o);
+  });
+  const ecu=$("editCuenta");
+  ecu.innerHTML="";
+  cuentas.forEach(c=>{
+    const o=document.createElement("option");
+    o.value=c.id;
+    o.textContent=c.icon+" "+c.nombre;
+    if(c.id===x.Cuenta)o.selected=true;
+    ecu.appendChild(o);
+  });
+  $("editFecha").value=x.Fecha||"";
+  $("editDescripcion").value=x.Descripción||"";
+  $("editMonto").value=Number(x.Monto||0).toLocaleString("es-CO");
+  $("editNota").value=x.Nota||"";
+  $("modalEditar").classList.add("open");
+}
+
+async function confirmarEdicion(){
+  const x=data.find(d=>String(d.ID)===String(editandoId));
+  if(!x){$("modalEditar").classList.remove("open");return}
+  const m=parseMonto($("editMonto").value);
+  if(!$("editDescripcion").value.trim()||m<=0){toast("Completa");return}
+  x.Fecha=$("editFecha").value;
+  x.Categoría=$("editCategoria").value;
+  x.Descripción=$("editDescripcion").value.trim();
+  x.Monto=m;
+  x.Cuenta=$("editCuenta").value;
+  x.Nota=$("editNota").value.trim();
+  guardarDatos();
+  $("modalEditar").classList.remove("open");
+  if(window.db&&window.auth?.currentUser&&!String(editandoId).startsWith("local_")){
+    try{
+      const ctx=x.Contexto||contexto;
+      const colName=ctx==="negocio"?"movimientos_negocio":"movimientos_personal";
+      await window.fbUpdateDoc(window.fbDoc(window.db,"users",window.auth.currentUser.uid,colName,String(editandoId)),{Fecha:x.Fecha,Categoría:x.Categoría,Descripción:x.Descripción,Monto:x.Monto,Cuenta:x.Cuenta,Nota:x.Nota});
+    }catch(e){}
+  }
+  render();
+  editandoId=null;
+  toast("✔ Actualizado");
+}
+
+function renderHistorial(){if(!historial.length){$("historialCard").style.display="none";return}$("historialCard").style.display="block";$("historialLista").innerHTML=historial.map((m,i)=>`<div class="item" style="cursor:pointer" onclick="toggleMes(${i})"><div style="display:flex;justify-content:space-between"><span style="font-weight:700">📅 ${m.label}</span><span id="ma${i}">▶</span></div><div class="small">Ing: ${money(m.ing)} · Gas: ${money(m.gas)} · Bal: ${money(m.ing-m.gas)}</div><div style="display:none;margin-top:6px" id="mb${i}">${m.movimientos?.length?m.movimientos.map(x=>`<div>${x.Categoría||""} - ${x.Descripción||""}: ${money(x.Monto)}</div>`).join(""):'<div class="small">Sin datos</div>'}</div></div>`).join("")}
+function toggleMes(i){const b=$("mb"+i),a=$("ma"+i);b.style.display=b.style.display==="none"?"block":"none";a.textContent=b.style.display==="none"?"▶":"▼";}
+function abrirCierre(){const s=calcSaldos(),ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gas=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0);let h=`<div class="grid2" style="margin-bottom:8px"><div class="kpi"><span>Ingresos</span><strong style="color:var(--ok)">${money(ing)}</strong></div><div class="kpi"><span>Gastos</span><strong style="color:var(--bad)">${money(gas)}</strong></div></div>`;cuentas.forEach(c=>{h+=`<div style="font-size:12px;margin-bottom:3px">${c.icon} ${c.nombre}: ${money(s[c.id]||0)}</div>`});$("modalResumen").innerHTML=h;$("modalCierre").classList.add("open");}
 async function confirmarCierre(){
   const s=calcSaldos(),ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gas=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0),label=hoyColombia().toLocaleDateString("es-CO",{month:"long",year:"numeric"});
   historial.unshift({label,ing,gas,saldosCierre:{...s},movimientos:[...data]});
@@ -1096,21 +1044,91 @@ async function confirmarCierre(){
       snapNegocio.forEach(doc=>batchNegocio.delete(window.fbDoc(window.db,"users",window.auth.currentUser.uid,colNameNegocio,doc.id)));
       await batchPersonal.commit();
       await batchNegocio.commit();
-      console.log("✅ Firebase limpiado completamente");
-    }catch(e){console.log("Error limpiando Firebase:",e);}
+    }catch(e){}
   }
   data=[];
   await limpiarCola();
   localStorage.setItem(keyFor("dataCache"),"[]");
   guardarDatos();
-  const sc=$("syncCount");
-  if(sc)sc.innerText=0;
+  const sc=$("syncCount");if(sc)sc.innerText=0;
   $("modalCierre").classList.remove("open");
   render();
   toast("✔ Mes cerrado y datos sincronizados: "+label);
 }
 
-// Exportar funciones globales para mantener compatibilidad
+function renderCharts(){
+  const saldos=calcSaldos();
+  let ing=0,gas=0,cats={};
+  data.forEach(x=>{const m=Number(x.Monto)||0;if(x.Tipo==="Ingreso")ing+=m;else if(x.Tipo==="Gasto"){gas+=m;cats[x.Categoría]=(cats[x.Categoría]||0)+m}});
+  [c1,c2,c3,c4,c5,c6].forEach(c=>{if(c)c.destroy()});
+  const ctx6=$("chart6");if(ctx6&&cuentas.length)c6=new Chart(ctx6,{type:"bar",data:{labels:cuentas.map(c=>c.icon+" "+c.nombre),datasets:[{data:cuentas.map(c=>saldos[c.id]||0),backgroundColor:cuentas.map((_,i)=>ACC_COLORS[i%ACC_COLORS.length])}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:false}}}});
+  const ctx1=$("chart1");if(ctx1&&Object.keys(cats).length)c1=new Chart(ctx1,{type:"doughnut",data:{labels:Object.keys(cats),datasets:[{data:Object.values(cats)}]}});
+  const ctx2=$("chart2");if(ctx2)c2=new Chart(ctx2,{type:"bar",data:{labels:["Ingresos","Gastos"],datasets:[{data:[ing,gas],backgroundColor:["#22c55e","#ef4444"]}]}});
+  const dias={};let s=0;[...data].sort((a,b)=>new Date(a.Fecha)-new Date(b.Fecha)).forEach(x=>{const m=Number(x.Monto)||0;if(x.Tipo==="Ingreso")s+=m;else if(x.Tipo==="Gasto")s-=m;dias[x.Fecha]=s});
+  const ctx3=$("chart3");if(ctx3&&Object.keys(dias).length)c3=new Chart(ctx3,{type:"line",data:{labels:Object.keys(dias),datasets:[{data:Object.values(dias),fill:false,tension:0.3,borderColor:"#3b82f6",pointRadius:2}]}});
+  const w=[0,0,0,0,0,0,0];data.forEach(x=>{if(x.Tipo==="Gasto")w[new Date(x.Fecha+"T00:00:00").getDay()]+=Number(x.Monto)||0});
+  const ctx4=$("chart4");if(ctx4)c4=new Chart(ctx4,{type:"bar",data:{labels:["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"],datasets:[{data:w,backgroundColor:"#f59e0b"}]}});
+  const fm={};data.forEach(x=>{if(x.Tipo==="Gasto")fm[x.Descripción]=(fm[x.Descripción]||0)+(Number(x.Monto)||0)});
+  const tf=Object.entries(fm).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const ctx5=$("chart5");if(ctx5&&tf.length)c5=new Chart(ctx5,{type:"bar",data:{labels:tf.map(x=>x[0].length>20?x[0].slice(0,18)+"…":x[0]),datasets:[{data:tf.map(x=>x[1]),backgroundColor:"#ef4444"}]},options:{indexAxis:"y"}});
+  renderComparativa();
+}
+function renderComparativa(){const el=$("compareContent");if(!el)return;const meses=[];historial.slice(0,5).forEach(m=>meses.push({label:m.label,ing:m.ing,gas:m.gas}));const ingA=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gasA=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0);meses.unshift({label:"Este mes",ing:ingA,gas:gasA,actual:true});const maxV=Math.max(...meses.map(m=>Math.max(m.ing,m.gas)),1);el.innerHTML=meses.map(m=>`<div style="margin-bottom:10px;padding:10px;background:var(--cardBg);border-radius:12px;border:1px solid ${m.actual?"var(--primary)":"var(--line)"}"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-weight:700;font-size:12px">${m.label}${m.actual?' <span class="badge">actual</span>':""}</span><span style="font-size:11px;color:${m.ing-m.gas>=0?"var(--ok)":"var(--bad)"}">Bal: ${money(m.ing-m.gas)}</span></div><div class="compare-bar-wrap"><div class="compare-label">💰 Ing: ${money(m.ing)}</div><div class="compare-bar-bg"><div class="compare-bar-fill" style="width:${(m.ing/maxV*100).toFixed(1)}%;background:var(--ok)"></div></div></div><div class="compare-bar-wrap"><div class="compare-label">💸 Gas: ${money(m.gas)}</div><div class="compare-bar-bg"><div class="compare-bar-fill" style="width:${(m.gas/maxV*100).toFixed(1)}%;background:var(--bad)"></div></div></div></div>`).join("")}
+function mostrarFormInversion(){$("formInversion").style.display=$("formInversion").style.display==="none"?"block":"none"}
+function agregarInversion(){const tipo=$("invTipo").value,nombre=$("invNombre").value.trim(),monto=parseFloat(($("invMonto").value||"0").replace(/\./g,"").replace(",","."))||0,rent=parseFloat(($("invRentabilidad").value||"0").replace(",","."))||0;if(!nombre||monto<=0){toast("Completa");return}inversiones.push({id:"inv_"+Date.now(),tipo,nombre,monto,rentabilidad:rent,fecha:fechaHoyColombia()});localStorage.setItem("inversiones",JSON.stringify(inversiones));$("invNombre").value=$("invMonto").value=$("invRentabilidad").value="";$("formInversion").style.display="none";renderInversiones();toast("📈 Inversión agregada")}
+function eliminarInversion(id){inversiones=inversiones.filter(i=>i.id!==id);localStorage.setItem("inversiones",JSON.stringify(inversiones));renderInversiones()}
+function renderInversiones(){const totalInv=inversiones.reduce((a,i)=>a+(i.monto||0),0),rentEst=inversiones.reduce((a,i)=>a+((i.monto||0)*(i.rentabilidad||0)/100),0);$("inversionesResumen").innerHTML=`<div class="grid2" style="margin-bottom:10px"><div class="kpi"><span>Total invertido</span><strong style="color:#06b6d4">$${totalInv.toLocaleString("es-CO")}</strong></div><div class="kpi"><span>Rent. estimada</span><strong style="color:${rentEst>=0?'var(--ok)':'var(--bad)'}">$${rentEst.toLocaleString("es-CO")}</strong></div></div>${inversiones.map(i=>`<div class="inversion-card"><div style="display:flex;justify-content:space-between"><div><div style="font-weight:700;font-size:13px">${i.tipo==="CDT"?"🏦":i.tipo==="Acciones"?"📊":i.tipo==="Cripto"?"₿":"🏠"} ${i.nombre}</div><div class="small">$${(i.monto||0).toLocaleString("es-CO")} · ${i.rentabilidad>=0?'+':''}${i.rentabilidad}%</div></div><button class="small-btn" onclick="eliminarInversion('${i.id}')">🗑️</button></div></div>`).join("")||'<div class="alert mid">Sin inversiones</div>'}`;if(cInv)cInv.destroy();const ctx=$("chartInv");if(ctx&&inversiones.length)cInv=new Chart(ctx,{type:"doughnut",data:{labels:inversiones.map(i=>i.nombre),datasets:[{data:inversiones.map(i=>i.monto),backgroundColor:["#06b6d4","#8b5cf6","#f59e0b","#22c55e","#ef4444"]}]}})}
+function mostrarFormPrestamo(){$("formPrestamo").style.display=$("formPrestamo").style.display==="none"?"block":"none";if($("formPrestamo").style.display==="block"){const sel=$("prestamoCuenta");sel.innerHTML="";cuentas.forEach(c=>{sel.innerHTML+=`<option value="${c.id}">${c.icon} ${c.nombre}</option>`})}}
+function switchPrestamoTab(tipo,btn){prestamoFiltro=tipo;document.querySelectorAll("#dash-prestamos .tab-mini").forEach(t=>t.classList.remove("active"));btn.classList.add("active");renderPrestamos()}
+function agregarPrestamo(){const tipo=$("prestamoTipo").value,persona=$("prestamoPersona").value.trim(),monto=parseMonto($("prestamoMonto").value),cuenta=$("prestamoCuenta").value,vencimiento=$("prestamoVencimiento").value,nota=$("prestamoNota").value.trim(),interes=parseFloat(($("prestamoInteres").value||"0").replace(",","."))||0;if(!persona||monto<=0||!vencimiento){toast("Completa persona, monto y fecha");return}prestamos.push({id:"prestamo_"+Date.now(),tipo,persona,monto,cuenta,vencimiento,nota,interes,fecha:fechaHoyColombia(),pagos:[],estado:"pendiente"});localStorage.setItem("prestamos",JSON.stringify(prestamos));$("prestamoPersona").value=$("prestamoMonto").value=$("prestamoNota").value=$("prestamoInteres").value="";$("formPrestamo").style.display="none";renderPrestamos();toast("💳 Préstamo registrado")}
+function registrarPagoPrestamo(id){const p=prestamos.find(x=>x.id===id);if(!p)return;const monto=parseFloat(prompt("Monto del pago:","0")||"0");if(monto<=0)return;p.pagos.push({monto,fecha:fechaHoyColombia()});const hoy=hoyColombia(),meses=(hoy.getFullYear()-new Date(p.fecha).getFullYear())*12+(hoy.getMonth()-new Date(p.fecha).getMonth()),totalConInteres=p.monto*(1+(p.interes/100)*Math.max(meses,1));const totalPagado=p.pagos.reduce((a,x)=>a+x.monto,0);if(totalPagado>=totalConInteres)p.estado="pagado";else if(new Date(p.vencimiento)<hoy&&totalPagado<totalConInteres)p.estado="atrasado";localStorage.setItem("prestamos",JSON.stringify(prestamos));renderPrestamos()}
+function eliminarPrestamo(id){if(!confirm("¿Eliminar?"))return;prestamos=prestamos.filter(p=>p.id!==id);localStorage.setItem("prestamos",JSON.stringify(prestamos));renderPrestamos()}
+function renderPrestamos(){let filtrados=prestamos;if(prestamoFiltro==="recibidos")filtrados=prestamos.filter(p=>p.tipo==="recibido");else if(prestamoFiltro==="otorgados")filtrados=prestamos.filter(p=>p.tipo==="otorgado");const hoy=hoyColombia();$("prestamosLista").innerHTML=filtrados.length?filtrados.map(p=>{const totalPagado=p.pagos.reduce((a,x)=>a+x.monto,0),meses=(hoy.getFullYear()-new Date(p.fecha).getFullYear())*12+(hoy.getMonth()-new Date(p.fecha).getMonth()),totalConInteres=p.monto*(1+(p.interes/100)*Math.max(meses,1)),restante=Math.max(totalConInteres-totalPagado,0),pct=Math.min((totalPagado/totalConInteres)*100,100);return`<div class="prestamo-card prestamo-${p.tipo==="recibido"?"recibido":"otorgado"}"><div style="display:flex;justify-content:space-between;align-items:start"><div><div style="font-weight:700;font-size:13px">${p.tipo==="recibido"?"📥":"📤"} ${p.persona}</div><div class="small">${money(p.monto)} · ${p.interes>0?`Interés: ${p.interes}%`:'Sin interés'}</div><div class="small">Vence: ${new Date(p.vencimiento+'T00:00:00').toLocaleDateString("es-CO")}</div>${p.nota?`<div class="small">📝 ${p.nota}</div>`:''}<div class="small">Total: ${money(totalConInteres)} | Restante: ${money(restante)} | ${p.pagos.length} pagos: ${money(totalPagado)}</div><span class="prestamo-status ${p.estado}">${p.estado==="pendiente"?"Pendiente":p.estado==="pagado"?"Pagado":"Atrasado"}</span></div><div style="display:flex;flex-direction:column;gap:4px">${p.estado!=="pagado"?`<button class="success-btn" onclick="registrarPagoPrestamo('${p.id}')">💵 Pagar</button>`:''}<button class="small-btn" onclick="eliminarPrestamo('${p.id}')">🗑️</button></div></div><div class="progress" style="margin-top:6px"><div class="bar" style="width:${pct}%;background:${pct>=100?'var(--ok)':'var(--warn)'}"></div></div><div class="small" style="text-align:right;margin-top:2px">${pct.toFixed(0)}% pagado</div></div>`}).join(""):'<div class="alert mid">Sin préstamos</div>';const rec=prestamos.filter(p=>p.tipo==="recibido"&&p.estado!=="pagado"),ot=prestamos.filter(p=>p.tipo==="otorgado"&&p.estado!=="pagado");const totalRec=rec.reduce((a,p)=>{const meses=(hoy.getFullYear()-new Date(p.fecha).getFullYear())*12+(hoy.getMonth()-new Date(p.fecha).getMonth());const r=p.monto*(1+(p.interes/100)*Math.max(meses,1))-p.pagos.reduce((s,x)=>s+x.monto,0);return a+Math.max(r,0)},0);const totalOt=ot.reduce((a,p)=>{const meses=(hoy.getFullYear()-new Date(p.fecha).getFullYear())*12+(hoy.getMonth()-new Date(p.fecha).getMonth());const r=p.monto*(1+(p.interes/100)*Math.max(meses,1))-p.pagos.reduce((s,x)=>s+x.monto,0);return a+Math.max(r,0)},0);$("prestamosResumen").innerHTML=`<div class="grid2"><div class="kpi"><span>Debes</span><strong style="color:var(--bad)">${money(totalRec)}</strong></div><div class="kpi"><span>Te deben</span><strong style="color:var(--ok)">${money(totalOt)}</strong></div><div class="kpi"><span>Balance neto</span><strong style="color:${totalOt-totalRec>=0?'var(--ok)':'var(--bad)'}">${money(totalOt-totalRec)}</strong></div><div class="kpi"><span>⚠️ Atrasados</span><strong style="color:var(--bad)">${prestamos.filter(p=>p.estado==="atrasado").length}</strong></div></div>`}
+
+function goTab(tab,btn){
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+  $("tab-"+tab).classList.add("active");
+  document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));
+  if(btn)btn.classList.add("active");
+  else{const idx={home:0,dashboard:1,goals:2,list:3,settings:4};document.querySelectorAll(".nav button")[idx[tab]]?.classList.add("active")}
+  if(tab==="list"){renderHistorial();renderLista()}
+  if(tab==="settings"){renderCuentasAdmin();renderCatsAdmin();renderHistorialAdmin()}
+  if(tab==="dashboard"){setTimeout(renderCharts,400);renderInversiones();renderPrestamos()}
+  if(tab==="goals"){renderBudgets();renderRecList()}
+}
+function switchDashTab(tab,btn){["finanzas","inversiones","prestamos"].forEach(t=>{const el=$("dash-"+t);if(el)el.style.display="none"});document.querySelectorAll("#tab-dashboard .tab-mini").forEach(t=>t.classList.remove("active"));btn.classList.add("active");const el=$("dash-"+tab);if(el)el.style.display="block";if(tab==="finanzas")setTimeout(renderCharts,300);if(tab==="inversiones")renderInversiones();if(tab==="prestamos")renderPrestamos()}
+function setMode(mode,btn){modoActual=mode;document.querySelectorAll(".mode-tab").forEach(t=>t.classList.remove("active"));btn.classList.add("active");document.querySelectorAll(".form-section").forEach(s=>s.classList.remove("active"));if(mode==="transferencia")$("fs-transfer").classList.add("active");else if(mode==="traspaso"){$("fs-traspaso").classList.add("active");poblarTraspaso();}else{$("fs-normal").classList.add("active");poblarCat(mode==="ingreso"?"ingreso":"gasto")}}
+function toggleHide(){hidden=!hidden;localStorage.setItem("hideMoney",hidden?"1":"0");render()}
+function addCuenta(){const n=$("newCuentaNombre").value.trim(),icon=$("newCuentaIcon").value;if(!n){toast("Nombre");return}cuentas.push({id:n.toLowerCase().replace(/\s+/g,"_")+"_"+Date.now(),nombre:n,icon,saldoInicial:0});guardarDatos();$("newCuentaNombre").value="";poblarSelects();render();renderCuentasAdmin();toast("✔ Agregada")}
+function delCuenta(id){if(!confirm("¿Eliminar?"))return;cuentas=cuentas.filter(c=>c.id!==id);guardarDatos();poblarSelects();render();renderCuentasAdmin()}
+function renderCuentasAdmin(){$("cuentasAdmin").innerHTML=cuentas.map(c=>`<div class="cuenta-card"><div class="cuenta-left"><div class="cuenta-icon">${c.icon}</div><div class="cuenta-name">${c.nombre}</div></div><button class="small-btn" onclick="delCuenta('${c.id}')">🗑️</button></div>`).join("")}
+function addCategoria(){const icon=$("newCatIcon").value.trim()||"📌",nombre=$("newCatNombre").value.trim(),tipo=$("newCatTipo").value;if(!nombre){toast("Nombre");return}categorias.push({id:nombre.toLowerCase().replace(/\s+/g,"_")+"_"+Date.now(),nombre,icon,tipo});guardarDatos();$("newCatIcon").value=$("newCatNombre").value="";renderCatsAdmin();poblarCat("ingreso");toast("✔ Agregada")}
+function delCategoria(id){categorias=categorias.filter(c=>c.id!==id);guardarDatos();renderCatsAdmin();poblarCat("ingreso")}
+function renderCatsAdmin(){$("catsAdmin").innerHTML=categorias.map(c=>`<div class="cat-chip">${c.icon} ${c.nombre} <button onclick="delCategoria('${c.id}')">✕</button></div>`).join("")}
+function getBudgets(){return JSON.parse(localStorage.getItem(keyFor("budgets"))||"{}")}
+function addBudget(){const cat=$("budgetCatSel").value,m=parseMonto($("budgetMonto").value);if(!cat||m<=0){toast("Completa");return}const b=getBudgets();b[cat]=m;localStorage.setItem(keyFor("budgets"),JSON.stringify(b));$("budgetMonto").value="";renderBudgets();toast("✔ Guardado")}
+function delBudget(cat){const b=getBudgets();delete b[cat];localStorage.setItem(keyFor("budgets"),JSON.stringify(b));renderBudgets()}
+function renderBudgets(){const el=$("budgetList"),b=getBudgets();if(!Object.keys(b).length){el.innerHTML='<div class="alert mid">Sin presupuestos</div>';return}const gr={};data.filter(x=>x.Tipo==="Gasto").forEach(x=>{gr[x.Categoría]=(gr[x.Categoría]||0)+Number(x.Monto||0)});el.innerHTML=Object.entries(b).map(([cat,lim])=>{const g=gr[cat]||0,pct=Math.min((g/lim)*100,100);return`<div class="item"><div style="display:flex;justify-content:space-between"><span>${cat}</span><button class="small-btn" onclick="delBudget('${cat.replace(/'/g,"\\'")}')">🗑️</button></div><div class="small">${money(g)} / ${money(lim)} (${pct.toFixed(0)}%)</div><div class="progress"><div class="bar" style="width:${pct}%;background:${pct>=100?'var(--bad)':pct>=80?'var(--warn)':'var(--ok)'}"></div></div></div>`}).join("")}
+function addRecurrente(){const c=$("recCuentaSel").value,cat=$("recCatSel").value,d=$("recDesc").value.trim(),m=parseMonto($("recMonto").value);if(!d||m<=0){toast("Completa");return}const r=JSON.parse(localStorage.getItem(keyFor("recurrentes"))||"[]");r.push({id:"rec_"+Date.now(),cuenta:c,cat,desc:d,monto:m});localStorage.setItem(keyFor("recurrentes"),JSON.stringify(r));$("recDesc").value=$("recMonto").value="";renderRecList();toast("✔ Agregado")}
+function delRec(id){const r=JSON.parse(localStorage.getItem(keyFor("recurrentes"))||"[]").filter(x=>x.id!==id);localStorage.setItem(keyFor("recurrentes"),JSON.stringify(r));renderRecList()}
+function renderRecList(){const el=$("recList"),r=JSON.parse(localStorage.getItem(keyFor("recurrentes"))||"[]");if(!r.length){el.innerHTML='<div class="alert mid">Sin recurrentes</div>';return}el.innerHTML='<div class="small" style="margin-bottom:6px">Total fijo: <b>'+money(r.reduce((a,x)=>a+(x.monto||0),0))+'</b></div>'+r.map(x=>'<div class="item" style="display:flex;justify-content:space-between"><div><div style="font-weight:600;font-size:12px">'+x.cat+' · '+x.desc+'</div><div class="small">'+x.cuenta+' · <b>'+money(x.monto)+'</b></div></div><button class="small-btn" onclick="delRec(\''+x.id+'\')">🗑️</button></div>').join("")}
+async function aplicarRecurrentes(){const r=JSON.parse(localStorage.getItem(keyFor("recurrentes"))||"[]");if(!r.length){toast("Sin recurrentes");return}if(!confirm("¿Aplicar "+r.length+" gastos?"))return;const f=fechaHoyColombia();for(const x of r){const datos={Fecha:f,Tipo:"Gasto",Cuenta:x.cuenta,Categoría:x.cat,Descripción:x.desc+" (rec)",Monto:x.monto,Nota:"Auto",Contexto:contexto};await guardarConOffline(datos,contexto);}render();toast("✔ "+r.length+" aplicados")}
+function addGoal(){const n=$("goalName").value.trim(),v=Number($("goalValue").value);if(!n||v<=0){toast("Completa");return}goals.push({nombre:n,valor:v});guardarDatos();$("goalName").value=$("goalValue").value="";render();toast("🎯 Guardada")}
+function delGoal(i){goals.splice(i,1);guardarDatos();render()}
+function toggleVoice(){if(!('webkitSpeechRecognition' in window)){toast("❌ No soportado");return}isListening?stopVoice():startVoice()}
+function startVoice(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;recognition=new SR();recognition.lang="es-CO";recognition.interimResults=true;$("voiceBtn").classList.add("listening");$("voiceBtn").innerHTML="🎤...";$("voiceFeedback").classList.add("active");$("voiceFeedback").innerHTML="👂 Habla...";isListening=true;recognition.onresult=(e)=>{const t=e.results[0][0].transcript;if(!e.results[0].isFinal)$("voiceFeedback").innerHTML='📝 "'+t+'"';else{let monto=0;const texto=t.toLowerCase();const m1=texto.match(/(\d+)\s*millones?/i),m2=texto.match(/(\d+)\s*mil/i),m3=texto.match(/(\d[\d.]*)/);if(m1)monto=parseInt(m1[1].replace(/\./g,""))*1e6;else if(m2)monto=parseInt(m2[1].replace(/\./g,""))*1e3;else if(m3)monto=parseInt(m3[1].replace(/\./g,""));if(monto){setMode("gasto",document.querySelectorAll(".mode-tab")[1]);$("descripcion").value=texto;$("montoInput").value=monto.toLocaleString("es-CO");$("voiceFeedback").innerHTML="✅ $"+monto.toLocaleString("es-CO")+"<br><small>Revisa y guarda</small>"}else $("voiceFeedback").innerHTML="❌ No detecté monto";stopVoice()}};recognition.onerror=()=>stopVoice();recognition.start()}
+function stopVoice(){if(recognition)recognition.stop();$("voiceBtn").classList.remove("listening");$("voiceBtn").innerHTML="🎤 Voz";isListening=false}
+function toggleNotiDiaria(){const a=$("toggleDiario").checked;localStorage.setItem("notiDiaria",a?"1":"0");if(a){if(Notification.permission==="default")Notification.requestPermission().then(p=>{if(p==="granted")programarNoti();else{$("toggleDiario").checked=false;localStorage.setItem("notiDiaria","0")}});else if(Notification.permission==="granted")programarNoti()}else{localStorage.removeItem("proxNoti");toast("🔕 Desactivado")}}
+function programarNoti(){if(Notification.permission!=="granted")return;const h=parseInt(localStorage.getItem("horaNoti")||"20"),a=new Date(),r=new Date();r.setHours(h,0,0,0);if(r<=a)r.setDate(r.getDate()+1);setTimeout(()=>{new Notification("💳 Banking PRO AI",{body:"¿Registraste tus gastos de hoy?",icon:"💳"});programarNoti()},r.getTime()-a.getTime())}
+function cambiarHora(){localStorage.setItem("horaNoti",$("horaRecordatorio").value);if(localStorage.getItem("notiDiaria")==="1")programarNoti()}
+function probarNoti(){if(Notification.permission==="granted"){new Notification("🔔 Prueba",{body:"¡Funciona!"});toast("✅ Enviada")}else if(Notification.permission==="default"){Notification.requestPermission().then(p=>{if(p==="granted")probarNoti();else toast("❌ Denegado")})}else toast("❌ Bloqueadas")}
+function limpiarCache(ctx){if(!confirm("¿Limpiar "+ctx+"?"))return;localStorage.removeItem(keyForCtx("dataCache",ctx));if(ctx===contexto){data=[];render()}toast("✔ Limpiado")}
+function exportarCSV(){const f=data.map(x=>[x.Fecha||"",x.Tipo||"",x.Categoría||"",(x.Descripción||"").replace(/,/g,";"),x.Monto||0,x.Cuenta||x.CuentaOrigen||"",x.Nota||""]);const csv="Fecha,Tipo,Categoría,Descripción,Monto,Cuenta,Nota\n"+f.map(r=>r.join(",")).join("\n");const b=new Blob(["\uFEFF"+csv]),url=URL.createObjectURL(b),a=document.createElement("a");a.href=url;a.download="movimientos_"+fechaHoyColombia().slice(0,7)+".csv";a.click();toast("📥 CSV exportado")}
+function diag(){$("diagContent").innerHTML="✅ Firebase: "+(window.db?"OK":"NO")+"<br>👤 "+(window.auth?.currentUser?.email||"Sin sesión")+"<br>💾 "+data.length+" movimientos<br>📡 "+(navigator.onLine?"Online":"Offline")+"<br>🎨 Tema: "+temaActual+"<br>📈 Inv: "+inversiones.length+"<br>💳 Prest: "+prestamos.length+"<br>📅 Hoy: "+fechaHoyColombia()}
+function aplicarTema(tema){temaActual=tema;localStorage.setItem("tema",tema);document.body.className=document.body.className.replace(/tema-\w+/g,"");document.body.classList.add("tema-"+tema);document.querySelectorAll(".tema-preview").forEach(t=>t.classList.remove("activo"));const p=$("tema"+tema.charAt(0).toUpperCase()+tema.slice(1));if(p)p.classList.add("activo");if(contexto==="negocio")document.body.classList.add("modo-negocio");toast("🎨 Tema "+tema)}
+function renderHistorialAdmin(){const el=$("historialAdminLista");if(!el)return;if(!historial.length){el.innerHTML='<div class="alert mid">No hay meses cerrados en el historial</div>';return}el.innerHTML=historial.map((m,i)=>`<div class="item" style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:700;font-size:13px">📅 ${m.label}</div><div class="small">Ing: ${money(m.ing)} · Gas: ${money(m.gas)} · Bal: ${money(m.ing-m.gas)}</div><div class="small">${m.movimientos?.length||0} movimientos</div></div><button class="small-btn" onclick="eliminarMesHistorial(${i})" style="width:auto;background:rgba(239,68,68,.15);color:var(--bad)">🗑️</button></div>`).join("")}
+function eliminarMesHistorial(index){const mes=historial[index];if(!confirm(`¿Eliminar "${mes.label}" del historial?`))return;historial.splice(index,1);localStorage.setItem(keyFor("historialMeses"),JSON.stringify(historial));renderHistorialAdmin();toast("🗑️ Mes eliminado: "+mes.label)}
+
 window.setContexto=setContexto;window.toggleHide=toggleHide;window.goTab=goTab;
 window.switchDashTab=switchDashTab;window.setMode=setMode;window.guardar=guardar;
 window.renderLista=renderLista;window.setFiltro=setFiltro;window.toggleVoice=toggleVoice;
@@ -1130,10 +1148,7 @@ window.limpiarCache=limpiarCache;window.diag=diag;window.aplicarTema=aplicarTema
 window.toggleNotiDiaria=toggleNotiDiaria;window.cambiarHora=cambiarHora;window.probarNoti=probarNoti;
 window.eliminarMesHistorial=eliminarMesHistorial;window.renderHistorialAdmin=renderHistorialAdmin;
 
-console.log("✅ Banking PRO AI v28 - OFFLINE ROBUSTO + SYNCMULTI");
-console.log("📡 Cola de pendientes con IndexedDB");
-console.log("🔄 Sincronización automática al recuperar conexión");
-console.log("📱 Multi-dispositivo: al iniciar sesión carga todos los datos");
+console.log("✅ Banking PRO AI v28 - COMPLETO con offline robusto y multi-dispositivo");
 </script>
 </body>
 </html>
