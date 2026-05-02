@@ -663,7 +663,6 @@
 </head>
 <body>
 
-<!-- LOGIN -->
 <div id="loginScreen">
   <div class="login-box">
     <div class="login-logo"><span>💳</span><h1>Banking PRO AI</h1><p>Tu gestor financiero inteligente</p></div>
@@ -686,7 +685,6 @@
   </div>
 </div>
 
-<!-- APP -->
 <div id="appContent">
   <div class="header">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
@@ -702,7 +700,6 @@
     <div style="font-size:11px;margin-top:6px;cursor:pointer;color:var(--muted)" onclick="toggleHide()">👁 Mostrar / ocultar</div>
   </div>
 
-  <!-- HOME -->
   <section class="tab active" id="tab-home">
     <div class="card">
       <div class="title">➕ Registrar <span class="ctx-label personal" id="movCtxLabel">Personal</span></div>
@@ -738,14 +735,12 @@
       <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">🎤 Voz</button>
       <div class="voice-feedback" id="voiceFeedback"></div>
     </div>
-
     <div class="card"><div class="title" id="cuentasTitle">🏦 Mis cuentas</div><div id="cuentasResumen"></div><div class="dist-bar" id="distBar"></div><div class="dist-legend" id="distLegend"></div></div>
     <div class="card"><div class="title">🎛️ Centro de mando</div><div id="cockpit"></div></div>
     <div class="card"><div class="title">⭐ Favoritos</div><div class="grid2" id="favList"></div></div>
     <div class="card"><div class="title">🧠 Coach Financiero</div><div id="coach"></div></div>
   </section>
 
-  <!-- DASHBOARD -->
   <section class="tab" id="tab-dashboard">
     <div class="tabs-mini">
       <div class="tab-mini active" onclick="switchDashTab('finanzas',this)">📊 Finanzas</div>
@@ -798,7 +793,6 @@
     </div>
   </section>
 
-  <!-- GOALS -->
   <section class="tab" id="tab-goals">
     <div class="card"><div class="title">🎯 Nueva meta <span class="ctx-label personal" id="goalCtxLabel">Personal</span></div><input type="text" id="goalName" placeholder="Ej: Viaje"><input type="number" id="goalValue" placeholder="Monto"><button class="primary" onclick="addGoal()">💾 Guardar</button></div>
     <div class="card"><div class="title">🚀 Mis metas</div><div id="goalList"></div></div>
@@ -806,7 +800,6 @@
     <div class="card"><div class="title">🔁 Recurrentes <span class="ctx-label personal" id="recCtxLabel">Personal</span></div><select id="recCuentaSel"></select><select id="recCatSel"></select><input type="text" id="recDesc" placeholder="Descripción"><input type="text" id="recMonto" placeholder="Monto"><button class="primary" onclick="addRecurrente()">➕ Agregar</button><div id="recList" style="margin-top:8px"></div><button class="warn-btn" style="width:100%;margin-top:8px" onclick="aplicarRecurrentes()">⚡ Aplicar al mes</button></div>
   </section>
 
-  <!-- MOVEMENTS -->
   <section class="tab" id="tab-list">
     <div class="card">
       <div class="title">📋 Movimientos</div>
@@ -828,7 +821,6 @@
     <div class="card" id="historialCard" style="display:none"><div class="title">🗂️ Historial de meses</div><div id="historialLista"></div></div>
   </section>
 
-  <!-- SETTINGS -->
   <section class="tab" id="tab-settings">
     <div class="card"><div class="title">👤 Mi cuenta</div><div id="userInfoBlock" style="margin-bottom:12px"></div><button class="danger" style="width:100%" onclick="cerrarSesion()">🚪 Cerrar sesión</button></div>
     <div class="card"><div class="title">🎨 Personalizar tema</div>
@@ -872,16 +864,29 @@
 const $=id=>document.getElementById(id);
 const ACC_COLORS=["#3b82f6","#22c55e","#f59e0b","#ec4899","#a78bfa","#14b8a6"];
 
-// ══ CORRECCIÓN ZONA HORARIA COLOMBIA (UTC-5) ══
+// ══ FECHA CORRECTA PARA COLOMBIA ══
 function hoyColombia(){
-  const ahora=new Date();
-  const offset=-5; // Colombia UTC-5
-  const fechaUTC=ahora.getTime()+(ahora.getTimezoneOffset()*60000);
-  return new Date(fechaUTC+(offset*3600000));
+  const ahora = new Date();
+  const year = ahora.getFullYear();
+  const month = ahora.getMonth();
+  const day = ahora.getDate();
+  return new Date(year, month, day);
 }
+
 function fechaHoyColombia(){
-  const h=hoyColombia();
-  return h.getFullYear()+"-"+String(h.getMonth()+1).padStart(2,"0")+"-"+String(h.getDate()).padStart(2,"0");
+  const ahora = new Date();
+  const year = ahora.getFullYear();
+  const month = String(ahora.getMonth() + 1).padStart(2, '0');
+  const day = String(ahora.getDate()).padStart(2, '0');
+  return year + '-' + month + '-' + day;
+}
+
+function fechaParaInput(){
+  const ahora = new Date();
+  const year = ahora.getFullYear();
+  const month = String(ahora.getMonth() + 1).padStart(2, '0');
+  const day = String(ahora.getDate()).padStart(2, '0');
+  return year + '-' + month + '-' + day;
 }
 
 let contexto=localStorage.getItem("contexto")||"personal",data=[],pending=[],hidden=localStorage.getItem("hideMoney")==="1";
@@ -908,7 +913,7 @@ function labelDay(f){
 
 document.addEventListener("DOMContentLoaded",()=>{
   $("today").innerText=hoyColombia().toLocaleDateString("es-CO",{weekday:"long",day:"numeric",month:"long"});
-  $("fecha").valueAsDate=hoyColombia();
+  $("fecha").value = fechaParaInput();
   aplicarTema(temaActual);
   $("tabLoginBtn").onclick=()=>switchLoginTab("login");$("tabRegisterBtn").onclick=()=>switchLoginTab("register");
   $("loginBtn").onclick=iniciarSesion;$("registerBtn").onclick=registrarUsuario;
@@ -926,19 +931,16 @@ async function iniciarSesion(){const e=$("loginEmail").value.trim(),p=$("loginPa
 async function registrarUsuario(){const n=$("regName").value.trim(),e=$("regEmail").value.trim(),p=$("regPass").value;if(!n||!e||!p||p.length<6){showError("Completa (mín. 6)");return}$("loginError").classList.remove("visible");$("registerBtn").disabled=true;$("registerBtn").textContent="⏳...";try{const cred=await window.fbRegister(e,p);await window.fbUpdateProfile(cred.user,{displayName:n});try{await window.fbAddDoc(window.fbCollection(window.db,"users"),{uid:cred.user.uid,email:e,displayName:n,createdAt:fechaHoyColombia()})}catch(ex){}}catch(err){$("registerBtn").disabled=false;$("registerBtn").textContent="Crear cuenta →";showError("Error: "+err.message)}}
 async function cerrarSesion(){if(!confirm("¿Cerrar sesión?"))return;await window.fbLogout()}
 
-// ══ CORRECCIÓN: RENDER SIEMPRE DESPUÉS DE CARGAR ══
+// ══ CORRECCIÓN: RENDER DENTRO DE CARGARTODO ══
 function onUserChanged(user){
   if(user){
     localStorage.setItem("uid",user.uid);window.currentUser=user;
     $("loginScreen").classList.add("oculto");$("appContent").classList.add("visible");
     actualizarUI(user);
-    cargarTodo();
-    // Forzar render después de cargar
-    setTimeout(()=>{
-      render();
-      renderInversiones();
-      renderPrestamos();
-    },100);
+    cargarTodo(); // Ahora cargarTodo() llama a render() internamente
+    renderInversiones();
+    renderPrestamos();
+    console.log("✅ Sesión iniciada, datos cargados");
   }else{$("loginScreen").classList.remove("oculto");$("appContent").classList.remove("visible")}
   $("loginBtn").disabled=false;$("registerBtn").disabled=false;$("loginBtn").textContent="Entrar →";$("registerBtn").textContent="Crear cuenta →";
 }
@@ -955,6 +957,10 @@ function cargarTodo(){
   inversiones=JSON.parse(localStorage.getItem("inversiones")||"[]");prestamos=JSON.parse(localStorage.getItem("prestamos")||"[]");
   $("syncCount").innerText=data.length;$("pendingCount").innerText=pending.length;
   poblarSelects();actualizarLabels();
+  
+  // ══ RENDER SE LLAMA AQUÍ DESPUÉS DE CARGAR TODO ══
+  render();
+  console.log("✅ Datos cargados y renderizados:", data.length, "movimientos");
 }
 
 function poblarSelects(){
@@ -967,7 +973,7 @@ function poblarSelects(){
 function poblarCat(modo){const s=$("categoria");if(!s)return;s.innerHTML="";categorias.filter(c=>c.tipo==="ambos"||c.tipo===modo).forEach(c=>{s.innerHTML+='<option value="'+c.icon+' '+c.nombre+'">'+c.icon+' '+c.nombre+'</option>'})}
 function poblarTraspaso(){const so=$("traspasoOrigen"),sd=$("traspasoDestino"),dir=$("traspasoDireccion").value;if(!so||!sd)return;const co=dir==="p2n"?"personal":"negocio",cd=dir==="p2n"?"negocio":"personal";const cO=JSON.parse(localStorage.getItem(keyForCtx("cuentas",co))||"[]"),cD=JSON.parse(localStorage.getItem(keyForCtx("cuentas",cd))||"[]");so.innerHTML="";cO.forEach(c=>{so.innerHTML+='<option value="'+c.id+'">'+(c.icon||"")+' '+c.nombre+'</option>'});sd.innerHTML="";cD.forEach(c=>{sd.innerHTML+='<option value="'+c.id+'">'+(c.icon||"")+' '+c.nombre+'</option>'})}
 
-function setContexto(ctx){contexto=ctx;localStorage.setItem("contexto",ctx);document.body.classList.toggle("modo-negocio",ctx==="negocio");$("ctxPersonal").classList.toggle("ctx-active",ctx==="personal");$("ctxNegocio").classList.toggle("ctx-active",ctx==="negocio");cargarTodo();render();renderInversiones();renderPrestamos();toast(ctx==="negocio"?"🏪 Negocio":"👤 Personal")}
+function setContexto(ctx){contexto=ctx;localStorage.setItem("contexto",ctx);document.body.classList.toggle("modo-negocio",ctx==="negocio");$("ctxPersonal").classList.toggle("ctx-active",ctx==="personal");$("ctxNegocio").classList.toggle("ctx-active",ctx==="negocio");cargarTodo();renderInversiones();renderPrestamos();toast(ctx==="negocio"?"🏪 Negocio":"👤 Personal")}
 function actualizarLabels(){const l=contexto==="negocio"?{c:"negocio",t:"Negocio"}:{c:"personal",t:"Personal"};["movCtxLabel","goalCtxLabel","cierreCtxLabel","budgetCtxLabel","recCtxLabel"].forEach(id=>{const el=$(id);if(el){el.className="ctx-label "+l.c;el.innerText=l.t}});$("cuentasTitle").innerHTML=(contexto==="negocio"?"🏪":"🏦")+" Mis cuentas";$("ctxSaldoLabel").innerText=contexto==="negocio"?"Capital":"Saldo disponible"}
 
 function calcSaldos(){const s={};cuentas.forEach(c=>{s[c.id]=c.saldoInicial||0});const todos=[...data,...pending].sort((a,b)=>new Date(a.Fecha||0)-new Date(b.Fecha||0));todos.forEach(x=>{const m=Number(x.Monto)||0;if(x.Tipo==="Transferencia"){if(x.CuentaOrigen&&s[x.CuentaOrigen]!==undefined)s[x.CuentaOrigen]-=m;if(x.CuentaDestino&&s[x.CuentaDestino]!==undefined)s[x.CuentaDestino]+=m}else if(x.Tipo==="TraspasoSalida"){if(x.Cuenta)s[x.Cuenta]-=m}else if(x.Tipo==="TraspasoEntrada"){if(x.Cuenta)s[x.Cuenta]+=m}else{const cid=x.Cuenta||"";if(s[cid]===undefined)s[cid]=0;if(x.Tipo==="Ingreso")s[cid]+=m;else if(x.Tipo==="Gasto")s[cid]-=m}});return s}
@@ -988,7 +994,7 @@ async function guardar(){
     $("descripcion").value=$("montoInput").value=$("notaInput").value="";
   }
   datos.ID=datos.ID||"local_"+Date.now();data.push(datos);guardarDatos();
-  $("fecha").valueAsDate=hoyColombia(); // Resetear fecha a hoy
+  $("fecha").value = fechaParaInput();
   render();toast("✔ Guardado");
 }
 
@@ -1001,7 +1007,7 @@ async function guardarTraspaso(){
   const dO=JSON.parse(localStorage.getItem(keyForCtx("dataCache",ctxO))||"[]");dO.push(rO);localStorage.setItem(keyForCtx("dataCache",ctxO),JSON.stringify(dO));
   const dD=JSON.parse(localStorage.getItem(keyForCtx("dataCache",ctxD))||"[]");dD.push(rD);localStorage.setItem(keyForCtx("dataCache",ctxD),JSON.stringify(dD));
   if(contexto===ctxO)data=dO;else if(contexto===ctxD)data=dD;$("syncCount").innerText=data.length;$("montoTrspaso").value=$("descTrspaso").value="";
-  $("fecha").valueAsDate=hoyColombia(); // Resetear fecha a hoy
+  $("fecha").value = fechaParaInput();
   render();toast("✔ Traspaso: "+money(m));
 }
 
@@ -1073,8 +1079,9 @@ function render(){
   $("goalList").innerHTML=goals.length?goals.map((g,i)=>{const p=Math.min((ah/g.valor)*100,100);return`<div class="item"><div style="font-weight:700">${g.nombre}</div><div class="small">${money(ah)} / ${money(g.valor)}</div><div class="progress"><div class="bar" style="width:${p}%"></div></div><button class="small-btn" onclick="delGoal(${i})">🗑️</button></div>`}).join(""):'<div class="alert mid">Sin metas</div>';
 }
 
-// ══ RESTO DE FUNCIONES (idénticas a la versión anterior) ══
 function usarFav(cat,des,monto,cuenta){setMode("gasto",document.querySelectorAll(".mode-tab")[1]);$("categoria").value=cat;$("descripcion").value=des;$("montoInput").value=Number(monto).toLocaleString("es-CO");if(cuenta)$("cuentaSel").value=cuenta;toast("Cargado")}
+
+// ═══════════════ LISTA ═══════════════
 function setFiltro(tipo,btn){filtroTipo=tipo;document.querySelectorAll(".filter-chip").forEach(c=>c.classList.remove("active"));btn.classList.add("active");renderLista()}
 function renderLista(){
   const busq=($("searchInput")?.value||"").toLowerCase().trim(),cf=$("filterCuentaSel")?.value||"",orden=$("filterOrden")?.value||"fecha_desc";
@@ -1085,11 +1092,16 @@ function renderLista(){
   let ld="";f.forEach(x=>{const m=Number(x.Monto)||0,cls=x.Tipo==="Ingreso"?"ingreso":x.Tipo==="Gasto"?"gasto":x.Tipo==="Transferencia"?"transferencia":"traspaso";if(orden.startsWith("fecha")&&x.Fecha!==ld){$("lista").innerHTML+=`<div class="timeline-day">${labelDay(x.Fecha)}</div>`;ld=x.Fecha}let cl="";if(x.Tipo==="Transferencia"){const o=cuentas.find(c=>c.id===x.CuentaOrigen),d=cuentas.find(c=>c.id===x.CuentaDestino);cl=`<span class="badge">🔄 ${o?.icon||""} → ${d?.icon||""}</span>`}else if(x.Cuenta){const c=cuentas.find(cu=>cu.id===x.Cuenta);if(c)cl=`<span class="badge">${c.icon} ${c.nombre}</span>`}
   $("lista").innerHTML+=`<div class="item ${cls}"><div>${x.Categoría||""} - ${x.Descripción||""}${cl}</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px"><b>${money(m)}</b><div style="display:flex;gap:4px">${(x.Tipo==="Ingreso"||x.Tipo==="Gasto")?`<button class="warn-btn" onclick="abrirEditar('${x.ID}')">✏️</button>`:""}<button class="small-btn" onclick="borrar('${x.ID}')">🗑️</button></div></div></div>`});
 }
+
 async function borrar(id){if(!confirm("¿Eliminar?"))return;data=data.filter(d=>String(d.ID)!==String(id));guardarDatos();render();toast("🗑️ Eliminado")}
 function abrirEditar(id){const x=data.find(d=>String(d.ID)===String(id));if(!x||x.Tipo==="Transferencia"||x.Tipo?.includes("Traspaso")){toast("No editable");return}editandoId=String(id);const ec=$("editCategoria");ec.innerHTML="";const modo=x.Tipo==="Ingreso"?"ingreso":"gasto";categorias.filter(c=>c.tipo==="ambos"||c.tipo===modo).forEach(c=>{const o=document.createElement("option");o.value=c.icon+" "+c.nombre;o.textContent=c.icon+" "+c.nombre;if(o.value===x.Categoría)o.selected=true;ec.appendChild(o)});const ecu=$("editCuenta");ecu.innerHTML="";cuentas.forEach(c=>{const o=document.createElement("option");o.value=c.id;o.textContent=c.icon+" "+c.nombre;if(c.id===x.Cuenta)o.selected=true;ecu.appendChild(o)});$("editFecha").value=x.Fecha||"";$("editDescripcion").value=x.Descripción||"";$("editMonto").value=Number(x.Monto||0).toLocaleString("es-CO");$("editNota").value=x.Nota||"";$("modalEditar").classList.add("open")}
 function confirmarEdicion(){const x=data.find(d=>String(d.ID)===String(editandoId));if(!x){$("modalEditar").classList.remove("open");return}const m=parseMonto($("editMonto").value);if(!$("editDescripcion").value.trim()||m<=0){toast("Completa");return}x.Fecha=$("editFecha").value;x.Categoría=$("editCategoria").value;x.Descripción=$("editDescripcion").value.trim();x.Monto=m;x.Cuenta=$("editCuenta").value;x.Nota=$("editNota").value.trim();guardarDatos();$("modalEditar").classList.remove("open");render();editandoId=null;toast("✔ Actualizado")}
+
+// ═══════════════ HISTORIAL ═══════════════
 function renderHistorial(){if(!historial.length){$("historialCard").style.display="none";return}$("historialCard").style.display="block";$("historialLista").innerHTML=historial.map((m,i)=>`<div class="item" style="cursor:pointer" onclick="toggleMes(${i})"><div style="display:flex;justify-content:space-between"><span style="font-weight:700">📅 ${m.label}</span><span id="ma${i}">▶</span></div><div class="small">Ing: ${money(m.ing)} · Gas: ${money(m.gas)} · Bal: ${money(m.ing-m.gas)}</div><div style="display:none;margin-top:6px" id="mb${i}">${m.movimientos?.length?m.movimientos.map(x=>`<div>${x.Categoría||""} - ${x.Descripción||""}: ${money(x.Monto)}</div>`).join(""):'<div class="small">Sin datos</div>'}</div></div>`).join("")}
 function toggleMes(i){const b=$("mb"+i),a=$("ma"+i);b.style.display=b.style.display==="none"?"block":"none";a.textContent=b.style.display==="none"?"▶":"▼"}
+
+// ═══════════════ CIERRE MES ═══════════════
 function abrirCierre(){const s=calcSaldos(),ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gas=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0);let h=`<div class="grid2" style="margin-bottom:8px"><div class="kpi"><span>Ingresos</span><strong style="color:var(--ok)">${money(ing)}</strong></div><div class="kpi"><span>Gastos</span><strong style="color:var(--bad)">${money(gas)}</strong></div></div>`;cuentas.forEach(c=>{h+=`<div style="font-size:12px;margin-bottom:3px">${c.icon} ${c.nombre}: ${money(s[c.id]||0)}</div>`});$("modalResumen").innerHTML=h;$("modalCierre").classList.add("open")}
 function confirmarCierre(){const s=calcSaldos(),ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gas=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0),label=hoyColombia().toLocaleDateString("es-CO",{month:"long",year:"numeric"});historial.unshift({label,ing,gas,saldosCierre:{...s},movimientos:[...data]});localStorage.setItem(keyFor("historialMeses"),JSON.stringify(historial));cuentas=cuentas.map(c=>({...c,saldoInicial:s[c.id]||0}));guardarDatos();data=[];pending=[];localStorage.setItem(keyFor("dataCache"),"[]");localStorage.setItem(keyFor("pendingQueue"),"[]");$("syncCount").innerText=0;$("pendingCount").innerText=0;$("modalCierre").classList.remove("open");render();toast("✔ Mes cerrado")}
 
@@ -1234,8 +1246,9 @@ window.mostrarFormPrestamo=mostrarFormPrestamo;window.switchPrestamoTab=switchPr
 window.toggleMes=toggleMes;window.exportarCSV=exportarCSV;window.limpiarCache=limpiarCache;window.diag=diag;
 window.aplicarTema=aplicarTema;window.toggleNotiDiaria=toggleNotiDiaria;window.cambiarHora=cambiarHora;window.probarNoti=probarNoti;
 
-console.log("✅ Banking PRO AI v27 - Bugs corregidos | Fecha Colombia UTC-5 | Datos cargan automático");
-console.log("📅 Fecha actual Colombia:",fechaHoyColombia());
+console.log("✅ Banking PRO AI v27 - Bugs corregidos");
+console.log("📅 Fecha actual Colombia:", fechaHoyColombia());
+console.log("🔄 Datos cargan automáticamente al iniciar sesión");
 </script>
 </body>
 </html>
