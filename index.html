@@ -698,6 +698,11 @@
     <div class="small" style="margin-top:2px" id="ctxSaldoLabel">Saldo total disponible</div>
     <div class="big" id="saldoTop">$0</div>
     <div style="font-size:11px;margin-top:6px;cursor:pointer;color:var(--muted)" onclick="toggleHide()">👁 Mostrar / ocultar</div>
+    <div class="grid3" style="margin-top:10px">
+      <div class="kpi"><span>Movimientos</span><strong id="syncCount">0</strong></div>
+      <div class="kpi"><span>Pendientes</span><strong id="pendingCount">0</strong></div>
+      <div class="kpi"><span>Balance</span><strong id="streakBox">$0</strong></div>
+    </div>
   </div>
 
   <section class="tab active" id="tab-home">
@@ -860,7 +865,7 @@
 <div class="modal-overlay" id="modalEditar"><div class="modal"><h3>✏️ Editar movimiento</h3><input type="date" id="editFecha"><select id="editCategoria"></select><input type="text" id="editDescripcion" placeholder="Descripción"><input type="text" id="editMonto" placeholder="Monto"><select id="editCuenta"></select><input type="text" id="editNota" placeholder="Nota"><div class="modal-btns"><button class="secondary" onclick="$('modalEditar').classList.remove('open')">Cancelar</button><button class="primary" onclick="confirmarEdicion()">✔ Guardar</button></div></div></div>
 
 <script>
-// ═══════════════ BANKING PRO AI v27 - UID CORREGIDO ═══════════════
+// ═══════════════ BANKING PRO AI v27 - CORREGIDO ═══════════════
 const $=id=>document.getElementById(id);
 const ACC_COLORS=["#3b82f6","#22c55e","#f59e0b","#ec4899","#a78bfa","#14b8a6"];
 
@@ -930,20 +935,16 @@ async function iniciarSesion(){const e=$("loginEmail").value.trim(),p=$("loginPa
 async function registrarUsuario(){const n=$("regName").value.trim(),e=$("regEmail").value.trim(),p=$("regPass").value;if(!n||!e||!p||p.length<6){showError("Completa (mín. 6)");return}$("loginError").classList.remove("visible");$("registerBtn").disabled=true;$("registerBtn").textContent="⏳...";try{const cred=await window.fbRegister(e,p);await window.fbUpdateProfile(cred.user,{displayName:n});try{await window.fbAddDoc(window.fbCollection(window.db,"users"),{uid:cred.user.uid,email:e,displayName:n,createdAt:fechaHoyColombia()})}catch(ex){}}catch(err){$("registerBtn").disabled=false;$("registerBtn").textContent="Crear cuenta →";showError("Error: "+err.message)}}
 async function cerrarSesion(){if(!confirm("¿Cerrar sesión?"))return;await window.fbLogout()}
 
-// ══ CORRECCIÓN: Guardar uid ANTES de cargarTodo ══
 function onUserChanged(user){
   if(user){
-    // PRIMERO guardar el uid para que keyFor funcione
     localStorage.setItem("uid", user.uid);
     window.currentUser = user;
-    
     $("loginScreen").classList.add("oculto");
     $("appContent").classList.add("visible");
     actualizarUI(user);
-    cargarTodo(); // Ahora uid() devuelve el uid correcto
+    cargarTodo();
     renderInversiones();
     renderPrestamos();
-    console.log("✅ Sesión iniciada. UID:", uid());
   } else {
     $("loginScreen").classList.remove("oculto");
     $("appContent").classList.remove("visible");
@@ -964,10 +965,11 @@ function cargarTodo(){
   data=JSON.parse(localStorage.getItem(keyFor("dataCache"))||"[]");pending=JSON.parse(localStorage.getItem(keyFor("pendingQueue"))||"[]");
   historial=JSON.parse(localStorage.getItem(keyFor("historialMeses"))||"[]");goals=JSON.parse(localStorage.getItem(keyFor("goals"))||"[]");
   inversiones=JSON.parse(localStorage.getItem("inversiones")||"[]");prestamos=JSON.parse(localStorage.getItem("prestamos")||"[]");
-  $("syncCount").innerText=data.length;$("pendingCount").innerText=pending.length;
+  const sc=$("syncCount");if(sc)sc.innerText=data.length;
+  const pc=$("pendingCount");if(pc)pc.innerText=pending.length;
   poblarSelects();actualizarLabels();
   render();
-  console.log("✅ Datos cargados. UID:", uid(), "Movimientos:", data.length, "Saldo:", $("saldoTop").innerText);
+  console.log("✅ Datos cargados. UID:", uid(), "Movimientos:", data.length);
 }
 
 function poblarSelects(){
@@ -1013,7 +1015,7 @@ async function guardarTraspaso(){
   const rD={Fecha:f,Tipo:"TraspasoEntrada",Cuenta:cd,Categoría:"🔀 Traspaso",Descripción:desc+" ← "+(ctxO==="negocio"?"🏪":"👤"),Monto:m,Contexto:ctxD};
   const dO=JSON.parse(localStorage.getItem(keyForCtx("dataCache",ctxO))||"[]");dO.push(rO);localStorage.setItem(keyForCtx("dataCache",ctxO),JSON.stringify(dO));
   const dD=JSON.parse(localStorage.getItem(keyForCtx("dataCache",ctxD))||"[]");dD.push(rD);localStorage.setItem(keyForCtx("dataCache",ctxD),JSON.stringify(dD));
-  if(contexto===ctxO)data=dO;else if(contexto===ctxD)data=dD;$("syncCount").innerText=data.length;$("montoTrspaso").value=$("descTrspaso").value="";
+  if(contexto===ctxO)data=dO;else if(contexto===ctxD)data=dD;$("syncCount")?.innerText=data.length;$("montoTrspaso").value=$("descTrspaso").value="";
   $("fecha").value = fechaParaInput();
   render();toast("✔ Traspaso: "+money(m));
 }
@@ -1101,7 +1103,7 @@ function confirmarEdicion(){const x=data.find(d=>String(d.ID)===String(editandoI
 function renderHistorial(){if(!historial.length){$("historialCard").style.display="none";return}$("historialCard").style.display="block";$("historialLista").innerHTML=historial.map((m,i)=>`<div class="item" style="cursor:pointer" onclick="toggleMes(${i})"><div style="display:flex;justify-content:space-between"><span style="font-weight:700">📅 ${m.label}</span><span id="ma${i}">▶</span></div><div class="small">Ing: ${money(m.ing)} · Gas: ${money(m.gas)} · Bal: ${money(m.ing-m.gas)}</div><div style="display:none;margin-top:6px" id="mb${i}">${m.movimientos?.length?m.movimientos.map(x=>`<div>${x.Categoría||""} - ${x.Descripción||""}: ${money(x.Monto)}</div>`).join(""):'<div class="small">Sin datos</div>'}</div></div>`).join("")}
 function toggleMes(i){const b=$("mb"+i),a=$("ma"+i);b.style.display=b.style.display==="none"?"block":"none";a.textContent=b.style.display==="none"?"▶":"▼"}
 function abrirCierre(){const s=calcSaldos(),ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gas=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0);let h=`<div class="grid2" style="margin-bottom:8px"><div class="kpi"><span>Ingresos</span><strong style="color:var(--ok)">${money(ing)}</strong></div><div class="kpi"><span>Gastos</span><strong style="color:var(--bad)">${money(gas)}</strong></div></div>`;cuentas.forEach(c=>{h+=`<div style="font-size:12px;margin-bottom:3px">${c.icon} ${c.nombre}: ${money(s[c.id]||0)}</div>`});$("modalResumen").innerHTML=h;$("modalCierre").classList.add("open")}
-function confirmarCierre(){const s=calcSaldos(),ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gas=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0),label=hoyColombia().toLocaleDateString("es-CO",{month:"long",year:"numeric"});historial.unshift({label,ing,gas,saldosCierre:{...s},movimientos:[...data]});localStorage.setItem(keyFor("historialMeses"),JSON.stringify(historial));cuentas=cuentas.map(c=>({...c,saldoInicial:s[c.id]||0}));guardarDatos();data=[];pending=[];localStorage.setItem(keyFor("dataCache"),"[]");localStorage.setItem(keyFor("pendingQueue"),"[]");$("syncCount").innerText=0;$("pendingCount").innerText=0;$("modalCierre").classList.remove("open");render();toast("✔ Mes cerrado")}
+function confirmarCierre(){const s=calcSaldos(),ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gas=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0),label=hoyColombia().toLocaleDateString("es-CO",{month:"long",year:"numeric"});historial.unshift({label,ing,gas,saldosCierre:{...s},movimientos:[...data]});localStorage.setItem(keyFor("historialMeses"),JSON.stringify(historial));cuentas=cuentas.map(c=>({...c,saldoInicial:s[c.id]||0}));guardarDatos();data=[];pending=[];localStorage.setItem(keyFor("dataCache"),"[]");localStorage.setItem(keyFor("pendingQueue"),"[]");const sc=$("syncCount");if(sc)sc.innerText=0;const pc=$("pendingCount");if(pc)pc.innerText=0;$("modalCierre").classList.remove("open");render();toast("✔ Mes cerrado")}
 
 function renderCharts(){
   const saldos=calcSaldos();let ing=0,gas=0,cats={};data.forEach(x=>{const m=Number(x.Monto)||0;if(x.Tipo==="Ingreso")ing+=m;else if(x.Tipo==="Gasto"){gas+=m;cats[x.Categoría]=(cats[x.Categoría]||0)+m}});
@@ -1239,7 +1241,7 @@ window.mostrarFormPrestamo=mostrarFormPrestamo;window.switchPrestamoTab=switchPr
 window.toggleMes=toggleMes;window.exportarCSV=exportarCSV;window.limpiarCache=limpiarCache;window.diag=diag;
 window.aplicarTema=aplicarTema;window.toggleNotiDiaria=toggleNotiDiaria;window.cambiarHora=cambiarHora;window.probarNoti=probarNoti;
 
-console.log("✅ Banking PRO AI v27 - UID corregido");
+console.log("✅ Banking PRO AI v27 - CORREGIDO");
 console.log("📅 Fecha:", fechaHoyColombia());
 </script>
 </body>
