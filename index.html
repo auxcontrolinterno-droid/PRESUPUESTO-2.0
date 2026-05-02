@@ -860,7 +860,7 @@
 <div class="modal-overlay" id="modalEditar"><div class="modal"><h3>✏️ Editar movimiento</h3><input type="date" id="editFecha"><select id="editCategoria"></select><input type="text" id="editDescripcion" placeholder="Descripción"><input type="text" id="editMonto" placeholder="Monto"><select id="editCuenta"></select><input type="text" id="editNota" placeholder="Nota"><div class="modal-btns"><button class="secondary" onclick="$('modalEditar').classList.remove('open')">Cancelar</button><button class="primary" onclick="confirmarEdicion()">✔ Guardar</button></div></div></div>
 
 <script>
-// ═══════════════ BANKING PRO AI v27 - DOBLE RENDER ═══════════════
+// ═══════════════ BANKING PRO AI v27 - VERIFICACIÓN DE DOM LISTO ═══════════════
 const $=id=>document.getElementById(id);
 const ACC_COLORS=["#3b82f6","#22c55e","#f59e0b","#ec4899","#a78bfa","#14b8a6"];
 
@@ -930,7 +930,7 @@ async function iniciarSesion(){const e=$("loginEmail").value.trim(),p=$("loginPa
 async function registrarUsuario(){const n=$("regName").value.trim(),e=$("regEmail").value.trim(),p=$("regPass").value;if(!n||!e||!p||p.length<6){showError("Completa (mín. 6)");return}$("loginError").classList.remove("visible");$("registerBtn").disabled=true;$("registerBtn").textContent="⏳...";try{const cred=await window.fbRegister(e,p);await window.fbUpdateProfile(cred.user,{displayName:n});try{await window.fbAddDoc(window.fbCollection(window.db,"users"),{uid:cred.user.uid,email:e,displayName:n,createdAt:fechaHoyColombia()})}catch(ex){}}catch(err){$("registerBtn").disabled=false;$("registerBtn").textContent="Crear cuenta →";showError("Error: "+err.message)}}
 async function cerrarSesion(){if(!confirm("¿Cerrar sesión?"))return;await window.fbLogout()}
 
-// ══ SOLUCIÓN: RENDER INMEDIATO + RESPALDO A 500ms ══
+// ══ SIMPLE ══
 function onUserChanged(user){
   if(user){
     localStorage.setItem("uid",user.uid);window.currentUser=user;
@@ -940,16 +940,6 @@ function onUserChanged(user){
     cargarTodo();
     renderInversiones();
     renderPrestamos();
-    
-    // PRIMER RENDER - inmediato
-    render();
-    
-    // SEGUNDO RENDER - por si el primero falló
-    setTimeout(() => {
-      console.log("🔄 Render de respaldo 500ms");
-      render();
-    }, 500);
-    
   } else {
     $("loginScreen").classList.remove("oculto");
     $("appContent").classList.remove("visible");
@@ -962,6 +952,7 @@ function onUserChanged(user){
 
 function actualizarUI(user){const dn=user.displayName||(user.email||"").split("@")[0],ini=dn.split(/[\s._-]+/).filter(Boolean).map(w=>w[0]).join("").toUpperCase().slice(0,2)||"U";$("userAvatar").textContent=ini;$("userName").textContent=dn.split(" ")[0];$("userInfoBlock").innerHTML='<div style="display:flex;align-items:center;gap:10px"><div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff">'+ini+'</div><div><div style="font-weight:700">'+dn+'</div><div class="small">'+(user.email||"")+'</div></div></div>';}
 
+// ══ SOLUCIÓN: ESPERAR A QUE saldoTop EXISTA Y SEA VISIBLE ══
 function cargarTodo(){
   const defC={personal:[{id:"nequi",nombre:"Nequi",icon:"📱"},{id:"davivienda",nombre:"Davivienda",icon:"🏦"},{id:"efectivo",nombre:"Efectivo",icon:"💵"}],negocio:[{id:"caja_neg",nombre:"Caja",icon:"🏪"},{id:"banco_neg",nombre:"Banco Neg.",icon:"🏦"}]};
   cuentas=JSON.parse(localStorage.getItem(keyFor("cuentas"))||JSON.stringify(defC[contexto]||defC.personal));cuentas=cuentas.map(c=>({saldoInicial:0,...c}));
@@ -972,7 +963,18 @@ function cargarTodo(){
   inversiones=JSON.parse(localStorage.getItem("inversiones")||"[]");prestamos=JSON.parse(localStorage.getItem("prestamos")||"[]");
   $("syncCount").innerText=data.length;$("pendingCount").innerText=pending.length;
   poblarSelects();actualizarLabels();
-  // NO llamar a render() aquí
+  
+  // Esperar a que saldoTop exista y sea visible
+  function intentarRender(){
+    const st = $("saldoTop");
+    if(st && st.offsetParent !== null){
+      render();
+      console.log("✅ Render exitoso. Saldo:", st.innerText);
+    } else {
+      requestAnimationFrame(intentarRender);
+    }
+  }
+  requestAnimationFrame(intentarRender);
 }
 
 function poblarSelects(){
@@ -985,7 +987,7 @@ function poblarSelects(){
 function poblarCat(modo){const s=$("categoria");if(!s)return;s.innerHTML="";categorias.filter(c=>c.tipo==="ambos"||c.tipo===modo).forEach(c=>{s.innerHTML+='<option value="'+c.icon+' '+c.nombre+'">'+c.icon+' '+c.nombre+'</option>'})}
 function poblarTraspaso(){const so=$("traspasoOrigen"),sd=$("traspasoDestino"),dir=$("traspasoDireccion").value;if(!so||!sd)return;const co=dir==="p2n"?"personal":"negocio",cd=dir==="p2n"?"negocio":"personal";const cO=JSON.parse(localStorage.getItem(keyForCtx("cuentas",co))||"[]"),cD=JSON.parse(localStorage.getItem(keyForCtx("cuentas",cd))||"[]");so.innerHTML="";cO.forEach(c=>{so.innerHTML+='<option value="'+c.id+'">'+(c.icon||"")+' '+c.nombre+'</option>'});sd.innerHTML="";cD.forEach(c=>{sd.innerHTML+='<option value="'+c.id+'">'+(c.icon||"")+' '+c.nombre+'</option>'})}
 
-function setContexto(ctx){contexto=ctx;localStorage.setItem("contexto",ctx);document.body.classList.toggle("modo-negocio",ctx==="negocio");$("ctxPersonal").classList.toggle("ctx-active",ctx==="personal");$("ctxNegocio").classList.toggle("ctx-active",ctx==="negocio");cargarTodo();render();renderInversiones();renderPrestamos();toast(ctx==="negocio"?"🏪 Negocio":"👤 Personal")}
+function setContexto(ctx){contexto=ctx;localStorage.setItem("contexto",ctx);document.body.classList.toggle("modo-negocio",ctx==="negocio");$("ctxPersonal").classList.toggle("ctx-active",ctx==="personal");$("ctxNegocio").classList.toggle("ctx-active",ctx==="negocio");cargarTodo();renderInversiones();renderPrestamos();toast(ctx==="negocio"?"🏪 Negocio":"👤 Personal")}
 function actualizarLabels(){const l=contexto==="negocio"?{c:"negocio",t:"Negocio"}:{c:"personal",t:"Personal"};["movCtxLabel","goalCtxLabel","cierreCtxLabel","budgetCtxLabel","recCtxLabel"].forEach(id=>{const el=$(id);if(el){el.className="ctx-label "+l.c;el.innerText=l.t}});$("cuentasTitle").innerHTML=(contexto==="negocio"?"🏪":"🏦")+" Mis cuentas";$("ctxSaldoLabel").innerText=contexto==="negocio"?"Capital":"Saldo disponible"}
 
 function calcSaldos(){const s={};cuentas.forEach(c=>{s[c.id]=c.saldoInicial||0});const todos=[...data,...pending].sort((a,b)=>new Date(a.Fecha||0)-new Date(b.Fecha||0));todos.forEach(x=>{const m=Number(x.Monto)||0;if(x.Tipo==="Transferencia"){if(x.CuentaOrigen&&s[x.CuentaOrigen]!==undefined)s[x.CuentaOrigen]-=m;if(x.CuentaDestino&&s[x.CuentaDestino]!==undefined)s[x.CuentaDestino]+=m}else if(x.Tipo==="TraspasoSalida"){if(x.Cuenta)s[x.Cuenta]-=m}else if(x.Tipo==="TraspasoEntrada"){if(x.Cuenta)s[x.Cuenta]+=m}else{const cid=x.Cuenta||"";if(s[cid]===undefined)s[cid]=0;if(x.Tipo==="Ingreso")s[cid]+=m;else if(x.Tipo==="Gasto")s[cid]-=m}});return s}
@@ -1244,7 +1246,7 @@ window.mostrarFormPrestamo=mostrarFormPrestamo;window.switchPrestamoTab=switchPr
 window.toggleMes=toggleMes;window.exportarCSV=exportarCSV;window.limpiarCache=limpiarCache;window.diag=diag;
 window.aplicarTema=aplicarTema;window.toggleNotiDiaria=toggleNotiDiaria;window.cambiarHora=cambiarHora;window.probarNoti=probarNoti;
 
-console.log("✅ Banking PRO AI v27 - Doble render (inmediato + 500ms)");
+console.log("✅ Banking PRO AI v27 - Verificación de DOM listo");
 console.log("📅 Fecha:", fechaHoyColombia());
 </script>
 </body>
