@@ -860,11 +860,10 @@
 <div class="modal-overlay" id="modalEditar"><div class="modal"><h3>✏️ Editar movimiento</h3><input type="date" id="editFecha"><select id="editCategoria"></select><input type="text" id="editDescripcion" placeholder="Descripción"><input type="text" id="editMonto" placeholder="Monto"><select id="editCuenta"></select><input type="text" id="editNota" placeholder="Nota"><div class="modal-btns"><button class="secondary" onclick="$('modalEditar').classList.remove('open')">Cancelar</button><button class="primary" onclick="confirmarEdicion()">✔ Guardar</button></div></div></div>
 
 <script>
-// ═══════════════ BANKING PRO AI v27 - BUGS CORREGIDOS ═══════════════
+// ═══════════════ BANKING PRO AI v27 - HOME CORREGIDO ═══════════════
 const $=id=>document.getElementById(id);
 const ACC_COLORS=["#3b82f6","#22c55e","#f59e0b","#ec4899","#a78bfa","#14b8a6"];
 
-// ══ FECHA CORRECTA PARA COLOMBIA ══
 function hoyColombia(){
   const ahora = new Date();
   const year = ahora.getFullYear();
@@ -931,7 +930,6 @@ async function iniciarSesion(){const e=$("loginEmail").value.trim(),p=$("loginPa
 async function registrarUsuario(){const n=$("regName").value.trim(),e=$("regEmail").value.trim(),p=$("regPass").value;if(!n||!e||!p||p.length<6){showError("Completa (mín. 6)");return}$("loginError").classList.remove("visible");$("registerBtn").disabled=true;$("registerBtn").textContent="⏳...";try{const cred=await window.fbRegister(e,p);await window.fbUpdateProfile(cred.user,{displayName:n});try{await window.fbAddDoc(window.fbCollection(window.db,"users"),{uid:cred.user.uid,email:e,displayName:n,createdAt:fechaHoyColombia()})}catch(ex){}}catch(err){$("registerBtn").disabled=false;$("registerBtn").textContent="Crear cuenta →";showError("Error: "+err.message)}}
 async function cerrarSesion(){if(!confirm("¿Cerrar sesión?"))return;await window.fbLogout()}
 
-// ══ CORRECCIÓN: RENDER CON DELAY PARA ASEGURAR DOM ══
 function onUserChanged(user){
   if(user){
     localStorage.setItem("uid",user.uid);window.currentUser=user;
@@ -940,11 +938,6 @@ function onUserChanged(user){
     cargarTodo();
     renderInversiones();
     renderPrestamos();
-    // Forzar un segundo render después de que el DOM esté completamente listo
-    setTimeout(() => {
-      render();
-      console.log("🔄 Render forzado - DOM listo");
-    }, 300);
   } else {
     $("loginScreen").classList.remove("oculto");
     $("appContent").classList.remove("visible");
@@ -957,6 +950,7 @@ function onUserChanged(user){
 
 function actualizarUI(user){const dn=user.displayName||(user.email||"").split("@")[0],ini=dn.split(/[\s._-]+/).filter(Boolean).map(w=>w[0]).join("").toUpperCase().slice(0,2)||"U";$("userAvatar").textContent=ini;$("userName").textContent=dn.split(" ")[0];$("userInfoBlock").innerHTML='<div style="display:flex;align-items:center;gap:10px"><div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff">'+ini+'</div><div><div style="font-weight:700">'+dn+'</div><div class="small">'+(user.email||"")+'</div></div></div>';}
 
+// ══ SOLUCIÓN: Forzar home activo y render ══
 function cargarTodo(){
   const defC={personal:[{id:"nequi",nombre:"Nequi",icon:"📱"},{id:"davivienda",nombre:"Davivienda",icon:"🏦"},{id:"efectivo",nombre:"Efectivo",icon:"💵"}],negocio:[{id:"caja_neg",nombre:"Caja",icon:"🏪"},{id:"banco_neg",nombre:"Banco Neg.",icon:"🏦"}]};
   cuentas=JSON.parse(localStorage.getItem(keyFor("cuentas"))||JSON.stringify(defC[contexto]||defC.personal));cuentas=cuentas.map(c=>({saldoInicial:0,...c}));
@@ -967,8 +961,19 @@ function cargarTodo(){
   inversiones=JSON.parse(localStorage.getItem("inversiones")||"[]");prestamos=JSON.parse(localStorage.getItem("prestamos")||"[]");
   $("syncCount").innerText=data.length;$("pendingCount").innerText=pending.length;
   poblarSelects();actualizarLabels();
+  
+  // ══ SOLUCIÓN: Forzar home activo ══
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+  const tabHome = $("tab-home");
+  if(tabHome) tabHome.classList.add("active");
+  
+  // Restaurar botón home en nav
+  document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));
+  const navBtns = document.querySelectorAll(".nav button");
+  if(navBtns[0]) navBtns[0].classList.add("active");
+  
   render();
-  console.log("✅ Datos cargados:", data.length, "movimientos");
+  console.log("✅ Home cargado con", data.length, "movimientos");
 }
 
 function poblarSelects(){
@@ -1021,7 +1026,6 @@ async function guardarTraspaso(){
 
 function guardarDatos(){localStorage.setItem(keyFor("dataCache"),JSON.stringify(data));localStorage.setItem(keyFor("cuentas"),JSON.stringify(cuentas));localStorage.setItem(keyFor("categorias"),JSON.stringify(categorias));localStorage.setItem(keyFor("goals"),JSON.stringify(goals));localStorage.setItem("prestamos",JSON.stringify(prestamos));localStorage.setItem("inversiones",JSON.stringify(inversiones))}
 
-// ═══════════════ COACH FINANCIERO ═══════════════
 function renderCoach(ing,gas,ah,cats,saldos){
   const bal=ing-gas;
   const hoy=hoyColombia();
@@ -1068,7 +1072,6 @@ function renderCoach(ing,gas,ah,cats,saldos){
   $("coach").innerHTML=html;
 }
 
-// ═══════════════ RENDER PRINCIPAL ═══════════════
 function render(){
   let ing=0,gas=0,ah=0,cats={};
   [...data].sort((a,b)=>new Date(b.Fecha)-new Date(a.Fecha)).forEach(x=>{const m=Number(x.Monto)||0;if(x.Tipo==="Ingreso")ing+=m;else if(x.Tipo==="Gasto"){gas+=m;cats[x.Categoría]=(cats[x.Categoría]||0)+m}if(String(x.Categoría||"").includes("Ahorro"))ah+=m});
@@ -1244,10 +1247,9 @@ window.mostrarFormPrestamo=mostrarFormPrestamo;window.switchPrestamoTab=switchPr
 window.toggleMes=toggleMes;window.exportarCSV=exportarCSV;window.limpiarCache=limpiarCache;window.diag=diag;
 window.aplicarTema=aplicarTema;window.toggleNotiDiaria=toggleNotiDiaria;window.cambiarHora=cambiarHora;window.probarNoti=probarNoti;
 
-console.log("✅ Banking PRO AI v27 - Bugs corregidos");
+console.log("✅ Banking PRO AI v27 - Home corregido");
 console.log("📅 Fecha Colombia:", fechaHoyColombia());
-console.log("🔄 Datos cargan automáticamente + render forzado a 300ms");
+console.log("🏠 Home forzado como activo al cargar");
 </script>
 </body>
 </html>
-```
