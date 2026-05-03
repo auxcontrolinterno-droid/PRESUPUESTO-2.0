@@ -1421,11 +1421,51 @@ window.verHistorialCompleto=verHistorialCompleto;window.verDetalleMes=verDetalle
 
 console.log("✅ Banking PRO AI v30 - COMPLETO con Sincronización en Tiempo Real");
 </script>
+<!-- ═══════════════ SISTEMA DE CONTROL DE ACCESO COMPLETO Y CORREGIDO ═══════════════ -->
 <script>
-// ═══════════════ SOLUCIÓN: SINCRONIZAR DESDE AUTH ═══════════════
 const adminUIDs = ["ehvt48aV7BUBDKUC8YXVaNRNjO63"];
 
-// Esta función registra automáticamente a cualquiera que inicie sesión
+// ═══ TOAST ═══
+function toastMsg(msg) {
+    const toast = document.getElementById('toast');
+    if (toast) {
+        toast.textContent = msg;
+        toast.style.display = 'block';
+        setTimeout(() => toast.style.display = 'none', 2400);
+    }
+}
+
+// ═══ GUARDAR EN USERS ═══
+async function guardarEnUsers(uid, email, displayName) {
+    if (!window.db) return;
+    
+    try {
+        const snapUsers = await window.fbGetDocs(
+            window.fbQuery(window.fbCollection(window.db, "users"))
+        );
+        
+        let existe = false;
+        snapUsers.forEach(doc => {
+            if (doc.data().uid === uid || doc.id === uid) {
+                existe = true;
+            }
+        });
+        
+        if (!existe) {
+            console.log("📝 Guardando en colección users:", email);
+            await window.fbAddDoc(window.fbCollection(window.db, "users"), {
+                uid: uid,
+                email: email,
+                displayName: displayName || email?.split('@')[0] || '',
+                createdAt: new Date().toISOString()
+            });
+        }
+    } catch(e) {
+        console.error("Error guardando en users:", e);
+    }
+}
+
+// ═══ REGISTRAR EN USER_ACCESS ═══
 async function registrarEnUserAccess(uid, email) {
     if (!window.db) return;
     
@@ -1455,26 +1495,420 @@ async function registrarEnUserAccess(uid, email) {
     }
 }
 
-// Interceptar tanto login como registro
+// ═══ OBTENER O CREAR DOCUMENTO EN USER_ACCESS ═══
+async function obtenerOcrearDocId(uid, email) {
+    const querySnapshot = await window.fbGetDocs(
+        window.fbQuery(window.fbCollection(window.db, "user_access"))
+    );
+    
+    let docId = null;
+    querySnapshot.forEach(doc => {
+        if (doc.data().uid === uid) docId = doc.id;
+    });
+    
+    if (!docId) {
+        const docRef = await window.fbAddDoc(window.fbCollection(window.db, "user_access"), {
+            uid: uid,
+            email: email || "",
+            acceso_permitido: true,
+            duracion_acceso: "permanente",
+            fecha_creacion: new Date().toISOString(),
+            fecha_expiracion: null
+        });
+        docId = docRef.id;
+    }
+    
+    return docId;
+}
+
+// ═══ INTERCEPTAR LOGIN ═══
 const fbLoginOriginal = window.fbLogin;
 window.fbLogin = async function(email, password) {
     const result = await fbLoginOriginal(email, password);
     if (result && result.user) {
         await registrarEnUserAccess(result.user.uid, result.user.email);
+        await guardarEnUsers(result.user.uid, result.user.email, result.user.displayName);
     }
     return result;
 };
 
+// ═══ INTERCEPTAR REGISTRO ═══
 const fbRegisterOriginal = window.fbRegister;
 window.fbRegister = async function(email, password) {
     const result = await fbRegisterOriginal(email, password);
     if (result && result.user) {
         await registrarEnUserAccess(result.user.uid, result.user.email);
+        await guardarEnUsers(result.user.uid, email, '');
     }
     return result;
 };
 
-// Panel de admin con lista de user_access
+// ═══ CARGAR LISTA DE USUARIOS ═══
+window.cargarListaUsuarios = async function() {
+    const listaDiv = document.getElementById('adminUserList');
+    if (!listaDiv) return;
+    
+    listaDiv.innerHTML = '<div class="alert info">⏳ Buscando en todas las fuentes...</div>';
+    
+    try {
+        const usuarios = [];
+        const vistos = new Set();
+        
+        // 1. user_access
+        try {
+            const snapAccess = await window.fbGetDocs(
+                window.fbQuery(window.fbCollection(window.db, "user_access"))
+            );
+            
+            snapAccess.forEach(doc => {
+                const data = doc.data();
+                if (data.uid && !vistos.has(data.uid)) {
+                    vistos.add(data.uid);
+                    usuarios.push({
+                        uid: data.uid,
+                        email: data.email || 'Sin email',
+                        acceso_permitido: data.acceso_permitido !== false,
+                        fecha_expiracion: data.fecha_expiracion || null,
+                        duracion: data.duracion_acceso || 'permanente',
+                        docId: doc.id
+                    });
+                }
+            });
+            console.log("📦 user_access:", snapAccess.size, "documentos");
+        } catch(e) {
+            console.log("Error user_access:", e);
+        }
+        
+        // 2. users
+        try {
+            const snapUsers = await window.fbGetDocs(
+                window.fbQuery(window.fbCollection(window.db, "users"))
+            );
+            
+            snapUsers.forEach(doc => {
+                const data = doc.data();
+                const uid = data.uid || doc.id;
+                if (uid && !vistos.has(uid)) {
+                    vistos.add(uid);
+                    usuarios.push({
+                        uid: uid,
+                        email: data.email || 'Sin email',
+                        displayName: data.displayName || '',
+                        acceso_permitido: true,
+                        fecha_expiracion: null,
+                        duracion: 'permanente',
+                        docId: null,
+                        soloRegistro: true
+                    });
+                }
+            });
+            console.log("📦 users:", snapUsers.size, "documentos");
+        } catch(e) {
+            console.log("Error users:", e);
+        }
+        
+        if (usuarios.length === 0) {
+            listaDiv.innerHTML = `
+                <div class="alert mid">No se encontraron usuarios</div>
+                <div class="small" style="margin-top:8px;text-align:center;">
+                    <b>Para que aparezcan usuarios:</b><br><br>
+                    1. Alguien debe registrarse en la app<br>
+                    2. O iniciar sesión con una cuenta existente<br><br>
+                    Se guardan automáticamente en:<br>
+                    • user_access<br>
+                    • users<br><br>
+                    <button class="primary" onclick="window.sincronizarUsuariosExistentes()" style="margin-top:8px;font-size:12px;">
+                        🔄 Sincronizar usuarios existentes
+                    </button>
+                </div>
+            `;
+            return;
+        }
+        
+        const ahora = new Date();
+        const activos = usuarios.filter(u => u.acceso_permitido).length;
+        const bloqueados = usuarios.filter(u => !u.acceso_permitido).length;
+        
+        let html = `
+            <div style="display:flex;gap:8px;margin-bottom:10px;">
+                <div class="kpi" style="flex:1;background:rgba(34,197,94,.1);">
+                    <span>✅ Activos</span>
+                    <strong style="color:var(--ok);">${activos}</strong>
+                </div>
+                <div class="kpi" style="flex:1;background:rgba(239,68,68,.1);">
+                    <span>⛔ Bloqueados</span>
+                    <strong style="color:var(--bad);">${bloqueados}</strong>
+                </div>
+                <div class="kpi" style="flex:1;">
+                    <span>👥 Total</span>
+                    <strong>${usuarios.length}</strong>
+                </div>
+            </div>
+        `;
+        
+        usuarios.forEach(user => {
+            const esAdmin = adminUIDs.includes(user.uid);
+            const nombre = user.displayName || user.email?.split('@')[0] || 'Usuario';
+            
+            let permitido = user.acceso_permitido;
+            let diasRestantes = null;
+            let expirado = false;
+            
+            if (user.fecha_expiracion && permitido) {
+                const expiracion = new Date(user.fecha_expiracion);
+                if (ahora > expiracion) {
+                    permitido = false;
+                    expirado = true;
+                } else {
+                    diasRestantes = Math.ceil((expiracion - ahora) / (1000 * 60 * 60 * 24));
+                }
+            }
+            
+            let estado, color, icono;
+            if (esAdmin) {
+                estado = '👑 Administrador';
+                color = 'var(--accent)';
+                icono = '👑';
+            } else if (expirado) {
+                estado = '⏰ Expirado';
+                color = 'var(--warn)';
+                icono = '⏰';
+            } else if (!permitido) {
+                estado = '⛔ Bloqueado';
+                color = 'var(--bad)';
+                icono = '⛔';
+            } else if (diasRestantes !== null && diasRestantes <= 3) {
+                estado = `⚠️ ${diasRestantes} días restantes`;
+                color = 'var(--warn)';
+                icono = '⚠️';
+            } else if (diasRestantes !== null) {
+                estado = `✅ ${diasRestantes} días restantes`;
+                color = 'var(--ok)';
+                icono = '✅';
+            } else {
+                estado = '✅ Activo (Sin límite)';
+                color = 'var(--ok)';
+                icono = '✅';
+            }
+            
+            const fechaExp = user.fecha_expiracion 
+                ? new Date(user.fecha_expiracion).toLocaleDateString('es-CO', {day:'numeric', month:'short', year:'numeric'})
+                : 'Sin límite';
+            
+            const emailSeguro = (user.email || '').replace(/'/g, "\\'");
+            
+            html += `
+                <div style="background: var(--cardBg); padding: 10px; margin-bottom: 6px; border-radius: 12px; border-left: 3px solid ${color};">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                        <span style="font-size:20px;">${icono}</span>
+                        <div style="flex:1;">
+                            <div style="font-weight:600;font-size:13px;">
+                                ${nombre}
+                                ${esAdmin ? '<span style="font-size:9px;color:var(--accent);">(Tú)</span>' : ''}
+                                ${user.soloRegistro ? '<span style="font-size:8px;color:var(--muted);">(Registrado)</span>' : ''}
+                            </div>
+                            <div style="font-size:10px;color:var(--muted);">${user.email}</div>
+                        </div>
+                    </div>
+                    
+                    <div style="font-size:10px;color:${color};margin-bottom:4px;">${estado}</div>
+                    <div style="font-size:9px;color:var(--muted);margin-bottom:6px;">Expira: ${fechaExp}</div>
+                    
+                    ${!esAdmin ? `
+                        <div style="display:flex;gap:3px;flex-wrap:wrap;">
+                            ${permitido ? `
+                                <button class="small-btn warn-btn" onclick="window.bloquearUsuarioPorUID('${user.uid}', '${emailSeguro}')" style="flex:1;font-size:9px;min-width:65px;">
+                                    🔒 Bloquear
+                                </button>
+                            ` : `
+                                <button class="small-btn success-btn" onclick="window.permitirUsuarioPorUID('${user.uid}', '${emailSeguro}')" style="flex:1;font-size:9px;min-width:65px;">
+                                    🔓 Permitir
+                                </button>
+                            `}
+                            <button class="small-btn" onclick="window.setTiempoPorUID('${user.uid}', '${emailSeguro}', 1)" style="font-size:9px;padding:4px 6px;">📅1d</button>
+                            <button class="small-btn" onclick="window.setTiempoPorUID('${user.uid}', '${emailSeguro}', 7)" style="font-size:9px;padding:4px 6px;">📅7d</button>
+                            <button class="small-btn" onclick="window.setTiempoPorUID('${user.uid}', '${emailSeguro}', 30)" style="font-size:9px;padding:4px 6px;">📅30d</button>
+                            <button class="small-btn success-btn" onclick="window.setTiempoPorUID('${user.uid}', '${emailSeguro}', 0)" style="font-size:9px;padding:4px 6px;">♾️</button>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        });
+        
+        listaDiv.innerHTML = html;
+        
+    } catch(e) {
+        console.error("Error:", e);
+        listaDiv.innerHTML = `
+            <div class="alert bad">Error: ${e.message}</div>
+            <button class="primary" onclick="window.cargarListaUsuarios()" style="width:100%;margin-top:8px;">
+                🔄 Reintentar
+            </button>
+        `;
+    }
+};
+
+// ═══ SINCRONIZAR USUARIOS EXISTENTES ═══
+window.sincronizarUsuariosExistentes = async function() {
+    const listaDiv = document.getElementById('adminUserList');
+    if (!listaDiv) return;
+    
+    listaDiv.innerHTML = '<div class="alert info">⏳ Sincronizando usuarios existentes...</div>';
+    
+    try {
+        // Obtener todos los documentos en "users"
+        const snapUsers = await window.fbGetDocs(
+            window.fbQuery(window.fbCollection(window.db, "users"))
+        );
+        
+        let count = 0;
+        
+        for (const doc of snapUsers.docs) {
+            const data = doc.data();
+            const uid = data.uid || doc.id;
+            const email = data.email || '';
+            
+            if (uid) {
+                // Verificar si existe en user_access
+                const snapAccess = await window.fbGetDocs(
+                    window.fbQuery(window.fbCollection(window.db, "user_access"))
+                );
+                
+                let existe = false;
+                snapAccess.forEach(adoc => {
+                    if (adoc.data().uid === uid) existe = true;
+                });
+                
+                if (!existe) {
+                    await window.fbAddDoc(window.fbCollection(window.db, "user_access"), {
+                        uid: uid,
+                        email: email,
+                        acceso_permitido: true,
+                        duracion_acceso: "permanente",
+                        fecha_creacion: new Date().toISOString(),
+                        fecha_expiracion: null
+                    });
+                    count++;
+                    console.log("✅ Sincronizado:", email);
+                }
+            }
+        }
+        
+        toastMsg(`✅ ${count} usuarios sincronizados`);
+        window.cargarListaUsuarios();
+    } catch(e) {
+        console.error("Error:", e);
+        listaDiv.innerHTML = `
+            <div class="alert bad">Error: ${e.message}</div>
+            <button class="primary" onclick="window.cargarListaUsuarios()" style="width:100%;margin-top:8px;">
+                🔄 Reintentar
+            </button>
+        `;
+    }
+};
+
+// ═══ BLOQUEAR USUARIO ═══
+window.bloquearUsuarioPorUID = async function(uid, email) {
+    if (!confirm('¿Bloquear este usuario?')) return;
+    
+    const docId = await obtenerOcrearDocId(uid, email);
+    if (docId) {
+        await window.fbUpdateDoc(window.fbDoc(window.db, "user_access", docId), {
+            acceso_permitido: false,
+            fecha_expiracion: null,
+            ultima_modificacion: new Date().toISOString()
+        });
+        toastMsg('🔒 Usuario bloqueado');
+        window.cargarListaUsuarios();
+    }
+};
+
+// ═══ PERMITIR USUARIO ═══
+window.permitirUsuarioPorUID = async function(uid, email) {
+    if (!confirm('¿Permitir acceso a este usuario?')) return;
+    
+    const docId = await obtenerOcrearDocId(uid, email);
+    if (docId) {
+        await window.fbUpdateDoc(window.fbDoc(window.db, "user_access", docId), {
+            acceso_permitido: true,
+            fecha_expiracion: null,
+            duracion_acceso: 'permanente',
+            ultima_modificacion: new Date().toISOString()
+        });
+        toastMsg('🔓 Usuario permitido (sin límite)');
+        window.cargarListaUsuarios();
+    }
+};
+
+// ═══ CONFIGURAR TIEMPO ═══
+window.setTiempoPorUID = async function(uid, email, dias) {
+    const msg = dias === 0 ? '¿Dar acceso PERMANENTE?' : `¿Permitir acceso por ${dias} día(s)?`;
+    if (!confirm(msg)) return;
+    
+    const ahora = new Date();
+    const expiracion = dias === 0 ? null : new Date(ahora.getTime() + (dias * 24 * 60 * 60 * 1000)).toISOString();
+    
+    const docId = await obtenerOcrearDocId(uid, email);
+    if (docId) {
+        await window.fbUpdateDoc(window.fbDoc(window.db, "user_access", docId), {
+            acceso_permitido: true,
+            duracion_acceso: dias === 0 ? 'permanente' : `${dias}_dias`,
+            fecha_expiracion: expiracion,
+            ultima_modificacion: ahora.toISOString()
+        });
+        
+        toastMsg(dias === 0 ? '♾️ Acceso PERMANENTE' : `⏰ Acceso por ${dias} día(s)`);
+        window.cargarListaUsuarios();
+    }
+};
+
+// ═══ VERIFICACIÓN AL INICIAR SESIÓN ═══
+const onUserChangedOriginal = window.onUserChanged;
+window.onUserChanged = async function(user) {
+    if (user) {
+        await registrarEnUserAccess(user.uid, user.email);
+        await guardarEnUsers(user.uid, user.email, user.displayName);
+        
+        const querySnapshot = await window.fbGetDocs(
+            window.fbQuery(window.fbCollection(window.db, "user_access"))
+        );
+        
+        let bloqueado = false;
+        querySnapshot.forEach(doc => {
+            if (doc.data().uid === user.uid) {
+                const data = doc.data();
+                
+                if (data.acceso_permitido === false) {
+                    bloqueado = true;
+                }
+                
+                if (data.fecha_expiracion && data.acceso_permitido !== false) {
+                    const ahora = new Date();
+                    const expiracion = new Date(data.fecha_expiracion);
+                    if (ahora > expiracion) {
+                        bloqueado = true;
+                        window.fbUpdateDoc(window.fbDoc(window.db, "user_access", doc.id), {
+                            acceso_permitido: false,
+                            ultima_modificacion: ahora.toISOString()
+                        }).catch(() => {});
+                    }
+                }
+            }
+        });
+        
+        if (bloqueado && !adminUIDs.includes(user.uid)) {
+            alert("⛔ Tu acceso ha expirado o ha sido bloqueado por el administrador.\n\nContacta al administrador para más información.");
+            try { await window.fbLogout(); } catch(e) {}
+            return;
+        }
+    }
+    
+    if (onUserChangedOriginal) {
+        onUserChangedOriginal(user);
+    }
+};
+
+// ═══ PANEL DE ADMINISTRACIÓN EN AJUSTES ═══
 const goTabOriginal = window.goTab;
 window.goTab = function(tab, btn) {
     goTabOriginal(tab, btn);
@@ -1494,7 +1928,7 @@ function agregarPanelAdmin() {
     cardDiv.innerHTML = `
         <div class="title">👥 Administrar Usuarios</div>
         <p class="small" style="color: var(--muted); margin-bottom: 8px;">
-            ⏰ Configura tiempos | 🔒 Bloquea usuarios
+            ⏰ Configura tiempos de acceso | 🔒 Bloquea usuarios
         </p>
         <div id="adminUserList" style="margin-bottom: 8px; max-height: 500px; overflow-y: auto;">
             <div class="alert info">⏳ Cargando...</div>
@@ -1502,207 +1936,29 @@ function agregarPanelAdmin() {
         <button class="secondary" onclick="window.cargarListaUsuarios()" style="width: 100%; margin-top: 8px;">
             🔄 Actualizar Lista
         </button>
+        <button class="warn-btn" onclick="window.sincronizarUsuariosExistentes()" style="width: 100%; margin-top: 4px; font-size: 12px;">
+            🔄 Sincronizar usuarios existentes
+        </button>
         <div class="small" style="margin-top: 6px; text-align: center; color: var(--muted);">
-            💡 Los usuarios aparecen al iniciar sesión o registrarse
+            💡 Usuarios nuevos: Permitidos por defecto | Usa "Sincronizar" para usuarios antiguos
         </div>
     `;
     
-    const miCuentaCard = document.querySelector('#tab-settings .card');
-    if (miCuentaCard && miCuentaCard.nextSibling) {
-        miCuentaCard.parentNode.insertBefore(cardDiv, miCuentaCard.nextSibling);
+    const settingsTab = document.getElementById('tab-settings');
+    if (settingsTab) {
+        const primeraCard = settingsTab.querySelector('.card');
+        if (primeraCard && primeraCard.nextSibling) {
+            primeraCard.parentNode.insertBefore(cardDiv, primeraCard.nextSibling);
+        }
     }
     
     setTimeout(() => window.cargarListaUsuarios(), 500);
 }
 
-// Cargar lista simple y directa
-window.cargarListaUsuarios = async function() {
-    const listaDiv = document.getElementById('adminUserList');
-    if (!listaDiv) return;
-    
-    listaDiv.innerHTML = '<div class="alert info">⏳ Cargando...</div>';
-    
-    try {
-        const querySnapshot = await window.fbGetDocs(
-            window.fbQuery(window.fbCollection(window.db, "user_access"))
-        );
-        
-        if (querySnapshot.empty) {
-            listaDiv.innerHTML = `
-                <div class="alert mid">No hay usuarios aún</div>
-                <div class="small" style="margin-top:8px;text-align:center;">
-                    Los usuarios aparecerán automáticamente cuando:<br>
-                    1. Se registren en la app<br>
-                    2. Inicien sesión<br><br>
-                    También puedes pedirle a alguien que inicie sesión<br>
-                    para que aparezca en esta lista.
-                </div>
-            `;
-            return;
-        }
-        
-        let html = '';
-        const ahora = new Date();
-        
-        querySnapshot.forEach(doc => {
-            const data = doc.data();
-            const esAdmin = adminUIDs.includes(data.uid);
-            
-            // Verificar expiración
-            let permitido = data.acceso_permitido !== false;
-            let diasRestantes = null;
-            
-            if (data.fecha_expiracion && permitido) {
-                const expiracion = new Date(data.fecha_expiracion);
-                if (ahora > expiracion) {
-                    permitido = false;
-                } else {
-                    diasRestantes = Math.ceil((expiracion - ahora) / (1000 * 60 * 60 * 24));
-                }
-            }
-            
-            // Estado y color
-            let estado, color;
-            if (esAdmin && permitido) {
-                estado = '👑 Admin';
-                color = 'var(--accent)';
-            } else if (!permitido && data.fecha_expiracion && !data.acceso_permitido) {
-                estado = '⛔ Bloqueado';
-                color = 'var(--bad)';
-            } else if (!permitido) {
-                estado = '⏰ Expirado';
-                color = 'var(--warn)';
-            } else if (diasRestantes !== null) {
-                estado = `✅ ${diasRestantes} días restantes`;
-                color = diasRestantes <= 3 ? 'var(--warn)' : 'var(--ok)';
-            } else {
-                estado = '✅ Sin límite';
-                color = 'var(--ok)';
-            }
-            
-            html += `
-                <div style="background: var(--cardBg); padding: 10px; margin-bottom: 6px; border-radius: 12px; border-left: 3px solid ${color};">
-                    <div style="font-weight: 600; font-size: 13px;">
-                        ${data.email || 'Sin email'}
-                        ${esAdmin ? '<span style="font-size:9px;color:var(--accent);">(Admin)</span>' : ''}
-                    </div>
-                    <div style="font-size: 10px; color: ${color}; margin-top: 2px;">${estado}</div>
-                    ${data.fecha_expiracion ? `<div style="font-size: 8px; color: var(--muted);">Expira: ${new Date(data.fecha_expiracion).toLocaleDateString('es-CO')}</div>` : ''}
-                    
-                    ${!esAdmin ? `
-                        <div style="display: flex; gap: 3px; margin-top: 8px; flex-wrap: wrap;">
-                            ${permitido ? `
-                                <button class="small-btn warn-btn" onclick="window.bloquearUsuario('${doc.id}')" style="flex:1; font-size:9px;">🔒 Bloquear</button>
-                            ` : `
-                                <button class="small-btn success-btn" onclick="window.permitirUsuario('${doc.id}')" style="flex:1; font-size:9px;">🔓 Permitir</button>
-                            `}
-                            <button class="small-btn" onclick="window.setTiempo('${doc.id}', 1)" style="font-size:9px; padding:4px;">📅1d</button>
-                            <button class="small-btn" onclick="window.setTiempo('${doc.id}', 7)" style="font-size:9px; padding:4px;">📅7d</button>
-                            <button class="small-btn" onclick="window.setTiempo('${doc.id}', 30)" style="font-size:9px; padding:4px;">📅30d</button>
-                            <button class="small-btn success-btn" onclick="window.setTiempo('${doc.id}', 0)" style="font-size:9px; padding:4px;">♾️</button>
-                        </div>
-                    ` : ''}
-                </div>
-            `;
-        });
-        
-        listaDiv.innerHTML = html;
-    } catch(e) {
-        console.error("Error:", e);
-        listaDiv.innerHTML = `
-            <div class="alert bad">Error</div>
-            <button class="primary" onclick="window.cargarListaUsuarios()" style="width:100%;margin-top:8px;">🔄 Reintentar</button>
-        `;
-    }
-};
-
-// Funciones simples
-window.bloquearUsuario = async function(docId) {
-    if (!confirm('¿Bloquear usuario?')) return;
-    await window.fbUpdateDoc(window.fbDoc(window.db, "user_access", docId), {
-        acceso_permitido: false,
-        ultima_modificacion: new Date().toISOString()
-    });
-    window.cargarListaUsuarios();
-};
-
-window.permitirUsuario = async function(docId) {
-    if (!confirm('¿Permitir acceso?')) return;
-    await window.fbUpdateDoc(window.fbDoc(window.db, "user_access", docId), {
-        acceso_permitido: true,
-        fecha_expiracion: null,
-        ultima_modificacion: new Date().toISOString()
-    });
-    window.cargarListaUsuarios();
-};
-
-window.setTiempo = async function(docId, dias) {
-    const msg = dias === 0 ? '¿Acceso PERMANENTE?' : `¿Permitir por ${dias} día(s)?`;
-    if (!confirm(msg)) return;
-    
-    const ahora = new Date();
-    const expiracion = dias === 0 ? null : new Date(ahora.getTime() + (dias * 24 * 60 * 60 * 1000)).toISOString();
-    
-    await window.fbUpdateDoc(window.fbDoc(window.db, "user_access", docId), {
-        acceso_permitido: true,
-        duracion_acceso: dias === 0 ? 'permanente' : `${dias}_dias`,
-        fecha_expiracion: expiracion,
-        ultima_modificacion: ahora.toISOString()
-    });
-    
-    const toast = document.getElementById('toast');
-    if (toast) {
-        toast.textContent = dias === 0 ? '✅ Acceso PERMANENTE' : `✅ ${dias} día(s)`;
-        toast.style.display = 'block';
-        setTimeout(() => toast.style.display = 'none', 2400);
-    }
-    
-    window.cargarListaUsuarios();
-};
-
-// Verificación al iniciar sesión
-const onUserChangedOriginal = window.onUserChanged;
-window.onUserChanged = async function(user) {
-    if (user) {
-        // Registrar automáticamente
-        await registrarEnUserAccess(user.uid, user.email);
-        
-        // Verificar si está bloqueado
-        const querySnapshot = await window.fbGetDocs(
-            window.fbQuery(window.fbCollection(window.db, "user_access"))
-        );
-        
-        let bloqueado = false;
-        querySnapshot.forEach(doc => {
-            if (doc.data().uid === user.uid) {
-                const data = doc.data();
-                if (data.acceso_permitido === false) {
-                    bloqueado = true;
-                } else if (data.fecha_expiracion) {
-                    if (new Date() > new Date(data.fecha_expiracion)) {
-                        bloqueado = true;
-                        // Actualizar automáticamente
-                        window.fbUpdateDoc(window.fbDoc(window.db, "user_access", doc.id), {
-                            acceso_permitido: false
-                        });
-                    }
-                }
-            }
-        });
-        
-        if (bloqueado && !adminUIDs.includes(user.uid)) {
-            alert("⛔ Tu acceso ha expirado o ha sido bloqueado.");
-            try { await window.fbLogout(); } catch(e) {}
-            return;
-        }
-    }
-    
-    if (onUserChangedOriginal) {
-        onUserChangedOriginal(user);
-    }
-};
-
-console.log("✅ Sistema de acceso automático instalado");
+console.log("✅ Sistema de control de acceso COMPLETO y CORREGIDO");
+console.log("📦 Busca en: user_access + users");
+console.log("🔄 Botón 'Sincronizar' para usuarios existentes");
+console.log("⏰ Control de tiempo: 1d, 7d, 30d, permanente");
 </script>
 </body>
 </html>
