@@ -1421,7 +1421,7 @@ window.verHistorialCompleto=verHistorialCompleto;window.verDetalleMes=verDetalle
 
 console.log("✅ Banking PRO AI v30 - COMPLETO con Sincronización en Tiempo Real");
 </script>
-<!-- ═══════════════ SISTEMA DE CONTROL DE ACCESO COMPLETO v6 - CON AVISOS ═══════════════ -->
+<!-- ═══════════════ SISTEMA DE CONTROL DE ACCESO COMPLETO v7 - FINAL ═══════════════ -->
 <script>
 const adminUIDs = ["ehvt48aV7BUBDKUC8YXVaNRNjO63"];
 
@@ -1434,6 +1434,9 @@ function toastMsg(msg) {
         toast.style.background = '#1e293b';
         toast.style.color = '#fff';
         toast.style.fontWeight = '700';
+        toast.style.fontSize = '12px';
+        toast.style.padding = '10px 14px';
+        toast.style.cursor = 'default';
         toast.onclick = () => { toast.style.display = 'none'; };
         setTimeout(() => { toast.style.display = 'none'; }, 2400);
     }
@@ -1618,9 +1621,6 @@ window.cargarListaUsuarios = async function() {
                     <b>Para que aparezcan usuarios:</b><br><br>
                     1. Alguien debe registrarse en la app<br>
                     2. O iniciar sesión con una cuenta existente<br><br>
-                    Se guardan automáticamente en:<br>
-                    • user_access<br>
-                    • users<br><br>
                     <button class="primary" onclick="window.sincronizarUsuariosExistentes()" style="margin-top:8px;font-size:12px;">
                         🔄 Sincronizar usuarios existentes
                     </button>
@@ -1872,7 +1872,7 @@ window.setTiempoPorUID = async function(uid, email, dias) {
     }
 };
 
-// ═══ VERIFICACIÓN AL INICIAR SESIÓN (CON AVISO DE TIEMPO) ═══
+// ═══ VERIFICACIÓN AL INICIAR SESIÓN ═══
 const onUserChangedOriginal = window.onUserChanged;
 window.onUserChanged = async function(user) {
     if (user) {
@@ -1914,82 +1914,74 @@ window.onUserChanged = async function(user) {
         });
         
         if (bloqueado && !adminUIDs.includes(user.uid)) {
-            alert("⛔ Tu acceso ha expirado o ha sido bloqueado por el administrador.\n\nContacta al administrador para más información.");
-            try { await window.fbLogout(); } catch(e) {}
+            const toast = document.getElementById('toast');
+            if (toast) {
+                toast.textContent = "⛔ Acceso bloqueado. Contacta al administrador.";
+                toast.style.display = 'block';
+                toast.style.background = '#ef4444';
+                toast.style.color = '#fff';
+                toast.style.fontWeight = '700';
+                toast.style.fontSize = '13px';
+                toast.style.padding = '14px 18px';
+                toast.style.cursor = 'pointer';
+                toast.onclick = () => {
+                    toast.style.display = 'none';
+                    toast.style.background = '#1e293b';
+                    toast.style.fontSize = '12px';
+                    toast.style.padding = '10px 14px';
+                };
+            }
+            setTimeout(() => {
+                try { await window.fbLogout(); } catch(e) {}
+            }, 3000);
             return;
         }
         
-        // ═══ AVISAR AL USUARIO SI LE QUEDA 1 DÍA O MENOS ═══
+        // ═══ AVISO CUANDO QUEDA 1 DÍA O MENOS ═══
         if (diasRestantes !== null && diasRestantes <= 1 && !adminUIDs.includes(user.uid)) {
             const mensaje = diasRestantes === 0 
-                ? "⚠️ ¡Tu acceso vence HOY! Contacta al administrador para renovarlo."
-                : "⚠️ Tu acceso vence mañana. Contacta al administrador para renovarlo.";
+                ? "⚠️ ¡Tu acceso vence HOY! Contacta al administrador."
+                : "⚠️ Tu acceso vence mañana. Contacta al administrador.";
             
             const toast = document.getElementById('toast');
             if (toast) {
                 toast.textContent = mensaje;
                 toast.style.display = 'block';
-                toast.style.background = 'rgba(245,158,11,.95)';
+                toast.style.background = '#ef4444';
                 toast.style.color = '#fff';
                 toast.style.fontWeight = '700';
                 toast.style.fontSize = '13px';
-                toast.style.padding = '12px 16px';
+                toast.style.padding = '14px 18px';
+                toast.style.cursor = 'pointer';
                 toast.onclick = () => {
                     toast.style.display = 'none';
                     toast.style.background = '#1e293b';
-                    toast.style.color = '#fff';
-                    toast.style.fontWeight = '700';
                     toast.style.fontSize = '12px';
                     toast.style.padding = '10px 14px';
                 };
             }
-            
-            setTimeout(() => {
-    // Crear modal personalizado sin URL
-    const overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
-    
-    const modal = document.createElement('div');
-    modal.style.cssText = 'background:#1e293b;border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:24px;max-width:380px;width:100%;text-align:center;color:#fff;font-family:Inter,sans-serif;';
-    
-    modal.innerHTML = `
-        <div style="font-size:48px;margin-bottom:12px;">⚠️</div>
-        <h3 style="font-size:18px;font-weight:800;margin-bottom:8px;color:#f59e0b;">Acceso por vencer</h3>
-        <p style="font-size:14px;color:#f1f5f9;margin-bottom:16px;line-height:1.5;">${mensaje}</p>
-        <p style="font-size:12px;color:#94a3b8;margin-bottom:20px;">Contacta al administrador para renovar tu acceso.</p>
-        <button style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border:none;padding:12px 24px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;width:100%;" 
-                onclick="this.closest('div').parentElement.remove()">
-            Entendido
-        </button>
-    `;
-    
-    overlay.appendChild(modal);
-    document.body.appendChild(overlay);
-    
-    // Cerrar al hacer clic fuera
-    overlay.addEventListener('click', function(e) {
-        if (e.target === overlay) overlay.remove();
-    });
-}, 1000);
+        }
         
-        // Si quedan 2-3 días, mostrar aviso sutil
+        // ═══ AVISO CUANDO QUEDAN 2-3 DÍAS ═══
         if (diasRestantes !== null && diasRestantes >= 2 && diasRestantes <= 3 && !adminUIDs.includes(user.uid)) {
             const toast = document.getElementById('toast');
             if (toast) {
                 toast.textContent = `📅 Tu acceso vence en ${diasRestantes} días`;
                 toast.style.display = 'block';
-                toast.style.background = 'rgba(59,130,246,.9)';
+                toast.style.background = '#f59e0b';
                 toast.style.color = '#fff';
                 toast.style.fontWeight = '600';
                 toast.style.fontSize = '12px';
                 toast.style.padding = '10px 14px';
+                toast.style.cursor = 'pointer';
                 toast.onclick = () => { toast.style.display = 'none'; };
                 setTimeout(() => {
-                    toast.style.display = 'none';
-                    toast.style.background = '#1e293b';
-                    toast.style.fontWeight = '700';
-                    toast.style.fontSize = '12px';
-                    toast.style.padding = '10px 14px';
+                    if (toast.textContent.includes('días')) {
+                        toast.style.display = 'none';
+                        toast.style.background = '#1e293b';
+                        toast.style.fontSize = '12px';
+                        toast.style.padding = '10px 14px';
+                    }
                 }, 6000);
             }
         }
@@ -2032,8 +2024,7 @@ function agregarPanelAdmin() {
             🔄 Sincronizar usuarios existentes
         </button>
         <div class="small" style="margin-top: 6px; text-align: center; color: var(--muted);">
-            💡 Usuarios nuevos: Permitidos por defecto<br>
-            ⚠️ Se avisa al usuario cuando queda 1 día
+            💡 Nuevos: Permitidos | ⚠️ Aviso al quedar 1 día
         </div>
     `;
     
@@ -2048,11 +2039,7 @@ function agregarPanelAdmin() {
     setTimeout(() => window.cargarListaUsuarios(), 500);
 }
 
-console.log("✅ Sistema de control de acceso COMPLETO v6");
-console.log("👥 Busca en: user_access + users");
-console.log("⏰ Control de tiempo: 1d, 7d, 30d, permanente");
-console.log("⚠️ Avisos al usuario: 1 día, 2-3 días");
-console.log("🔒 Bloqueo/Desbloqueo manual");
+console.log("✅ Sistema de control de acceso v7 - FINAL");
 </script>
 </body>
 </html>
