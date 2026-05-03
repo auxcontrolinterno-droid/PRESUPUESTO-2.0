@@ -386,7 +386,47 @@ function keyFor(b){const s=contexto==="negocio"?"Negocio":"";return uid()+"_"+s+
 function keyForCtx(b,c){const s=c==="negocio"?"Negocio":"";return uid()+"_"+s+b}
 function toast(m){const t=$("toast");t.innerText=m;t.style.display="block";clearTimeout(t._timeout);t._timeout=setTimeout(()=>t.style.display="none",2400)}
 function money(n){if(hidden)return"••••••";return"$"+Number(n).toLocaleString("es-CO")}
-function parseMonto(s){return Number(String(s).replace(/\./g,"").replace(",","."))||0}
+function parseMonto(s){
+    if (!s) return 0;
+    // Convertir a string y limpiar
+    let str = String(s).trim();
+    
+    // Detectar formato con punto como separador de miles (ej: 25.000)
+    // y coma como separador decimal (ej: 25,50)
+    let numero;
+    
+    // Si tiene punto y coma, es formato latino (25.000,50)
+    if (str.includes('.') && str.includes(',')) {
+        // Quitar puntos de miles y cambiar coma por punto decimal
+        str = str.replace(/\./g, '').replace(',', '.');
+        numero = parseFloat(str);
+    }
+    // Si solo tiene puntos (25.000) - formato miles
+    else if (str.includes('.') && !str.includes(',')) {
+        // Verificar si el punto es separador de miles (tiene 3 dígitos después)
+        const partes = str.split('.');
+        if (partes.length > 1 && partes[partes.length-1].length === 3) {
+            // Es separador de miles, quitar puntos
+            str = str.replace(/\./g, '');
+            numero = parseInt(str, 10);
+        } else {
+            // Es punto decimal
+            numero = parseFloat(str);
+        }
+    }
+    // Si solo tiene comas (25,50) - formato decimal
+    else if (str.includes(',')) {
+        str = str.replace(',', '.');
+        numero = parseFloat(str);
+    }
+    // Sin separadores
+    else {
+        numero = parseInt(str, 10);
+        if (isNaN(numero)) numero = parseFloat(str);
+    }
+    
+    return isNaN(numero) ? 0 : numero;
+}
 function labelDay(f){const n=hoyColombia();const t=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0")+"-"+String(n.getDate()).padStart(2,"0");if(f===t)return"HOY";return new Date(f+"T00:00:00").toLocaleDateString("es-CO",{day:"numeric",month:"short"})}
 // ═══ INDEXEDDB PARA OFFLINE ═══
 let dbPromise=null;
@@ -1386,7 +1426,113 @@ async function aplicarRecurrentes(){const r=JSON.parse(localStorage.getItem(keyF
 function addGoal(){const n=$("goalName").value.trim(),v=Number($("goalValue").value);if(!n||v<=0){toast("Completa");return}goals.push({nombre:n,valor:v});guardarDatos();$("goalName").value=$("goalValue").value="";render();toast("🎯 Guardada")}
 function delGoal(i){goals.splice(i,1);guardarDatos();render()}
 function toggleVoice(){if(!('webkitSpeechRecognition' in window)){toast("❌ No soportado");return}isListening?stopVoice():startVoice()}
-function startVoice(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;recognition=new SR();recognition.lang="es-CO";recognition.interimResults=true;$("voiceBtn").classList.add("listening");$("voiceBtn").innerHTML="🎤...";$("voiceFeedback").classList.add("active");$("voiceFeedback").innerHTML="👂 Habla...";isListening=true;recognition.onresult=(e)=>{const t=e.results[0][0].transcript;if(!e.results[0].isFinal)$("voiceFeedback").innerHTML='📝 "'+t+'"';else{let monto=0;const texto=t.toLowerCase();const m1=texto.match(/(\d+)\s*millones?/i),m2=texto.match(/(\d+)\s*mil/i),m3=texto.match(/(\d[\d.]*)/);if(m1)monto=parseInt(m1[1].replace(/\./g,""))*1e6;else if(m2)monto=parseInt(m2[1].replace(/\./g,""))*1e3;else if(m3)monto=parseInt(m3[1].replace(/\./g,""));if(monto){setMode("gasto",document.querySelectorAll(".mode-tab")[1]);$("descripcion").value=texto;$("montoInput").value=monto.toLocaleString("es-CO");$("voiceFeedback").innerHTML="✅ $"+monto.toLocaleString("es-CO")+"<br><small>Revisa y guarda</small>"}else $("voiceFeedback").innerHTML="❌ No detecté monto";stopVoice()}};recognition.onerror=()=>stopVoice();recognition.start()}
+function startVoice(){
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SR();
+    recognition.lang = "es-CO";
+    recognition.interimResults = true;
+    $("voiceBtn").classList.add("listening");
+    $("voiceBtn").innerHTML = "🎤...";
+    $("voiceFeedback").classList.add("active");
+    $("voiceFeedback").innerHTML = "👂 Habla...";
+    isListening = true;
+    
+    recognition.onresult = (e) => {
+        const t = e.results[0][0].transcript;
+        if (!e.results[0].isFinal) {
+            $("voiceFeedback").innerHTML = '📝 "' + t + '"';
+        } else {
+            let monto = 0;
+            const texto = t.toLowerCase();
+            
+            // Patrones mejorados para detectar montos
+            // Ej: "veinticinco mil", "25 mil", "25.000", "25,000", "veinticinco mil pesos"
+            const patrones = [
+                // Números con palabras: "veinticinco mil"
+                { regex: /(\w+)\s*mil/i, fn: (palabra) => convertirPalabraANumero(palabra) * 1000 },
+                // "veinticinco millones"
+                { regex: /(\w+)\s*millones?/i, fn: (palabra) => convertirPalabraANumero(palabra) * 1000000 },
+                // "25 mil"
+                { regex: /(\d+)\s*mil/i, fn: (num) => parseInt(num) * 1000 },
+                // "25 millones"
+                { regex: /(\d+)\s*millones?/i, fn: (num) => parseInt(num) * 1000000 },
+                // "25.000" o "25,000"
+                { regex: /(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{1,2})?)/, fn: (num) => parseMonto(num) }
+            ];
+            
+            for (const patron of patrones) {
+                const match = texto.match(patron.regex);
+                if (match) {
+                    if (typeof patron.fn === 'function') {
+                        monto = patron.fn(match[1]);
+                    } else {
+                        monto = patron.fn;
+                    }
+                    break;
+                }
+            }
+            
+            // Si no encontró con patrones, buscar cualquier número
+            if (monto === 0) {
+                const numeros = texto.match(/\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{1,2})?|\d+/g);
+                if (numeros && numeros.length > 0) {
+                    monto = parseMonto(numeros[0]);
+                }
+            }
+            
+            if (monto > 0) {
+                setMode("gasto", document.querySelectorAll(".mode-tab")[1]);
+                $("descripcion").value = texto;
+                $("montoInput").value = monto.toLocaleString("es-CO");
+                $("voiceFeedback").innerHTML = "✅ $" + monto.toLocaleString("es-CO") + "<br><small>Revisa y guarda</small>";
+            } else {
+                $("voiceFeedback").innerHTML = "❌ No detecté monto. Ejemplos: '25 mil', 'veinticinco mil', '25.000'";
+            }
+            stopVoice();
+        }
+    };
+    
+    recognition.onerror = () => stopVoice();
+    recognition.start();
+}
+
+// Función auxiliar para convertir palabras a números
+function convertirPalabraANumero(palabra) {
+    const numeros = {
+        "uno": 1, "un": 1, "una": 1,
+        "dos": 2, "tres": 3, "cuatro": 4, "cinco": 5,
+        "seis": 6, "siete": 7, "ocho": 8, "nueve": 9,
+        "diez": 10, "once": 11, "doce": 12, "trece": 13, "catorce": 14, "quince": 15,
+        "dieciseis": 16, "diecisiete": 17, "dieciocho": 18, "diecinueve": 19,
+        "veinte": 20, "veinti": 20, "veintiun": 21, "veintidos": 22, "veintitres": 23,
+        "treinta": 30, "cuarenta": 40, "cincuenta": 50, "sesenta": 60,
+        "setenta": 70, "ochenta": 80, "noventa": 90,
+        "cien": 100, "ciento": 100,
+        "quinientos": 500, "quinientas": 500,
+        "mil": 1000, "millon": 1000000, "millones": 1000000
+    };
+    
+    // Limpiar la palabra
+    palabra = palabra.toLowerCase().trim();
+    
+    // Manejar casos como "veinticinco" (20+5)
+    if (palabra.includes("veinti")) {
+        const resto = palabra.replace("veinti", "");
+        const numResto = numeros[resto];
+        if (numResto) return 20 + numResto;
+        return 20;
+    }
+    
+    // Manejar casos como "treinta y cinco"
+    if (palabra.includes(" y ")) {
+        const partes = palabra.split(" y ");
+        const primera = numeros[partes[0]];
+        const segunda = numeros[partes[1]];
+        if (primera && segunda) return primera + segunda;
+    }
+    
+    return numeros[palabra] || 0;
+}
 function stopVoice(){if(recognition)recognition.stop();$("voiceBtn").classList.remove("listening");$("voiceBtn").innerHTML="🎤 Voz";isListening=false}
 function toggleNotiDiaria(){const a=$("toggleDiario").checked;localStorage.setItem("notiDiaria",a?"1":"0");if(a){if(Notification.permission==="default")Notification.requestPermission().then(p=>{if(p==="granted")programarNoti();else{$("toggleDiario").checked=false;localStorage.setItem("notiDiaria","0")}});else if(Notification.permission==="granted")programarNoti()}else{localStorage.removeItem("proxNoti");toast("🔕 Desactivado")}}
 function programarNoti(){if(Notification.permission!=="granted")return;const h=parseInt(localStorage.getItem("horaNoti")||"20"),a=new Date(),r=new Date();r.setHours(h,0,0,0);if(r<=a)r.setDate(r.getDate()+1);setTimeout(()=>{new Notification("💳 Banking PRO AI",{body:"¿Registraste tus gastos de hoy?",icon:"💳"});programarNoti()},r.getTime()-a.getTime())}
