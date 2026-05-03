@@ -844,10 +844,15 @@ function onUserChanged(user){
       sincronizarPendientes();
       activarSincronizacionRealTime();
       await verificarAccesoPremium();
+      // 👇 AGREGA ESTA LÍNEA
+      actualizarUIPorPremium(esPremium);
     });
     actualizarStatusBar();
   }else{
-    if (unsubscribeRealTime) { unsubscribeRealTime(); unsubscribeRealTime = null; }
+    if (unsubscribeRealTime) {
+        unsubscribeRealTime();
+        unsubscribeRealTime = null;
+    }
     $("loginScreen").classList.remove("oculto");
     $("appContent").classList.remove("visible");
   }
