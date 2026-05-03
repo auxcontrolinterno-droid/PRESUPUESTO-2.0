@@ -5,7 +5,7 @@
   <meta name="theme-color" content="#0f172a">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-  <title>Banking PRO AI v31 - Premium</title>
+  <title>Banking PRO AI v30 - Tiempo Real</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script type="module">
@@ -49,7 +49,7 @@
     body.modo-negocio{--primary:#f59e0b;--primary2:#d97706}
     *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     body{font-family:Inter,sans-serif;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:var(--text);padding:14px 14px 100px;max-width:820px;margin:auto;min-height:100vh;transition:background .5s,color .3s}
-    .card,.header{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px;margin-bottom:10px;backdrop-filter:blur(10px);position:relative}
+    .card,.header{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px;margin-bottom:10px;backdrop-filter:blur(10px)}
     .big{font-size:32px;font-weight:800;color:var(--text)}
     .small{font-size:11px;color:var(--muted)}
     .title{font-size:16px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px;color:var(--text)}
@@ -207,7 +207,6 @@
     .status-dot.online{background:var(--ok);box-shadow:0 0 6px var(--ok)}
     .status-dot.offline{background:var(--bad);box-shadow:0 0 6px var(--bad)}
     .sync-badge{padding:1px 5px;border-radius:10px;font-size:8px;font-weight:700;background:rgba(59,130,246,.2);color:var(--primary);margin-left:3px}
-    #premiumBadge{background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;padding:2px 8px;border-radius:20px;font-size:9px;font-weight:700;position:absolute;top:10px;right:10px}
   </style>
 </head>
 <body>
@@ -239,10 +238,9 @@
 <div id="appContent">
   <div class="header">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-      <div><div class="small">Banking PRO AI v31 <span style="color:var(--ok)">●</span></div><div class="small" id="today"></div></div>
+      <div><div class="small">Banking PRO AI v30 <span style="color:var(--ok)">●</span></div><div class="small" id="today"></div></div>
       <div class="user-chip" onclick="goTab('settings')"><div class="user-chip-avatar" id="userAvatar">?</div><div class="user-chip-name" id="userName">—</div></div>
     </div>
-    <div id="premiumBadge" style="display: none;">⭐ PREMIUM</div>
     <div class="ctx-wrap">
       <div class="ctx-btn ctx-active" id="ctxPersonal" onclick="setContexto('personal')">👤 Personal</div>
       <div class="ctx-btn ctx-biz" id="ctxNegocio" onclick="setContexto('negocio')">🏪 Negocio</div>
@@ -344,41 +342,9 @@
       <button class="primary" onclick="verHistorialCompleto()">📅 Ver todos los meses cerrados</button>
       <div class="small" style="margin-top:4px">Consulta el historial de todos los meses anteriores</div>
     </div>
-    
-    <!-- TARJETA DE UPGRADE PREMIUM -->
-    <div class="card" id="upgradeCard">
-      <div class="title">⭐ Actualizar a Premium</div>
-      <div style="text-align: center; padding: 8px;">
-        <div style="font-size: 28px; margin-bottom: 4px;">🚀</div>
-        <div style="font-weight: 700; margin-bottom: 2px;">Premium de por vida</div>
-        <div class="small">Paga una sola vez y obtén todas las funciones</div>
-        <div style="font-size: 22px; font-weight: 800; color: var(--primary); margin: 6px 0;">$25.000 COP</div>
-        <div class="small" style="margin-bottom: 8px;">≈ $15 USD / $280 MXN</div>
-        
-        <div style="text-align: left; margin: 8px 0; font-size: 12px;">
-          <div>✅ Movimientos ilimitados</div>
-          <div>✅ Cuentas ilimitadas</div>
-          <div>✅ Metas ilimitadas</div>
-          <div>✅ Exportaciones avanzadas</div>
-          <div>✅ Insights con IA</div>
-          <div>✅ Historial ilimitado</div>
-          <div>✅ Múltiples negocios</div>
-          <div>✅ Soporte prioritario</div>
-        </div>
-        
-        <button class="primary" onclick="iniciarPagoUnico()">🔥 Obtener Premium</button>
-        <div class="small" style="margin-top: 6px;">Pago único, válido para siempre</div>
-      </div>
+    <div class="card"><div class="title">🗂️ Administrar historial</div>
+      <div id="historialAdminLista"></div>
     </div>
-    
-    <!-- PANEL DE ADMIN (SOLO VISIBLE PARA TI) -->
-    <div class="card" id="adminPanelCard" style="display: none;">
-      <div class="title">👑 Administración</div>
-      <button class="primary" onclick="mostrarPanelAdmin()">🔧 Activar Premium (Admin)</button>
-      <button class="secondary" style="margin-top: 6px;" onclick="verUsuariosPremium()">📊 Ver usuarios Premium</button>
-    </div>
-    
-    <div class="card"><div class="title">🗂️ Administrar historial</div><div id="historialAdminLista"></div></div>
     <div class="card"><div class="title">🏦 Cuentas</div><div id="cuentasAdmin"></div><label>Nueva</label><input type="text" id="newCuentaNombre" placeholder="Nombre"><select id="newCuentaIcon"><option>🏦</option><option>📱</option><option>💵</option><option>🐷</option><option>🏪</option></select><button class="primary" onclick="addCuenta()">➕ Agregar</button></div>
     <div class="card"><div class="title">🏷️ Categorías</div><div style="display:flex;flex-wrap:wrap;gap:2px;margin-bottom:6px" id="catsAdmin"></div><input type="text" id="newCatIcon" placeholder="Ícono"><input type="text" id="newCatNombre" placeholder="Nombre"><select id="newCatTipo"><option value="ambos">Ambos</option><option value="ingreso">Ingreso</option><option value="gasto">Gasto</option></select><button class="primary" onclick="addCategoria()">➕ Agregar</button></div>
     <div class="card"><div class="title">🧹 Limpiar</div><button class="secondary" onclick="limpiarCache('personal')" style="margin-bottom:6px">🗑️ Personal</button><button class="secondary" onclick="limpiarCache('negocio')">🗑️ Negocio</button></div>
@@ -399,7 +365,7 @@
 <div class="modal-overlay" id="modalEditar"><div class="modal"><h3>✏️ Editar movimiento</h3><input type="date" id="editFecha"><select id="editCategoria"></select><input type="text" id="editDescripcion" placeholder="Descripción"><input type="text" id="editMonto" placeholder="Monto"><select id="editCuenta"></select><input type="text" id="editNota" placeholder="Nota"><div class="modal-btns"><button class="secondary" onclick="document.getElementById('modalEditar').classList.remove('open')">Cancelar</button><button class="primary" onclick="confirmarEdicion()">✔ Guardar</button></div></div></div>
 
 <script>
-// ═══════════════ BANKING PRO AI v31 - PREMIUM + TIEMPO REAL ═══════════════
+// ═══════════════ BANKING PRO AI v30 - TIEMPO REAL ═══════════════
 const $=id=>document.getElementById(id);
 const ACC_COLORS=["#3b82f6","#22c55e","#f59e0b","#ec4899","#a78bfa","#14b8a6"];
 
@@ -413,16 +379,14 @@ let c1,c2,c3,c4,c5,c6,cInv,filtroTipo="todos",editandoId=null,recognition=null,i
 let inversiones=JSON.parse(localStorage.getItem("inversiones")||"[]"),temaActual=localStorage.getItem("tema")||"dark";
 let prestamos=JSON.parse(localStorage.getItem("prestamos")||"[]"),prestamoFiltro="todos";
 let syncInProgress=false;
-let unsubscribeRealTime = null;
-let esPremium = false;
-let adminEmail ="jorgefajardo203@gmail.com";
+let unsubscribeRealTime = null; // 👈 NUEVO: para sincronización en tiempo real
 
 function uid(){return window.currentUser?.uid||localStorage.getItem("uid")||"guest"}
 function keyFor(b){const s=contexto==="negocio"?"Negocio":"";return uid()+"_"+s+b}
 function keyForCtx(b,c){const s=c==="negocio"?"Negocio":"";return uid()+"_"+s+b}
 function toast(m){const t=$("toast");t.innerText=m;t.style.display="block";clearTimeout(t._timeout);t._timeout=setTimeout(()=>t.style.display="none",2400)}
 function money(n){if(hidden)return"••••••";return"$"+Number(n).toLocaleString("es-CO")}
-function parseMonto(s){if(!s)return 0;let str=String(s).trim();str=str.replace(/[^\d,.-]/g,'');str=str.replace(',','.');str=str.replace(/\./g,'');let num=parseFloat(str);return isNaN(num)?0:num}
+function parseMonto(s){return Number(String(s).replace(/\./g,"").replace(",","."))||0}
 function labelDay(f){const n=hoyColombia();const t=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0")+"-"+String(n.getDate()).padStart(2,"0");if(f===t)return"HOY";return new Date(f+"T00:00:00").toLocaleDateString("es-CO",{day:"numeric",month:"short"})}
 // ═══ INDEXEDDB PARA OFFLINE ═══
 let dbPromise=null;
@@ -497,194 +461,70 @@ async function actualizarContadorPendientes(){
   return cola.length;
 }
 
-// ═══ SISTEMA PREMIUM ═══
-async function verificarAccesoPremium() {
-    if (!window.currentUser) return false;
-    
-    try {
-        const userDoc = await window.fbGetDoc(window.fbDoc(window.db, "users", window.currentUser.uid));
-        
-        if (userDoc.exists()) {
-            const userData = userDoc.data();
-            // 👇 Verificar tanto premium como admin
-            esPremium = userData.premium === true || userData.premium === "true";
-            
-            console.log("📊 Verificación premium:", {
-                email: userData.email,
-                premium: userData.premium,
-                esPremium: esPremium
-            });
-            
-            actualizarUIPorPremium(esPremium);
-            return esPremium;
-        }
-        return false;
-    } catch (e) {
-        console.error("Error verificando premium:", e);
-        return false;
-    }
-}
-
-function actualizarUIPorPremium(premium) {
-    console.log("🎨 Actualizando UI - Premium:", premium);
-    
-    const upgradeCard = document.getElementById('upgradeCard');
-    const premiumBadge = document.getElementById('premiumBadge');
-    const adminPanel = document.getElementById('adminPanelCard');
-    
-    if (upgradeCard) upgradeCard.style.display = premium ? 'none' : 'block';
-    if (premiumBadge) premiumBadge.style.display = premium ? 'flex' : 'none';
-    
-    // Mostrar panel de admin SIEMPRE para el email admin, independientemente de premium
-    if (adminPanel && window.currentUser && window.currentUser.email === adminEmail) {
-        adminPanel.style.display = 'block';
-        console.log("👑 Panel de admin visible");
-    }
-    
-    if (premium) {
-        toast("⭐ ¡Premium activado! Disfruta de todas las funciones.");
-    }
-}
-
-function mostrarBannerUpgrade() {
-    const bannerExistente = document.getElementById('bannerUpgrade');
-    if (bannerExistente) return;
-    const banner = document.createElement('div');
-    banner.id = 'bannerUpgrade';
-    banner.className = 'alert info';
-    banner.style.cssText = 'position:fixed; bottom:80px; left:50%; transform:translateX(-50%); width:90%; max-width:350px; z-index:1001; text-align:center; cursor:pointer;';
-    banner.innerHTML = `⭐ ¡DESBLOQUEA TODAS LAS FUNCIONES! ⭐<br>Paga una sola vez y obtén Premium de por vida<br><strong style="color:var(--primary)">🎁 Solo $25.000 COP / $15 USD / $280 MXN</strong><br><button class="primary" style="margin-top:6px; padding:8px;" onclick="iniciarPagoUnico()">🔥 Obtener Premium Ahora</button>`;
-    document.body.appendChild(banner);
-    setTimeout(() => { if (banner) banner.style.opacity = '0'; setTimeout(() => { if (banner) banner.remove(); }, 500); }, 10000);
-}
-
-function iniciarPagoUnico() {
-    if (!window.currentUser) { toast("Primero inicia sesión"); return; }
-    const purchaseId = Date.now() + '_' + window.currentUser.uid;
-    sessionStorage.setItem('purchaseInProgress', 'true');
-    const modal = document.createElement('div');
-    modal.id = 'modalPagoPremium';
-    modal.className = 'modal-overlay open';
-    modal.innerHTML = `<div class="modal" style="max-width: 380px;"><h3>💳 Pago Único Premium</h3><p style="margin-bottom: 15px;">Valor: <strong>$25.000 COP / $15 USD / $280 MXN</strong></p><p class="small">Pago único, válido para siempre</p><div style="background: var(--cardBg); padding: 12px; border-radius: 12px; margin-bottom: 12px;"><div style="font-weight: 700; margin-bottom: 8px;">📲 Métodos de pago aceptados:</div><div>✅ Transferencia bancaria</div><div>✅ Nequi</div><div>✅ llaves</div></div><div class="alert info" style="font-size: 11px; margin-bottom: 12px;">🔑 <strong>TU CÓDIGO ÚNICO:</strong> <span style="font-family: monospace; font-size: 14px; background: var(--bg2); padding: 4px 8px; border-radius: 6px;">${purchaseId}</span><br><span class="small">Copia este código y envíalo después de pagar</span></div><div class="grid2" style="margin-bottom: 12px; font-size: 11px;"><div class="kpi"><span>Banco</span><strong>Banking PRO</strong></div><div class="kpi"><span>Cuenta</span><strong>@3024369603</strong></div><div class="kpi"><span>Titular</span><strong>Banking PRO</strong></div><div class="kpi"><span>Email</span><strong>jlft203@gmail.com</strong></div></div><div class="alert good" style="font-size: 11px;">📌 <strong>DESPUÉS DE PAGAR:</strong><br>1. Envía el comprobante a <strong>soporte@bankingpro.com</strong><br>2. Incluye tu código único: <strong>${purchaseId}</strong><br>3. Tu cuenta se activará en <strong>24 horas máximo</strong></div><div class="modal-btns" style="margin-top: 16px;"><button class="secondary" onclick="navigator.clipboard.writeText('${purchaseId}'); toast('✅ Código copiado')">📋 Copiar código</button><button class="primary" onclick="this.closest('.modal-overlay').remove()">Cerrar</button></div></div>`;
-    document.body.appendChild(modal);
-    setTimeout(() => modal.classList.add('open'), 10);
-}
-
-function mostrarPanelAdmin() {
-    if (!window.currentUser || window.currentUser.email !== adminEmail) { toast("❌ No autorizado"); return; }
-    const modal = document.createElement('div');
-    modal.id = 'modalAdmin';
-    modal.className = 'modal-overlay open';
-    modal.innerHTML = `<div class="modal" style="max-width: 500px;"><h3>👑 Panel de Administración</h3><p class="small">Activa Premium manualmente para usuarios que hayan pagado</p><label>Buscar usuario por email:</label><input type="email" id="adminSearchEmail" placeholder="usuario@email.com"><button class="primary" style="margin-top: 4px;" onclick="buscarUsuarioAdmin()">🔍 Buscar</button><div id="adminResultados" style="margin-top: 16px;"></div><div class="modal-btns" style="margin-top: 16px;"><button class="secondary" onclick="this.closest('.modal-overlay').remove()">Cerrar</button></div></div>`;
-    document.body.appendChild(modal);
-    setTimeout(() => modal.classList.add('open'), 10);
-}
-
-async function buscarUsuarioAdmin() {
-    const searchTerm = document.getElementById('adminSearchEmail')?.value;
-    if (!searchTerm) { toast("Ingresa un email"); return; }
-    
-    try {
-        // Obtener TODOS los usuarios (esto NO necesita índice)
-        const snapshot = await window.fbGetDocs(window.fbCollection(window.db, "users"));
-        const resultados = document.getElementById('adminResultados');
-        resultados.innerHTML = "<div class='alert info'>🔍 Buscando...</div>";
-        
-        let encontrado = false;
-        for (const doc of snapshot.docs) {
-            const user = doc.data();
-            if (user.email === searchTerm) {
-                encontrado = true;
-                const isPremium = user.premium === true;
-                resultados.innerHTML = `
-                    <div class="item" style="margin-top: 8px;">
-                        <div><b>📧 ${user.email}</b></div>
-                        <div>👤 ${user.displayName || "Sin nombre"}</div>
-                        <div>🆔 ${doc.id.substring(0, 12)}...</div>
-                        <div style="margin: 4px 0;">⭐ Premium: <strong style="color: ${isPremium ? 'var(--ok)' : 'var(--bad)'}">${isPremium ? "ACTIVO" : "INACTIVO"}</strong></div>
-                        ${user.premiumDate ? `<div>📅 Activado: ${new Date(user.premiumDate.toDate()).toLocaleDateString()}</div>` : ''}
-                        <button class="primary" style="margin-top: 8px; width: 100%;" onclick="activarPremiumManual('${doc.id}', '${user.email}')">
-                            ${isPremium ? "🔄 Reactivar Premium" : "⭐ Activar Premium"}
-                        </button>
-                    </div>
-                `;
-                break;
-            }
-        }
-        
-        if (!encontrado) {
-            resultados.innerHTML = '<div class="alert mid">❌ Usuario no encontrado. Verifica el email.</div>';
-        }
-    } catch (e) {
-        console.error("Error:", e);
-        resultados.innerHTML = '<div class="alert bad">❌ Error al buscar usuario</div>';
-        toast("Error al buscar usuario");
-    }
-}
-
-async function activarPremiumManual(userId, userEmail) {
-    if (!confirm(`¿Activar Premium de por vida para ${userEmail}?`)) return;
-    try {
-        await window.fbUpdateDoc(window.fbDoc(window.db, "users", userId), { premium: true, premiumDate: new Date(), activatedBy: "admin", activatedAt: new Date() });
-        toast(`✅ Premium activado para ${userEmail}`);
-        setTimeout(() => buscarUsuarioAdmin(), 500);
-    } catch (e) { toast("Error al activar premium"); }
-}
-
-async function verUsuariosPremium() {
-    if (window.currentUser?.email !== adminEmail) { toast("No autorizado"); return; }
-    try {
-        const q = window.fbQuery(window.fbCollection(window.db, "users"), window.fbWhere("premium", "==", true));
-        const snapshot = await window.fbGetDocs(q);
-        let html = '<div class="card"><div class="title">👑 Usuarios Premium</div>';
-        snapshot.forEach(doc => { const user = doc.data(); html += `<div class="item" style="margin-bottom: 4px;">📧 ${user.email} - 🗓️ ${user.premiumDate ? new Date(user.premiumDate.toDate()).toLocaleDateString() : 'Fecha desconocida'}</div>`; });
-        html += '</div>';
-        const modal = document.createElement('div');
-        modal.className = 'modal-overlay open';
-        modal.innerHTML = `<div class="modal" style="max-width: 400px;">${html}<div class="modal-btns"><button class="primary" onclick="this.closest('.modal-overlay').remove()">Cerrar</button></div></div>`;
-        document.body.appendChild(modal);
-    } catch (e) { console.error("Error:", e); }
-}
-
-// ═══ SINCRONIZACIÓN EN TIEMPO REAL ═══
+// ═══ SINCRONIZACIÓN EN TIEMPO REAL CON FIREBASE ═══
 function activarSincronizacionRealTime() {
     if (!window.db || !window.currentUser) return;
-    if (unsubscribeRealTime) { unsubscribeRealTime(); unsubscribeRealTime = null; }
+    
+    if (unsubscribeRealTime) {
+        unsubscribeRealTime();
+        unsubscribeRealTime = null;
+    }
+    
     const colNamePersonal = "movimientos_personal";
     const colNameNegocio = "movimientos_negocio";
+    
     const qPersonal = window.fbQuery(window.fbCollection(window.db, "users", window.currentUser.uid, colNamePersonal));
     const unsubscribePersonal = window.fbOnSnapshot(qPersonal, (snapshot) => {
-        const fbData = []; snapshot.forEach(doc => fbData.push({ ...doc.data(), ID: doc.id }));
+        const fbData = [];
+        snapshot.forEach(doc => fbData.push({ ...doc.data(), ID: doc.id }));
         localStorage.setItem(keyForCtx("dataCache", "personal"), JSON.stringify(fbData));
         if (contexto === "personal") {
             const oldLength = data.length;
             data = fbData;
             obtenerCola().then(pendientes => {
                 const pendientesPersonales = pendientes.filter(p => p.contexto === "personal");
-                for (const p of pendientesPersonales) if (!data.some(d => String(d.ID) === String(p.idLocal))) data.push({ ...p.datos, ID: p.idLocal });
-                guardarDatos(); render();
-                const sc = $("syncCount"); if (sc) sc.innerText = data.length;
+                for (const p of pendientesPersonales) {
+                    if (!data.some(d => String(d.ID) === String(p.idLocal))) {
+                        data.push({ ...p.datos, ID: p.idLocal });
+                    }
+                }
+                guardarDatos();
+                render();
+                const sc = $("syncCount");
+                if (sc) sc.innerText = data.length;
                 if (oldLength !== data.length) toast("🔄 Datos sincronizados");
             });
         }
     });
+    
     const qNegocio = window.fbQuery(window.fbCollection(window.db, "users", window.currentUser.uid, colNameNegocio));
     const unsubscribeNegocio = window.fbOnSnapshot(qNegocio, (snapshot) => {
-        const fbData = []; snapshot.forEach(doc => fbData.push({ ...doc.data(), ID: doc.id }));
+        const fbData = [];
+        snapshot.forEach(doc => fbData.push({ ...doc.data(), ID: doc.id }));
         localStorage.setItem(keyForCtx("dataCache", "negocio"), JSON.stringify(fbData));
         if (contexto === "negocio") {
             const oldLength = data.length;
             data = fbData;
             obtenerCola().then(pendientes => {
                 const pendientesNegocio = pendientes.filter(p => p.contexto === "negocio");
-                for (const p of pendientesNegocio) if (!data.some(d => String(d.ID) === String(p.idLocal))) data.push({ ...p.datos, ID: p.idLocal });
-                guardarDatos(); render();
-                const sc = $("syncCount"); if (sc) sc.innerText = data.length;
+                for (const p of pendientesNegocio) {
+                    if (!data.some(d => String(d.ID) === String(p.idLocal))) {
+                        data.push({ ...p.datos, ID: p.idLocal });
+                    }
+                }
+                guardarDatos();
+                render();
+                const sc = $("syncCount");
+                if (sc) sc.innerText = data.length;
                 if (oldLength !== data.length) toast("🔄 Datos sincronizados");
             });
         }
     });
-    unsubscribeRealTime = () => { unsubscribePersonal(); unsubscribeNegocio(); };
+    
+    unsubscribeRealTime = () => {
+        unsubscribePersonal();
+        unsubscribeNegocio();
+    };
 }
 
 // ═══ SINCRONIZACIÓN DE PENDIENTES ═══
@@ -692,6 +532,7 @@ async function sincronizarPendientes(){
   if(syncInProgress) return;
   if(!window.db||!window.auth?.currentUser) return;
   if(!navigator.onLine) return;
+  
   syncInProgress=true;
   try{
     const cola=await obtenerCola();
@@ -797,12 +638,14 @@ async function cargarHistorialDesdeFirebase() {
         const snapshot = await window.fbGetDocs(window.fbCollection(window.db, "users", window.auth.currentUser.uid, colHistorico));
         const historialFirebase = [];
         snapshot.forEach(doc => historialFirebase.push({ ...doc.data(), id: doc.id }));
+        
         if (historialFirebase.length > 0) {
             const existingIds = new Set(historial.map(h => h.id));
             const nuevos = historialFirebase.filter(h => !existingIds.has(h.id));
             historial.push(...nuevos);
             historial.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
             localStorage.setItem(keyFor("historialMeses"), JSON.stringify(historial));
+            console.log("📚 Historial cargado desde Firebase:", nuevos.length, "nuevos meses");
         }
     } catch (e) { console.error("Error cargando historial:", e); }
 }
@@ -880,7 +723,10 @@ async function registrarUsuario(){
 
 async function cerrarSesion(){
   if(!confirm("¿Cerrar sesión?"))return;
-  if (unsubscribeRealTime) { unsubscribeRealTime(); unsubscribeRealTime = null; }
+  if (unsubscribeRealTime) {
+      unsubscribeRealTime();
+      unsubscribeRealTime = null;
+  }
   await window.fbLogout();
 }
 
@@ -891,12 +737,9 @@ function onUserChanged(user){
     $("loginScreen").classList.add("oculto");
     $("appContent").classList.add("visible");
     actualizarUI(user);
-    cargarTodo().then(async ()=>{
+    cargarTodo().then(()=>{
       sincronizarPendientes();
-      activarSincronizacionRealTime();
-      await verificarAccesoPremium();
-      // 👇 AGREGA ESTA LÍNEA
-      actualizarUIPorPremium(esPremium);
+      activarSincronizacionRealTime(); // 👈 NUEVO: Activar tiempo real
     });
     actualizarStatusBar();
   }else{
@@ -1030,33 +873,6 @@ function calcSaldos(){
 }
 
 async function guardar(){
-  // 🔒 VERIFICACIÓN PREMIUM Y LÍMITES
-  const isPremium = await verificarAccesoPremium();
-  
-  if (!isPremium) {
-    const fechaInicioMes = hoyColombia();
-    fechaInicioMes.setDate(1);
-    const movimientosMes = data.filter(x => new Date(x.Fecha) >= fechaInicioMes).length;
-    
-    if (movimientosMes >= 30) {
-      toast("⚠️ Límite de 30 movimientos/mes para usuarios gratuitos. ¡Actualiza a Premium!");
-      mostrarBannerUpgrade();
-      return;
-    }
-    
-    if (cuentas.length >= 2 && modoActual !== "traspaso") {
-      toast("⚠️ Límite de 2 cuentas para usuarios gratuitos. ¡Actualiza a Premium!");
-      mostrarBannerUpgrade();
-      return;
-    }
-    
-    if (goals.length >= 2) {
-      toast("⚠️ Límite de 2 metas para usuarios gratuitos. ¡Actualiza a Premium!");
-      mostrarBannerUpgrade();
-      return;
-    }
-  }
-  
   if(modoActual==="traspaso"){
     await guardarTraspaso();
     return;
@@ -1114,6 +930,7 @@ function guardarDatos(){
   localStorage.setItem("prestamos",JSON.stringify(prestamos));
   localStorage.setItem("inversiones",JSON.stringify(inversiones));
 }
+
 // ═══════════════ COACH FINANCIERO V3 ═══════════════
 function renderCoach(ing, gas, ah, cats, saldos) {
     const bal = ing - gas;
@@ -1361,53 +1178,105 @@ function renderHistorial(){if(!historial.length){$("historialCard").style.displa
 function toggleMes(i){const b=$("mb"+i),a=$("ma"+i);b.style.display=b.style.display==="none"?"block":"none";a.textContent=b.style.display==="none"?"▶":"▼";}
 function abrirCierre(){const s=calcSaldos(),ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gas=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0);let h=`<div class="grid2" style="margin-bottom:8px"><div class="kpi"><span>Ingresos</span><strong style="color:var(--ok)">${money(ing)}</strong></div><div class="kpi"><span>Gastos</span><strong style="color:var(--bad)">${money(gas)}</strong></div></div>`;cuentas.forEach(c=>{h+=`<div style="font-size:11px;margin-bottom:3px">${c.icon} ${c.nombre}: ${money(s[c.id]||0)}</div>`});$("modalResumen").innerHTML=h;$("modalCierre").classList.add("open");}
 
+// ═══ CIERRE DE MES CON ARCHIVO POR MES ═══
 async function confirmarCierre() {
     const s = calcSaldos();
     const ing = data.filter(x => x.Tipo === "Ingreso").reduce((a, x) => a + Number(x.Monto || 0), 0);
     const gas = data.filter(x => x.Tipo === "Gasto").reduce((a, x) => a + Number(x.Monto || 0), 0);
+    
     const hoy = hoyColombia();
     const label = hoy.toLocaleDateString("es-CO", { month: "long", year: "numeric" });
     const mesKey = hoy.getFullYear() + "-" + String(hoy.getMonth() + 1).padStart(2, "0");
-    const mesCerrado = { id: mesKey, label: label, fecha: fechaHoyColombia(), ing: ing, gas: gas, balance: ing - gas, saldosCierre: { ...s }, movimientos: [...data], cuentas: cuentas.map(c => ({ id: c.id, nombre: c.nombre, icon: c.icon, saldoFinal: s[c.id] || 0 })), createdAt: Date.now() };
+    
+    const mesCerrado = {
+        id: mesKey,
+        label: label,
+        fecha: fechaHoyColombia(),
+        ing: ing,
+        gas: gas,
+        balance: ing - gas,
+        saldosCierre: { ...s },
+        movimientos: [...data],
+        cuentas: cuentas.map(c => ({ id: c.id, nombre: c.nombre, icon: c.icon, saldoFinal: s[c.id] || 0 })),
+        createdAt: Date.now()
+    };
+    
     historial.unshift(mesCerrado);
     localStorage.setItem(keyFor("historialMeses"), JSON.stringify(historial));
+    
     if (window.db && window.auth?.currentUser) {
         try {
             const colHistorico = "historial_mensual";
             const historicoRef = window.fbDoc(window.db, "users", window.auth.currentUser.uid, colHistorico, mesKey);
-            await window.fbUpdateDoc(historicoRef, mesCerrado).catch(async () => { await window.fbAddDoc(window.fbCollection(window.db, "users", window.auth.currentUser.uid, colHistorico), mesCerrado); });
+            await window.fbUpdateDoc(historicoRef, mesCerrado).catch(async () => {
+                await window.fbAddDoc(window.fbCollection(window.db, "users", window.auth.currentUser.uid, colHistorico), mesCerrado);
+            });
+            console.log("✅ Mes guardado en Firebase:", label);
         } catch (e) { console.error("Error guardando en Firebase:", e); }
     }
+    
     cuentas = cuentas.map(c => ({ ...c, saldoInicial: s[c.id] || 0 }));
     localStorage.setItem(keyFor("cuentas"), JSON.stringify(cuentas));
+    
     if (window.db && window.auth?.currentUser) {
-        const colNamePersonal = "movimientos_personal", colNameNegocio = "movimientos_negocio";
+        const colNamePersonal = "movimientos_personal";
+        const colNameNegocio = "movimientos_negocio";
         try {
             const snapPersonal = await window.fbGetDocs(window.fbCollection(window.db, "users", window.auth.currentUser.uid, colNamePersonal));
             const snapNegocio = await window.fbGetDocs(window.fbCollection(window.db, "users", window.auth.currentUser.uid, colNameNegocio));
             for (const doc of snapPersonal.docs) await window.fbDeleteDoc(window.fbDoc(window.db, "users", window.auth.currentUser.uid, colNamePersonal, doc.id));
             for (const doc of snapNegocio.docs) await window.fbDeleteDoc(window.fbDoc(window.db, "users", window.auth.currentUser.uid, colNameNegocio, doc.id));
+            console.log("🗑️ Movimientos del mes eliminados de Firebase");
         } catch (e) { console.error("Error limpiando movimientos:", e); }
     }
+    
     data = [];
     await limpiarCola();
     localStorage.setItem(keyFor("dataCache"), "[]");
     guardarDatos();
-    const sc = $("syncCount"); if (sc) sc.innerText = 0;
+    
+    const sc = $("syncCount");
+    if (sc) sc.innerText = 0;
     $("modalCierre").classList.remove("open");
     render();
     toast("✔ Mes cerrado: " + label + " - Historial guardado");
 }
 
+// ═══ FUNCIONES PARA VER HISTORIAL COMPLETO ═══
 function verHistorialCompleto() {
-    if (historial.length === 0) { toast("📭 No hay meses cerrados aún"); return; }
+    if (historial.length === 0) {
+        toast("📭 No hay meses cerrados aún");
+        return;
+    }
+    
     let html = `<div class="modal" style="max-width: 500px;"><h3>📆 Historial de Meses Cerrados</h3><div style="max-height: 60vh; overflow-y: auto;">`;
     historial.forEach((mes, i) => {
-        html += `<div class="item" style="margin-bottom: 8px;"><div style="display: flex; justify-content: space-between;"><span style="font-weight: 700;">📅 ${mes.label}</span><span class="small">${mes.fecha || ''}</span></div><div class="grid2" style="margin-top: 6px;"><div class="kpi"><span>💵 Ingresos</span><strong style="color: var(--ok)">${money(mes.ing)}</strong></div><div class="kpi"><span>💸 Gastos</span><strong style="color: var(--bad)">${money(mes.gas)}</strong></div><div class="kpi"><span>⚖️ Balance</span><strong>${money(mes.balance)}</strong></div><div class="kpi"><span>📊 Movimientos</span><strong>${mes.movimientos?.length || 0}</strong></div></div><button class="small-btn" style="margin-top: 6px;" onclick="verDetalleMes(${i})">🔍 Ver detalles</button><button class="small-btn warn-btn" style="margin-top: 6px;" onclick="exportarMes(${i})">📥 Exportar CSV</button></div>`;
+        html += `
+            <div class="item" style="margin-bottom: 8px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="font-weight: 700;">📅 ${mes.label}</span>
+                    <span class="small">${mes.fecha || ''}</span>
+                </div>
+                <div class="grid2" style="margin-top: 6px;">
+                    <div class="kpi"><span>💵 Ingresos</span><strong style="color: var(--ok)">${money(mes.ing)}</strong></div>
+                    <div class="kpi"><span>💸 Gastos</span><strong style="color: var(--bad)">${money(mes.gas)}</strong></div>
+                    <div class="kpi"><span>⚖️ Balance</span><strong>${money(mes.balance)}</strong></div>
+                    <div class="kpi"><span>📊 Movimientos</span><strong>${mes.movimientos?.length || 0}</strong></div>
+                </div>
+                <button class="small-btn" style="margin-top: 6px;" onclick="verDetalleMes(${i})">🔍 Ver detalles</button>
+                <button class="small-btn warn-btn" style="margin-top: 6px;" onclick="exportarMes(${i})">📥 Exportar CSV</button>
+            </div>
+        `;
     });
     html += `</div><div class="modal-btns" style="margin-top: 12px;"><button class="primary" onclick="this.closest('.modal-overlay').classList.remove('open')">Cerrar</button></div></div>`;
+    
     let modal = document.getElementById('modalHistorial');
-    if (!modal) { modal = document.createElement('div'); modal.id = 'modalHistorial'; modal.className = 'modal-overlay'; document.body.appendChild(modal); }
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'modalHistorial';
+        modal.className = 'modal-overlay';
+        document.body.appendChild(modal);
+    }
     modal.innerHTML = html;
     modal.classList.add('open');
 }
@@ -1415,9 +1284,31 @@ function verHistorialCompleto() {
 function verDetalleMes(index) {
     const mes = historial[index];
     if (!mes) return;
-    let html = `<div class="modal"><h3>📅 ${mes.label}</h3><div class="grid2" style="margin-bottom: 12px;"><div class="kpi"><span>💰 Ingresos</span><strong style="color:var(--ok)">${money(mes.ing)}</strong></div><div class="kpi"><span>💸 Gastos</span><strong style="color:var(--bad)">${money(mes.gas)}</strong></div><div class="kpi"><span>⚖️ Balance</span><strong>${money(mes.balance)}</strong></div><div class="kpi"><span>🏦 Ahorro</span><strong>${mes.ing > 0 ? ((mes.ing - mes.gas) / mes.ing * 100).toFixed(0) : 0}%</strong></div></div><div class="title" style="font-size: 14px;">🏦 Saldos de cierre</div>${mes.cuentas?.map(c => `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--line);"><span>${c.icon} ${c.nombre}</span><span class="${c.saldoFinal >= 0 ? 'positive' : 'negative'}">${money(c.saldoFinal)}</span></div>`).join('') || ''}<div class="modal-btns" style="margin-top: 12px;"><button class="secondary" onclick="this.closest('.modal-overlay').classList.remove('open')">Cerrar</button></div></div>`;
+    
+    let html = `
+        <div class="modal">
+            <h3>📅 ${mes.label}</h3>
+            <div class="grid2" style="margin-bottom: 12px;">
+                <div class="kpi"><span>💰 Ingresos</span><strong style="color:var(--ok)">${money(mes.ing)}</strong></div>
+                <div class="kpi"><span>💸 Gastos</span><strong style="color:var(--bad)">${money(mes.gas)}</strong></div>
+                <div class="kpi"><span>⚖️ Balance</span><strong>${money(mes.balance)}</strong></div>
+                <div class="kpi"><span>🏦 Ahorro</span><strong>${mes.ing > 0 ? ((mes.ing - mes.gas) / mes.ing * 100).toFixed(0) : 0}%</strong></div>
+            </div>
+            <div class="title" style="font-size: 14px;">🏦 Saldos de cierre</div>
+            ${mes.cuentas?.map(c => `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--line);"><span>${c.icon} ${c.nombre}</span><span class="${c.saldoFinal >= 0 ? 'positive' : 'negative'}">${money(c.saldoFinal)}</span></div>`).join('') || ''}
+            <div class="modal-btns" style="margin-top: 12px;">
+                <button class="secondary" onclick="this.closest('.modal-overlay').classList.remove('open')">Cerrar</button>
+            </div>
+        </div>
+    `;
+    
     let modal = document.getElementById('modalDetalleMes');
-    if (!modal) { modal = document.createElement('div'); modal.id = 'modalDetalleMes'; modal.className = 'modal-overlay'; document.body.appendChild(modal); }
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'modalDetalleMes';
+        modal.className = 'modal-overlay';
+        document.body.appendChild(modal);
+    }
     modal.innerHTML = html;
     modal.classList.add('open');
 }
@@ -1425,6 +1316,7 @@ function verDetalleMes(index) {
 function exportarMes(index) {
     const mes = historial[index];
     if (!mes) return;
+    
     const dataExport = mes.movimientos.map(x => [x.Fecha || "", x.Tipo || "", x.Categoría || "", x.Descripción || "", x.Monto || 0, x.Cuenta || ""]);
     const csv = "Fecha,Tipo,Categoría,Descripción,Monto,Cuenta\n" + dataExport.map(r => r.join(",")).join("\n");
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv" });
@@ -1494,7 +1386,7 @@ async function aplicarRecurrentes(){const r=JSON.parse(localStorage.getItem(keyF
 function addGoal(){const n=$("goalName").value.trim(),v=Number($("goalValue").value);if(!n||v<=0){toast("Completa");return}goals.push({nombre:n,valor:v});guardarDatos();$("goalName").value=$("goalValue").value="";render();toast("🎯 Guardada")}
 function delGoal(i){goals.splice(i,1);guardarDatos();render()}
 function toggleVoice(){if(!('webkitSpeechRecognition' in window)){toast("❌ No soportado");return}isListening?stopVoice():startVoice()}
-function startVoice(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;recognition=new SR();recognition.lang="es-CO";recognition.interimResults=true;$("voiceBtn").classList.add("listening");$("voiceBtn").innerHTML="🎤...";$("voiceFeedback").classList.add("active");$("voiceFeedback").innerHTML="👂 Habla...";isListening=true;recognition.onresult=(e)=>{const t=e.results[0][0].transcript;if(!e.results[0].isFinal){$("voiceFeedback").innerHTML='📝 "'+t+'"';}else{let monto=0;const texto=t.toLowerCase();const numerosEncontrados=texto.match(/\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{1,2})?|\d+/g);if(numerosEncontrados&&numerosEncontrados.length>0){monto=parseMonto(numerosEncontrados[0]);}if(monto>0){setMode("gasto",document.querySelectorAll(".mode-tab")[1]);$("descripcion").value=texto;$("montoInput").value=monto.toLocaleString("es-CO");$("voiceFeedback").innerHTML="✅ $"+monto.toLocaleString("es-CO")+"<br><small>Revisa y guarda</small>";}else{$("voiceFeedback").innerHTML="❌ No detecté monto. Ej: '25.000', '25 mil'";}stopVoice();}};recognition.onerror=()=>stopVoice();recognition.start()}
+function startVoice(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;recognition=new SR();recognition.lang="es-CO";recognition.interimResults=true;$("voiceBtn").classList.add("listening");$("voiceBtn").innerHTML="🎤...";$("voiceFeedback").classList.add("active");$("voiceFeedback").innerHTML="👂 Habla...";isListening=true;recognition.onresult=(e)=>{const t=e.results[0][0].transcript;if(!e.results[0].isFinal)$("voiceFeedback").innerHTML='📝 "'+t+'"';else{let monto=0;const texto=t.toLowerCase();const m1=texto.match(/(\d+)\s*millones?/i),m2=texto.match(/(\d+)\s*mil/i),m3=texto.match(/(\d[\d.]*)/);if(m1)monto=parseInt(m1[1].replace(/\./g,""))*1e6;else if(m2)monto=parseInt(m2[1].replace(/\./g,""))*1e3;else if(m3)monto=parseInt(m3[1].replace(/\./g,""));if(monto){setMode("gasto",document.querySelectorAll(".mode-tab")[1]);$("descripcion").value=texto;$("montoInput").value=monto.toLocaleString("es-CO");$("voiceFeedback").innerHTML="✅ $"+monto.toLocaleString("es-CO")+"<br><small>Revisa y guarda</small>"}else $("voiceFeedback").innerHTML="❌ No detecté monto";stopVoice()}};recognition.onerror=()=>stopVoice();recognition.start()}
 function stopVoice(){if(recognition)recognition.stop();$("voiceBtn").classList.remove("listening");$("voiceBtn").innerHTML="🎤 Voz";isListening=false}
 function toggleNotiDiaria(){const a=$("toggleDiario").checked;localStorage.setItem("notiDiaria",a?"1":"0");if(a){if(Notification.permission==="default")Notification.requestPermission().then(p=>{if(p==="granted")programarNoti();else{$("toggleDiario").checked=false;localStorage.setItem("notiDiaria","0")}});else if(Notification.permission==="granted")programarNoti()}else{localStorage.removeItem("proxNoti");toast("🔕 Desactivado")}}
 function programarNoti(){if(Notification.permission!=="granted")return;const h=parseInt(localStorage.getItem("horaNoti")||"20"),a=new Date(),r=new Date();r.setHours(h,0,0,0);if(r<=a)r.setDate(r.getDate()+1);setTimeout(()=>{new Notification("💳 Banking PRO AI",{body:"¿Registraste tus gastos de hoy?",icon:"💳"});programarNoti()},r.getTime()-a.getTime())}
@@ -1502,7 +1394,7 @@ function cambiarHora(){localStorage.setItem("horaNoti",$("horaRecordatorio").val
 function probarNoti(){if(Notification.permission==="granted"){new Notification("🔔 Prueba",{body:"¡Funciona!"});toast("✅ Enviada")}else if(Notification.permission==="default"){Notification.requestPermission().then(p=>{if(p==="granted")probarNoti();else toast("❌ Denegado")})}else toast("❌ Bloqueadas")}
 function limpiarCache(ctx){if(!confirm("¿Limpiar "+ctx+"?"))return;localStorage.removeItem(keyForCtx("dataCache",ctx));if(ctx===contexto){data=[];render()}toast("✔ Limpiado")}
 function exportarCSV(){const f=data.map(x=>[x.Fecha||"",x.Tipo||"",x.Categoría||"",(x.Descripción||"").replace(/,/g,";"),x.Monto||0,x.Cuenta||x.CuentaOrigen||"",x.Nota||""]);const csv="Fecha,Tipo,Categoría,Descripción,Monto,Cuenta,Nota\n"+f.map(r=>r.join(",")).join("\n");const b=new Blob(["\uFEFF"+csv]),url=URL.createObjectURL(b),a=document.createElement("a");a.href=url;a.download="movimientos_"+fechaHoyColombia().slice(0,7)+".csv";a.click();toast("📥 CSV exportado")}
-function diag(){$("diagContent").innerHTML="✅ Firebase: "+(window.db?"OK":"NO")+"<br>👤 "+(window.auth?.currentUser?.email||"Sin sesión")+"<br>💾 "+data.length+" movimientos<br>📡 "+(navigator.onLine?"Online":"Offline")+"<br>🎨 Tema: "+temaActual+"<br>📈 Inv: "+inversiones.length+"<br>💳 Prest: "+prestamos.length+"<br>⭐ Premium: "+(esPremium?"Activo":"Inactivo")}
+function diag(){$("diagContent").innerHTML="✅ Firebase: "+(window.db?"OK":"NO")+"<br>👤 "+(window.auth?.currentUser?.email||"Sin sesión")+"<br>💾 "+data.length+" movimientos<br>📡 "+(navigator.onLine?"Online":"Offline")+"<br>🎨 Tema: "+temaActual+"<br>📈 Inv: "+inversiones.length+"<br>💳 Prest: "+prestamos.length}
 function aplicarTema(tema){temaActual=tema;localStorage.setItem("tema",tema);document.body.className=document.body.className.replace(/tema-\w+/g,"");document.body.classList.add("tema-"+tema);document.querySelectorAll(".tema-preview").forEach(t=>t.classList.remove("activo"));const p=$("tema"+tema.charAt(0).toUpperCase()+tema.slice(1));if(p)p.classList.add("activo");if(contexto==="negocio")document.body.classList.add("modo-negocio");toast("🎨 Tema "+tema)}
 function renderHistorialAdmin(){const el=$("historialAdminLista");if(!el)return;if(!historial.length){el.innerHTML='<div class="alert mid">No hay meses cerrados en el historial</div>';return}el.innerHTML=historial.map((m,i)=>`<div class="item" style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:700;font-size:13px">📅 ${m.label}</div><div class="small">Ing: ${money(m.ing)} · Gas: ${money(m.gas)} · Bal: ${money(m.ing-m.gas)}</div><div class="small">${m.movimientos?.length||0} movimientos</div></div><button class="small-btn" onclick="eliminarMesHistorial(${i})" style="width:auto;background:rgba(239,68,68,.15);color:var(--bad)">🗑️</button></div>`).join("")}
 function eliminarMesHistorial(index){const mes=historial[index];if(!confirm(`¿Eliminar "${mes.label}" del historial?`))return;historial.splice(index,1);localStorage.setItem(keyFor("historialMeses"),JSON.stringify(historial));renderHistorialAdmin();toast("🗑️ Mes eliminado: "+mes.label)}
@@ -1526,11 +1418,8 @@ window.limpiarCache=limpiarCache;window.diag=diag;window.aplicarTema=aplicarTema
 window.toggleNotiDiaria=toggleNotiDiaria;window.cambiarHora=cambiarHora;window.probarNoti=probarNoti;
 window.eliminarMesHistorial=eliminarMesHistorial;window.renderHistorialAdmin=renderHistorialAdmin;
 window.verHistorialCompleto=verHistorialCompleto;window.verDetalleMes=verDetalleMes;window.exportarMes=exportarMes;
-window.verificarAccesoPremium=verificarAccesoPremium;window.iniciarPagoUnico=iniciarPagoUnico;
-window.mostrarPanelAdmin=mostrarPanelAdmin;window.activarPremiumManual=activarPremiumManual;
-window.verUsuariosPremium=verUsuariosPremium;window.buscarUsuarioAdmin=buscarUsuarioAdmin;
 
-console.log("✅ Banking PRO AI v31 - PREMIUM + TIEMPO REAL + HISTORIAL");
+console.log("✅ Banking PRO AI v30 - COMPLETO con Sincronización en Tiempo Real");
 </script>
 </body>
 </html>
