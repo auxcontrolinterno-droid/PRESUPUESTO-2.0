@@ -1421,7 +1421,7 @@ window.verHistorialCompleto=verHistorialCompleto;window.verDetalleMes=verDetalle
 
 console.log("✅ Banking PRO AI v30 - COMPLETO con Sincronización en Tiempo Real");
 </script>
-<!-- ═══════════════ SISTEMA DE CONTROL DE ACCESO COMPLETO Y CORREGIDO ═══════════════ -->
+<!-- ═══════════════ SISTEMA DE CONTROL DE ACCESO COMPLETO v6 - CON AVISOS ═══════════════ -->
 <script>
 const adminUIDs = ["ehvt48aV7BUBDKUC8YXVaNRNjO63"];
 
@@ -1431,7 +1431,11 @@ function toastMsg(msg) {
     if (toast) {
         toast.textContent = msg;
         toast.style.display = 'block';
-        setTimeout(() => toast.style.display = 'none', 2400);
+        toast.style.background = '#1e293b';
+        toast.style.color = '#fff';
+        toast.style.fontWeight = '700';
+        toast.onclick = () => { toast.style.display = 'none'; };
+        setTimeout(() => { toast.style.display = 'none'; }, 2400);
     }
 }
 
@@ -1677,10 +1681,18 @@ window.cargarListaUsuarios = async function() {
                 estado = '⛔ Bloqueado';
                 color = 'var(--bad)';
                 icono = '⛔';
-            } else if (diasRestantes !== null && diasRestantes <= 3) {
-                estado = `⚠️ ${diasRestantes} días restantes`;
+            } else if (diasRestantes === 0) {
+                estado = '⚠️ ¡Vence HOY!';
+                color = 'var(--bad)';
+                icono = '⚠️';
+            } else if (diasRestantes === 1) {
+                estado = '⚠️ 1 día restante';
                 color = 'var(--warn)';
                 icono = '⚠️';
+            } else if (diasRestantes !== null && diasRestantes <= 3) {
+                estado = `📅 ${diasRestantes} días restantes`;
+                color = 'var(--warn)';
+                icono = '📅';
             } else if (diasRestantes !== null) {
                 estado = `✅ ${diasRestantes} días restantes`;
                 color = 'var(--ok)';
@@ -1756,7 +1768,6 @@ window.sincronizarUsuariosExistentes = async function() {
     listaDiv.innerHTML = '<div class="alert info">⏳ Sincronizando usuarios existentes...</div>';
     
     try {
-        // Obtener todos los documentos en "users"
         const snapUsers = await window.fbGetDocs(
             window.fbQuery(window.fbCollection(window.db, "users"))
         );
@@ -1769,7 +1780,6 @@ window.sincronizarUsuariosExistentes = async function() {
             const email = data.email || '';
             
             if (uid) {
-                // Verificar si existe en user_access
                 const snapAccess = await window.fbGetDocs(
                     window.fbQuery(window.fbCollection(window.db, "user_access"))
                 );
@@ -1862,7 +1872,7 @@ window.setTiempoPorUID = async function(uid, email, dias) {
     }
 };
 
-// ═══ VERIFICACIÓN AL INICIAR SESIÓN ═══
+// ═══ VERIFICACIÓN AL INICIAR SESIÓN (CON AVISO DE TIEMPO) ═══
 const onUserChangedOriginal = window.onUserChanged;
 window.onUserChanged = async function(user) {
     if (user) {
@@ -1874,9 +1884,13 @@ window.onUserChanged = async function(user) {
         );
         
         let bloqueado = false;
+        let diasRestantes = null;
+        let docId = null;
+        
         querySnapshot.forEach(doc => {
             if (doc.data().uid === user.uid) {
                 const data = doc.data();
+                docId = doc.id;
                 
                 if (data.acceso_permitido === false) {
                     bloqueado = true;
@@ -1885,12 +1899,15 @@ window.onUserChanged = async function(user) {
                 if (data.fecha_expiracion && data.acceso_permitido !== false) {
                     const ahora = new Date();
                     const expiracion = new Date(data.fecha_expiracion);
+                    
                     if (ahora > expiracion) {
                         bloqueado = true;
                         window.fbUpdateDoc(window.fbDoc(window.db, "user_access", doc.id), {
                             acceso_permitido: false,
                             ultima_modificacion: ahora.toISOString()
                         }).catch(() => {});
+                    } else {
+                        diasRestantes = Math.ceil((expiracion - ahora) / (1000 * 60 * 60 * 24));
                     }
                 }
             }
@@ -1900,6 +1917,58 @@ window.onUserChanged = async function(user) {
             alert("⛔ Tu acceso ha expirado o ha sido bloqueado por el administrador.\n\nContacta al administrador para más información.");
             try { await window.fbLogout(); } catch(e) {}
             return;
+        }
+        
+        // ═══ AVISAR AL USUARIO SI LE QUEDA 1 DÍA O MENOS ═══
+        if (diasRestantes !== null && diasRestantes <= 1 && !adminUIDs.includes(user.uid)) {
+            const mensaje = diasRestantes === 0 
+                ? "⚠️ ¡Tu acceso vence HOY! Contacta al administrador para renovarlo."
+                : "⚠️ Tu acceso vence mañana. Contacta al administrador para renovarlo.";
+            
+            const toast = document.getElementById('toast');
+            if (toast) {
+                toast.textContent = mensaje;
+                toast.style.display = 'block';
+                toast.style.background = 'rgba(245,158,11,.95)';
+                toast.style.color = '#fff';
+                toast.style.fontWeight = '700';
+                toast.style.fontSize = '13px';
+                toast.style.padding = '12px 16px';
+                toast.onclick = () => {
+                    toast.style.display = 'none';
+                    toast.style.background = '#1e293b';
+                    toast.style.color = '#fff';
+                    toast.style.fontWeight = '700';
+                    toast.style.fontSize = '12px';
+                    toast.style.padding = '10px 14px';
+                };
+            }
+            
+            setTimeout(() => {
+                alert(mensaje + "\n\n⚠️ Podrías perder el acceso pronto.\nContacta al administrador.");
+            }, 1500);
+        }
+        
+        // Si quedan 2-3 días, mostrar aviso sutil
+        if (diasRestantes !== null && diasRestantes >= 2 && diasRestantes <= 3 && !adminUIDs.includes(user.uid)) {
+            const toast = document.getElementById('toast');
+            if (toast) {
+                toast.textContent = `📅 Tu acceso vence en ${diasRestantes} días`;
+                toast.style.display = 'block';
+                toast.style.background = 'rgba(59,130,246,.9)';
+                toast.style.color = '#fff';
+                toast.style.fontWeight = '600';
+                toast.style.fontSize = '12px';
+                toast.style.padding = '10px 14px';
+                toast.onclick = () => { toast.style.display = 'none'; };
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                    toast.style.background = '#1e293b';
+                    toast.style.fontWeight = '700';
+                    toast.style.fontSize = '12px';
+                    toast.style.padding = '10px 14px';
+                }, 6000);
+            }
         }
     }
     
@@ -1940,7 +2009,8 @@ function agregarPanelAdmin() {
             🔄 Sincronizar usuarios existentes
         </button>
         <div class="small" style="margin-top: 6px; text-align: center; color: var(--muted);">
-            💡 Usuarios nuevos: Permitidos por defecto | Usa "Sincronizar" para usuarios antiguos
+            💡 Usuarios nuevos: Permitidos por defecto<br>
+            ⚠️ Se avisa al usuario cuando queda 1 día
         </div>
     `;
     
@@ -1955,10 +2025,11 @@ function agregarPanelAdmin() {
     setTimeout(() => window.cargarListaUsuarios(), 500);
 }
 
-console.log("✅ Sistema de control de acceso COMPLETO y CORREGIDO");
-console.log("📦 Busca en: user_access + users");
-console.log("🔄 Botón 'Sincronizar' para usuarios existentes");
+console.log("✅ Sistema de control de acceso COMPLETO v6");
+console.log("👥 Busca en: user_access + users");
 console.log("⏰ Control de tiempo: 1d, 7d, 30d, permanente");
+console.log("⚠️ Avisos al usuario: 1 día, 2-3 días");
+console.log("🔒 Bloqueo/Desbloqueo manual");
 </script>
 </body>
 </html>
