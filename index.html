@@ -1421,57 +1421,65 @@ window.verHistorialCompleto=verHistorialCompleto;window.verDetalleMes=verDetalle
 
 console.log("✅ Banking PRO AI v30 - COMPLETO con Sincronización en Tiempo Real");
 </script>
-<!-- ═══════════════ SISTEMA DE CONTROL DE ACCESO ADMINISTRATIVO ═══════════════ -->
 <script>
-// Configuración del administrador
+// ═══════════════ SISTEMA DE CONTROL DE ACCESO ADMINISTRATIVO v3 ═══════════════
 const adminUIDs = ["ehvt48aV7BUBDKUC8YXVaNRNjO63"];
 
-// ═══ FUNCIÓN PARA VERIFICAR ACCESO DE USUARIO ═══
-async function verificarAccesoUsuario(uid) {
-    if (!window.db) return true;
+// Función para crear o verificar acceso
+async function crearObtenerAcceso(uid, email) {
+    if (!window.db) return false;
     
     try {
-        const querySnapshot = await window.fbGetDocs(
+        const docRef = window.fbDoc(window.db, "user_access", uid);
+        const docSnap = await window.fbGetDocs(
             window.fbQuery(window.fbCollection(window.db, "user_access"))
         );
         
+        let existe = false;
         let tieneAcceso = false;
-        querySnapshot.forEach(doc => {
-            if (doc.id === uid && doc.data().acceso_permitido === true) {
-                tieneAcceso = true;
+        
+        docSnap.forEach(doc => {
+            if (doc.id === uid) {
+                existe = true;
+                tieneAcceso = doc.data().acceso_permitido === true;
             }
         });
         
-        if (!querySnapshot.docs.some(d => d.id === uid)) {
+        if (!existe) {
+            console.log("🆕 Creando registro para:", email);
+            // Crear documento con el UID como ID
             try {
-                await window.fbAddDoc(
-                    window.fbCollection(window.db, "user_access"), 
-                    {
+                await navigator.onLine ? 
+                    window.fbAddDoc(window.fbCollection(window.db, "user_access"), {
                         uid: uid,
-                        email: window.auth.currentUser?.email || "",
+                        email: email,
                         acceso_permitido: false,
                         fecha_creacion: new Date().toISOString()
-                    }
-                );
-            } catch(e) {}
+                    }) : null;
+            } catch(e) {
+                console.log("Intentando crear de otra forma...");
+            }
+            return false;
         }
         
         return tieneAcceso;
     } catch (e) {
-        console.error("Error verificando acceso:", e);
-        return true;
+        console.error("Error:", e);
+        return true; // Si hay error, permitir acceso
     }
 }
 
-// ═══ MODIFICAR VERIFICACIÓN DE ACCESO AL INICIAR SESIÓN ═══
+// Modificar verificación al iniciar sesión
 const onUserChangedOriginal = window.onUserChanged;
 window.onUserChanged = async function(user) {
     if (user) {
-        const acceso = await verificarAccesoUsuario(user.uid);
+        const acceso = await crearObtenerAcceso(user.uid, user.email || "");
         
-        if (!acceso) {
+        if (!acceso && !adminUIDs.includes(user.uid)) {
             alert("⛔ Tu cuenta no tiene acceso activo. Contacta al administrador.");
-            await window.fbLogout();
+            try {
+                await window.fbLogout();
+            } catch(e) {}
             return;
         }
     }
@@ -1481,19 +1489,33 @@ window.onUserChanged = async function(user) {
     }
 };
 
-// ═══ AGREGAR BOTÓN DE ADMINISTRACIÓN EN AJUSTES ═══
+// También interceptar registro
+const fbRegisterOriginal = window.fbRegister;
+window.fbRegister = async function(email, password) {
+    try {
+        const result = await fbRegisterOriginal(email, password);
+        if (result && result.user) {
+            await crearObtenerAcceso(result.user.uid, email);
+        }
+        return result;
+    } catch(e) {
+        throw e;
+    }
+};
+
+// Panel de administración en ajustes
 const goTabOriginal = window.goTab;
 window.goTab = function(tab, btn) {
     goTabOriginal(tab, btn);
     
     if (tab === 'settings') {
-        setTimeout(agregarBotonAdmin, 100);
+        setTimeout(agregarBotonAdmin, 300);
     }
 };
 
 function agregarBotonAdmin() {
     if (document.getElementById('adminAccessSection')) return;
-    if (!adminUIDs.includes(window.auth?.currentUser?.uid)) return;
+    if (!window.auth?.currentUser || !adminUIDs.includes(window.auth.currentUser.uid)) return;
     
     const cardDiv = document.createElement('div');
     cardDiv.className = 'card';
@@ -1501,12 +1523,15 @@ function agregarBotonAdmin() {
     
     cardDiv.innerHTML = `
         <div class="title">👥 Administrar Accesos</div>
-        <p class="small" style="color: var(--muted); margin-bottom: 8px;">Activa o desactiva el acceso de usuarios</p>
-        <div id="adminUserList" style="margin-bottom: 8px; max-height: 300px; overflow-y: auto;">
-            <div class="alert info">Cargando usuarios...</div>
+        <p class="small" style="color: var(--muted); margin-bottom: 8px;">Gestiona qué usuarios pueden acceder</p>
+        <div id="adminUserList" style="margin-bottom: 8px; max-height: 400px; overflow-y: auto;">
+            <div class="alert info">⏳ Cargando usuarios...</div>
         </div>
         <button class="secondary" onclick="window.cargarListaUsuarios()" style="width: 100%; margin-top: 8px;">
             🔄 Actualizar Lista
+        </button>
+        <button class="primary" onclick="window.agregarUsuarioManual()" style="width: 100%; margin-top: 4px; font-size: 12px;">
+            ➕ Agregar usuario manualmente
         </button>
     `;
     
@@ -1515,10 +1540,63 @@ function agregarBotonAdmin() {
         miCuentaCard.parentNode.insertBefore(cardDiv, miCuentaCard.nextSibling);
     }
     
-    cargarListaUsuarios();
+    setTimeout(() => window.cargarListaUsuarios(), 500);
 }
 
-// ═══ FUNCIÓN PARA CARGAR LISTA DE USUARIOS ═══
+// Agregar usuario manualmente
+window.agregarUsuarioManual = function() {
+    const email = prompt("📧 Ingresa el correo del usuario a agregar:");
+    if (!email) return;
+    
+    // Buscar UID por email (esto es complejo sin funciones admin)
+    // Por ahora, pedimos el UID directamente
+    const uid = prompt("🔑 Ingresa el UID del usuario (puedes verlo en Firebase Console → Authentication):");
+    if (!uid) return;
+    
+    window.agregarAccesoDirecto(uid, email);
+};
+
+window.agregarAccesoDirecto = async function(uid, email) {
+    try {
+        // Verificar si ya existe
+        const querySnapshot = await window.fbGetDocs(
+            window.fbQuery(window.fbCollection(window.db, "user_access"))
+        );
+        
+        let existe = false;
+        querySnapshot.forEach(doc => {
+            if (doc.id === uid || doc.data().uid === uid) {
+                existe = true;
+            }
+        });
+        
+        if (existe) {
+            alert("⚠️ Este usuario ya existe en la lista");
+            return;
+        }
+        
+        await window.fbAddDoc(window.fbCollection(window.db, "user_access"), {
+            uid: uid,
+            email: email,
+            acceso_permitido: false,
+            fecha_creacion: new Date().toISOString()
+        });
+        
+        const toast = document.getElementById('toast');
+        if (toast) {
+            toast.textContent = "✅ Usuario agregado: " + email;
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 2400);
+        }
+        
+        window.cargarListaUsuarios();
+    } catch(e) {
+        console.error("Error:", e);
+        alert("❌ Error: " + e.message);
+    }
+};
+
+// Cargar lista de usuarios
 window.cargarListaUsuarios = async function() {
     const listaDiv = document.getElementById('adminUserList');
     if (!listaDiv) return;
@@ -1536,38 +1614,61 @@ window.cargarListaUsuarios = async function() {
         );
         
         if (querySnapshot.empty) {
-            listaDiv.innerHTML = '<div class="alert mid">No hay usuarios registrados</div>';
+            listaDiv.innerHTML = `
+                <div class="alert mid">No hay usuarios registrados</div>
+                <div class="small" style="margin-top:8px;text-align:center;">Usa "Agregar usuario manualmente" o pide a alguien que se registre</div>
+            `;
             return;
         }
         
         let html = '';
+        let count = 0;
+        
         querySnapshot.forEach(doc => {
+            count++;
             const data = doc.data();
             const estado = data.acceso_permitido ? '✅ Activo' : '⛔ Bloqueado';
             const color = data.acceso_permitido ? 'var(--ok)' : 'var(--bad)';
+            const esAdmin = adminUIDs.includes(data.uid);
             
             html += `
-                <div style="background: var(--cardBg); padding: 10px; margin-bottom: 6px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <div style="font-weight: 600; font-size: 13px;">${data.email || 'Sin email'}</div>
-                        <div style="font-size: 10px; color: ${color}; margin-top: 2px;">${estado}</div>
+                <div style="background: var(--cardBg); padding: 10px; margin-bottom: 6px; border-radius: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-weight: 600; font-size: 13px;">
+                                ${data.email || 'Sin email'} 
+                                ${esAdmin ? '<span style="font-size:9px;color:var(--accent);">(Admin)</span>' : ''}
+                            </div>
+                            <div style="font-size: 10px; color: ${color}; margin-top: 2px;">${estado}</div>
+                            <div style="font-size: 8px; color: var(--muted);">UID: ${(data.uid||'').substring(0,12)}...</div>
+                        </div>
+                        ${!esAdmin ? `
+                            <button class="small-btn ${data.acceso_permitido ? 'warn-btn' : 'success-btn'}" 
+                                    onclick="window.toggleAccesoUsuario('${doc.id}', ${!data.acceso_permitido})">
+                                ${data.acceso_permitido ? '🔒 Bloquear' : '🔓 Permitir'}
+                            </button>
+                        ` : ''}
                     </div>
-                    <button class="small-btn ${data.acceso_permitido ? 'warn-btn' : 'success-btn'}" 
-                            onclick="window.toggleAccesoUsuario('${doc.id}', ${!data.acceso_permitido})">
-                        ${data.acceso_permitido ? '🔒 Bloquear' : '🔓 Permitir'}
-                    </button>
                 </div>
             `;
         });
         
-        listaDiv.innerHTML = html;
+        listaDiv.innerHTML = `
+            <div class="small" style="margin-bottom:4px;">Total: ${count} usuarios</div>
+            ${html}
+        `;
     } catch (e) {
         console.error("Error:", e);
-        listaDiv.innerHTML = '<div class="alert bad">Error al cargar usuarios</div>';
+        listaDiv.innerHTML = `
+            <div class="alert bad">Error de conexión</div>
+            <button class="primary" onclick="window.cargarListaUsuarios()" style="width:100%;margin-top:8px;font-size:12px;">
+                🔄 Reintentar
+            </button>
+        `;
     }
 };
 
-// ═══ FUNCIÓN PARA ACTIVAR/DESACTIVAR ACCESO ═══
+// Activar/desactivar acceso
 window.toggleAccesoUsuario = async function(uidUsuario, permitir) {
     if (!confirm(`¿${permitir ? 'Activar' : 'Desactivar'} acceso para este usuario?`)) return;
     
@@ -1603,11 +1704,11 @@ window.toggleAccesoUsuario = async function(uidUsuario, permitir) {
         }
     } catch (e) {
         console.error("Error:", e);
-        alert("❌ Error al modificar acceso");
+        alert("❌ Error: " + e.message);
     }
 };
 
-console.log("✅ Sistema de control de acceso instalado correctamente");
+console.log("✅ Sistema de control de acceso v3 instalado");
 </script>
 </body>
 </html>
