@@ -1873,6 +1873,7 @@ window.setTiempoPorUID = async function(uid, email, dias) {
 };
 
 // ═══ VERIFICACIÓN AL INICIAR SESIÓN ═══
+// ═══ VERIFICACIÓN AL INICIAR SESIÓN (SIMPLIFICADO) ═══
 const onUserChangedOriginal = window.onUserChanged;
 window.onUserChanged = async function(user) {
     if (user) {
@@ -1885,35 +1886,43 @@ window.onUserChanged = async function(user) {
         
         let bloqueado = false;
         let diasRestantes = null;
-        let docId = null;
         
         querySnapshot.forEach(doc => {
             if (doc.data().uid === user.uid) {
                 const data = doc.data();
-                docId = doc.id;
                 
+                console.log("🔍 Verificando usuario:", data.email);
+                console.log("  acceso_permitido:", data.acceso_permitido);
+                console.log("  fecha_expiracion:", data.fecha_expiracion);
+                
+                // Verificar bloqueo
                 if (data.acceso_permitido === false) {
                     bloqueado = true;
+                    console.log("  ❌ BLOQUEADO");
                 }
                 
+                // Verificar expiración
                 if (data.fecha_expiracion && data.acceso_permitido !== false) {
                     const ahora = new Date();
                     const expiracion = new Date(data.fecha_expiracion);
+                    diasRestantes = Math.ceil((expiracion - ahora) / (1000 * 60 * 60 * 24));
+                    console.log("  ⏰ Días restantes:", diasRestantes);
                     
                     if (ahora > expiracion) {
                         bloqueado = true;
+                        console.log("  ❌ EXPIRADO");
                         window.fbUpdateDoc(window.fbDoc(window.db, "user_access", doc.id), {
                             acceso_permitido: false,
                             ultima_modificacion: ahora.toISOString()
                         }).catch(() => {});
-                    } else {
-                        diasRestantes = Math.ceil((expiracion - ahora) / (1000 * 60 * 60 * 24));
                     }
                 }
             }
         });
         
+        // Bloqueado
         if (bloqueado && !adminUIDs.includes(user.uid)) {
+            console.log("🚫 Usuario bloqueado, cerrando sesión");
             const toast = document.getElementById('toast');
             if (toast) {
                 toast.textContent = "⛔ Acceso bloqueado. Contacta al administrador.";
@@ -1924,21 +1933,17 @@ window.onUserChanged = async function(user) {
                 toast.style.fontSize = '13px';
                 toast.style.padding = '14px 18px';
                 toast.style.cursor = 'pointer';
-                toast.onclick = () => {
-                    toast.style.display = 'none';
-                    toast.style.background = '#1e293b';
-                    toast.style.fontSize = '12px';
-                    toast.style.padding = '10px 14px';
-                };
+                toast.onclick = () => { toast.style.display = 'none'; };
             }
-            setTimeout(() => {
+            setTimeout(async () => {
                 try { await window.fbLogout(); } catch(e) {}
             }, 3000);
             return;
         }
         
-        // ═══ AVISO CUANDO QUEDA 1 DÍA O MENOS ═══
+        // Aviso 1 día o menos
         if (diasRestantes !== null && diasRestantes <= 1 && !adminUIDs.includes(user.uid)) {
+            console.log("⚠️ MOSTRANDO AVISO - Días restantes:", diasRestantes);
             const mensaje = diasRestantes === 0 
                 ? "⚠️ ¡Tu acceso vence HOY! Contacta al administrador."
                 : "⚠️ Tu acceso vence mañana. Contacta al administrador.";
@@ -1956,14 +1961,13 @@ window.onUserChanged = async function(user) {
                 toast.onclick = () => {
                     toast.style.display = 'none';
                     toast.style.background = '#1e293b';
-                    toast.style.fontSize = '12px';
-                    toast.style.padding = '10px 14px';
                 };
             }
         }
         
-        // ═══ AVISO CUANDO QUEDAN 2-3 DÍAS ═══
+        // Aviso 2-3 días
         if (diasRestantes !== null && diasRestantes >= 2 && diasRestantes <= 3 && !adminUIDs.includes(user.uid)) {
+            console.log("📅 MOSTRANDO AVISO - Días restantes:", diasRestantes);
             const toast = document.getElementById('toast');
             if (toast) {
                 toast.textContent = `📅 Tu acceso vence en ${diasRestantes} días`;
@@ -1976,12 +1980,8 @@ window.onUserChanged = async function(user) {
                 toast.style.cursor = 'pointer';
                 toast.onclick = () => { toast.style.display = 'none'; };
                 setTimeout(() => {
-                    if (toast.textContent.includes('días')) {
-                        toast.style.display = 'none';
-                        toast.style.background = '#1e293b';
-                        toast.style.fontSize = '12px';
-                        toast.style.padding = '10px 14px';
-                    }
+                    toast.style.display = 'none';
+                    toast.style.background = '#1e293b';
                 }, 6000);
             }
         }
