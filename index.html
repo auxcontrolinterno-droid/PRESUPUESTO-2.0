@@ -5,12 +5,12 @@
   <meta name="theme-color" content="#0f172a">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-  <title>Banking PRO AI v30</title>
+  <title>Banking PRO AI v30 - Tiempo Real</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, writeBatch } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, writeBatch, query, onSnapshot } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
     const firebaseConfig = {
       apiKey: "AIzaSyABzhwIZkis5OykXxDHXVKCaP0k1qKTZcY",
@@ -27,6 +27,8 @@
     window.fbGetDocs = getDocs; window.fbDeleteDoc = deleteDoc;
     window.fbDoc = doc; window.fbUpdateDoc = updateDoc;
     window.fbWriteBatch = writeBatch;
+    window.fbQuery = query;
+    window.fbOnSnapshot = onSnapshot;
     window.fbRegister = (e,p) => createUserWithEmailAndPassword(auth,e,p);
     window.fbLogin = (e,p) => signInWithEmailAndPassword(auth,e,p);
     window.fbLogout = () => signOut(auth);
@@ -363,7 +365,7 @@
 <div class="modal-overlay" id="modalEditar"><div class="modal"><h3>✏️ Editar movimiento</h3><input type="date" id="editFecha"><select id="editCategoria"></select><input type="text" id="editDescripcion" placeholder="Descripción"><input type="text" id="editMonto" placeholder="Monto"><select id="editCuenta"></select><input type="text" id="editNota" placeholder="Nota"><div class="modal-btns"><button class="secondary" onclick="document.getElementById('modalEditar').classList.remove('open')">Cancelar</button><button class="primary" onclick="confirmarEdicion()">✔ Guardar</button></div></div></div>
 
 <script>
-// ═══════════════ BANKING PRO AI v30 - COMPLETO CON HISTORIAL POR MESES ═══════════════
+// ═══════════════ BANKING PRO AI v30 - TIEMPO REAL ═══════════════
 const $=id=>document.getElementById(id);
 const ACC_COLORS=["#3b82f6","#22c55e","#f59e0b","#ec4899","#a78bfa","#14b8a6"];
 
@@ -377,6 +379,8 @@ let c1,c2,c3,c4,c5,c6,cInv,filtroTipo="todos",editandoId=null,recognition=null,i
 let inversiones=JSON.parse(localStorage.getItem("inversiones")||"[]"),temaActual=localStorage.getItem("tema")||"dark";
 let prestamos=JSON.parse(localStorage.getItem("prestamos")||"[]"),prestamoFiltro="todos";
 let syncInProgress=false;
+let unsubscribeRealTime = null; // 👈 NUEVO: para sincronización en tiempo real
+
 function uid(){return window.currentUser?.uid||localStorage.getItem("uid")||"guest"}
 function keyFor(b){const s=contexto==="negocio"?"Negocio":"";return uid()+"_"+s+b}
 function keyForCtx(b,c){const s=c==="negocio"?"Negocio":"";return uid()+"_"+s+b}
@@ -384,7 +388,6 @@ function toast(m){const t=$("toast");t.innerText=m;t.style.display="block";clear
 function money(n){if(hidden)return"••••••";return"$"+Number(n).toLocaleString("es-CO")}
 function parseMonto(s){return Number(String(s).replace(/\./g,"").replace(",","."))||0}
 function labelDay(f){const n=hoyColombia();const t=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0")+"-"+String(n.getDate()).padStart(2,"0");if(f===t)return"HOY";return new Date(f+"T00:00:00").toLocaleDateString("es-CO",{day:"numeric",month:"short"})}
-
 // ═══ INDEXEDDB PARA OFFLINE ═══
 let dbPromise=null;
 function initIndexedDB(){
@@ -458,7 +461,73 @@ async function actualizarContadorPendientes(){
   return cola.length;
 }
 
-// ═══ SINCRONIZACIÓN ═══
+// ═══ SINCRONIZACIÓN EN TIEMPO REAL CON FIREBASE ═══
+function activarSincronizacionRealTime() {
+    if (!window.db || !window.currentUser) return;
+    
+    if (unsubscribeRealTime) {
+        unsubscribeRealTime();
+        unsubscribeRealTime = null;
+    }
+    
+    const colNamePersonal = "movimientos_personal";
+    const colNameNegocio = "movimientos_negocio";
+    
+    const qPersonal = window.fbQuery(window.fbCollection(window.db, "users", window.currentUser.uid, colNamePersonal));
+    const unsubscribePersonal = window.fbOnSnapshot(qPersonal, (snapshot) => {
+        const fbData = [];
+        snapshot.forEach(doc => fbData.push({ ...doc.data(), ID: doc.id }));
+        localStorage.setItem(keyForCtx("dataCache", "personal"), JSON.stringify(fbData));
+        if (contexto === "personal") {
+            const oldLength = data.length;
+            data = fbData;
+            obtenerCola().then(pendientes => {
+                const pendientesPersonales = pendientes.filter(p => p.contexto === "personal");
+                for (const p of pendientesPersonales) {
+                    if (!data.some(d => String(d.ID) === String(p.idLocal))) {
+                        data.push({ ...p.datos, ID: p.idLocal });
+                    }
+                }
+                guardarDatos();
+                render();
+                const sc = $("syncCount");
+                if (sc) sc.innerText = data.length;
+                if (oldLength !== data.length) toast("🔄 Datos sincronizados");
+            });
+        }
+    });
+    
+    const qNegocio = window.fbQuery(window.fbCollection(window.db, "users", window.currentUser.uid, colNameNegocio));
+    const unsubscribeNegocio = window.fbOnSnapshot(qNegocio, (snapshot) => {
+        const fbData = [];
+        snapshot.forEach(doc => fbData.push({ ...doc.data(), ID: doc.id }));
+        localStorage.setItem(keyForCtx("dataCache", "negocio"), JSON.stringify(fbData));
+        if (contexto === "negocio") {
+            const oldLength = data.length;
+            data = fbData;
+            obtenerCola().then(pendientes => {
+                const pendientesNegocio = pendientes.filter(p => p.contexto === "negocio");
+                for (const p of pendientesNegocio) {
+                    if (!data.some(d => String(d.ID) === String(p.idLocal))) {
+                        data.push({ ...p.datos, ID: p.idLocal });
+                    }
+                }
+                guardarDatos();
+                render();
+                const sc = $("syncCount");
+                if (sc) sc.innerText = data.length;
+                if (oldLength !== data.length) toast("🔄 Datos sincronizados");
+            });
+        }
+    });
+    
+    unsubscribeRealTime = () => {
+        unsubscribePersonal();
+        unsubscribeNegocio();
+    };
+}
+
+// ═══ SINCRONIZACIÓN DE PENDIENTES ═══
 async function sincronizarPendientes(){
   if(syncInProgress) return;
   if(!window.db||!window.auth?.currentUser) return;
@@ -562,7 +631,6 @@ async function cargarDesdeFirebase(){
   }
 }
 
-// ═══ CARGA DE HISTORIAL DESDE FIREBASE ═══
 async function cargarHistorialDesdeFirebase() {
     if (!window.db || !window.auth?.currentUser) return;
     try {
@@ -655,6 +723,10 @@ async function registrarUsuario(){
 
 async function cerrarSesion(){
   if(!confirm("¿Cerrar sesión?"))return;
+  if (unsubscribeRealTime) {
+      unsubscribeRealTime();
+      unsubscribeRealTime = null;
+  }
   await window.fbLogout();
 }
 
@@ -665,9 +737,16 @@ function onUserChanged(user){
     $("loginScreen").classList.add("oculto");
     $("appContent").classList.add("visible");
     actualizarUI(user);
-    cargarTodo().then(()=>{sincronizarPendientes();});
+    cargarTodo().then(()=>{
+      sincronizarPendientes();
+      activarSincronizacionRealTime(); // 👈 NUEVO: Activar tiempo real
+    });
     actualizarStatusBar();
   }else{
+    if (unsubscribeRealTime) {
+        unsubscribeRealTime();
+        unsubscribeRealTime = null;
+    }
     $("loginScreen").classList.remove("oculto");
     $("appContent").classList.remove("visible");
   }
@@ -1099,7 +1178,7 @@ function renderHistorial(){if(!historial.length){$("historialCard").style.displa
 function toggleMes(i){const b=$("mb"+i),a=$("ma"+i);b.style.display=b.style.display==="none"?"block":"none";a.textContent=b.style.display==="none"?"▶":"▼";}
 function abrirCierre(){const s=calcSaldos(),ing=data.filter(x=>x.Tipo==="Ingreso").reduce((a,x)=>a+Number(x.Monto||0),0),gas=data.filter(x=>x.Tipo==="Gasto").reduce((a,x)=>a+Number(x.Monto||0),0);let h=`<div class="grid2" style="margin-bottom:8px"><div class="kpi"><span>Ingresos</span><strong style="color:var(--ok)">${money(ing)}</strong></div><div class="kpi"><span>Gastos</span><strong style="color:var(--bad)">${money(gas)}</strong></div></div>`;cuentas.forEach(c=>{h+=`<div style="font-size:11px;margin-bottom:3px">${c.icon} ${c.nombre}: ${money(s[c.id]||0)}</div>`});$("modalResumen").innerHTML=h;$("modalCierre").classList.add("open");}
 
-// ═══ NUEVO: CIERRE DE MES CON ARCHIVO POR MES ═══
+// ═══ CIERRE DE MES CON ARCHIVO POR MES ═══
 async function confirmarCierre() {
     const s = calcSaldos();
     const ing = data.filter(x => x.Tipo === "Ingreso").reduce((a, x) => a + Number(x.Monto || 0), 0);
@@ -1122,11 +1201,9 @@ async function confirmarCierre() {
         createdAt: Date.now()
     };
     
-    // Guardar en historial local
     historial.unshift(mesCerrado);
     localStorage.setItem(keyFor("historialMeses"), JSON.stringify(historial));
     
-    // Guardar en Firebase
     if (window.db && window.auth?.currentUser) {
         try {
             const colHistorico = "historial_mensual";
@@ -1138,11 +1215,9 @@ async function confirmarCierre() {
         } catch (e) { console.error("Error guardando en Firebase:", e); }
     }
     
-    // Actualizar saldos iniciales
     cuentas = cuentas.map(c => ({ ...c, saldoInicial: s[c.id] || 0 }));
     localStorage.setItem(keyFor("cuentas"), JSON.stringify(cuentas));
     
-    // Limpiar movimientos actuales
     if (window.db && window.auth?.currentUser) {
         const colNamePersonal = "movimientos_personal";
         const colNameNegocio = "movimientos_negocio";
@@ -1155,7 +1230,6 @@ async function confirmarCierre() {
         } catch (e) { console.error("Error limpiando movimientos:", e); }
     }
     
-    // Resetear datos locales
     data = [];
     await limpiarCola();
     localStorage.setItem(keyFor("dataCache"), "[]");
@@ -1345,7 +1419,7 @@ window.toggleNotiDiaria=toggleNotiDiaria;window.cambiarHora=cambiarHora;window.p
 window.eliminarMesHistorial=eliminarMesHistorial;window.renderHistorialAdmin=renderHistorialAdmin;
 window.verHistorialCompleto=verHistorialCompleto;window.verDetalleMes=verDetalleMes;window.exportarMes=exportarMes;
 
-console.log("✅ Banking PRO AI v30 - COMPLETO con Historial por Meses y Offline Robusto");
+console.log("✅ Banking PRO AI v30 - COMPLETO con Sincronización en Tiempo Real");
 </script>
 </body>
 </html>
