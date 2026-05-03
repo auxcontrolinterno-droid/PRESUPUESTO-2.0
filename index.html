@@ -1945,9 +1945,32 @@ window.onUserChanged = async function(user) {
             }
             
             setTimeout(() => {
-                alert(mensaje + "\n\n⚠️ Podrías perder el acceso pronto.\nContacta al administrador.");
-            }, 1500);
-        }
+    // Crear modal personalizado sin URL
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
+    
+    const modal = document.createElement('div');
+    modal.style.cssText = 'background:#1e293b;border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:24px;max-width:380px;width:100%;text-align:center;color:#fff;font-family:Inter,sans-serif;';
+    
+    modal.innerHTML = `
+        <div style="font-size:48px;margin-bottom:12px;">⚠️</div>
+        <h3 style="font-size:18px;font-weight:800;margin-bottom:8px;color:#f59e0b;">Acceso por vencer</h3>
+        <p style="font-size:14px;color:#f1f5f9;margin-bottom:16px;line-height:1.5;">${mensaje}</p>
+        <p style="font-size:12px;color:#94a3b8;margin-bottom:20px;">Contacta al administrador para renovar tu acceso.</p>
+        <button style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border:none;padding:12px 24px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;width:100%;" 
+                onclick="this.closest('div').parentElement.remove()">
+            Entendido
+        </button>
+    `;
+    
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    
+    // Cerrar al hacer clic fuera
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) overlay.remove();
+    });
+}, 1000);
         
         // Si quedan 2-3 días, mostrar aviso sutil
         if (diasRestantes !== null && diasRestantes >= 2 && diasRestantes <= 3 && !adminUIDs.includes(user.uid)) {
