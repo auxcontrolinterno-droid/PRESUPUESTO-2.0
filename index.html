@@ -1421,5 +1421,193 @@ window.verHistorialCompleto=verHistorialCompleto;window.verDetalleMes=verDetalle
 
 console.log("✅ Banking PRO AI v30 - COMPLETO con Sincronización en Tiempo Real");
 </script>
+<!-- ═══════════════ SISTEMA DE CONTROL DE ACCESO ADMINISTRATIVO ═══════════════ -->
+<script>
+// Configuración del administrador
+const adminUIDs = ["ehvt48aV7BUBDKUC8YXVaNRNjO63"];
+
+// ═══ FUNCIÓN PARA VERIFICAR ACCESO DE USUARIO ═══
+async function verificarAccesoUsuario(uid) {
+    if (!window.db) return true;
+    
+    try {
+        const querySnapshot = await window.fbGetDocs(
+            window.fbQuery(window.fbCollection(window.db, "user_access"))
+        );
+        
+        let tieneAcceso = false;
+        querySnapshot.forEach(doc => {
+            if (doc.id === uid && doc.data().acceso_permitido === true) {
+                tieneAcceso = true;
+            }
+        });
+        
+        if (!querySnapshot.docs.some(d => d.id === uid)) {
+            try {
+                await window.fbAddDoc(
+                    window.fbCollection(window.db, "user_access"), 
+                    {
+                        uid: uid,
+                        email: window.auth.currentUser?.email || "",
+                        acceso_permitido: false,
+                        fecha_creacion: new Date().toISOString()
+                    }
+                );
+            } catch(e) {}
+        }
+        
+        return tieneAcceso;
+    } catch (e) {
+        console.error("Error verificando acceso:", e);
+        return true;
+    }
+}
+
+// ═══ MODIFICAR VERIFICACIÓN DE ACCESO AL INICIAR SESIÓN ═══
+const onUserChangedOriginal = window.onUserChanged;
+window.onUserChanged = async function(user) {
+    if (user) {
+        const acceso = await verificarAccesoUsuario(user.uid);
+        
+        if (!acceso) {
+            alert("⛔ Tu cuenta no tiene acceso activo. Contacta al administrador.");
+            await window.fbLogout();
+            return;
+        }
+    }
+    
+    if (onUserChangedOriginal) {
+        onUserChangedOriginal(user);
+    }
+};
+
+// ═══ AGREGAR BOTÓN DE ADMINISTRACIÓN EN AJUSTES ═══
+const goTabOriginal = window.goTab;
+window.goTab = function(tab, btn) {
+    goTabOriginal(tab, btn);
+    
+    if (tab === 'settings') {
+        setTimeout(agregarBotonAdmin, 100);
+    }
+};
+
+function agregarBotonAdmin() {
+    if (document.getElementById('adminAccessSection')) return;
+    if (!adminUIDs.includes(window.auth?.currentUser?.uid)) return;
+    
+    const cardDiv = document.createElement('div');
+    cardDiv.className = 'card';
+    cardDiv.id = 'adminAccessSection';
+    
+    cardDiv.innerHTML = `
+        <div class="title">👥 Administrar Accesos</div>
+        <p class="small" style="color: var(--muted); margin-bottom: 8px;">Activa o desactiva el acceso de usuarios</p>
+        <div id="adminUserList" style="margin-bottom: 8px; max-height: 300px; overflow-y: auto;">
+            <div class="alert info">Cargando usuarios...</div>
+        </div>
+        <button class="secondary" onclick="window.cargarListaUsuarios()" style="width: 100%; margin-top: 8px;">
+            🔄 Actualizar Lista
+        </button>
+    `;
+    
+    const miCuentaCard = document.querySelector('#tab-settings .card');
+    if (miCuentaCard && miCuentaCard.nextSibling) {
+        miCuentaCard.parentNode.insertBefore(cardDiv, miCuentaCard.nextSibling);
+    }
+    
+    cargarListaUsuarios();
+}
+
+// ═══ FUNCIÓN PARA CARGAR LISTA DE USUARIOS ═══
+window.cargarListaUsuarios = async function() {
+    const listaDiv = document.getElementById('adminUserList');
+    if (!listaDiv) return;
+    
+    if (!window.db || !window.auth?.currentUser) {
+        listaDiv.innerHTML = '<div class="alert bad">Error de conexión</div>';
+        return;
+    }
+    
+    listaDiv.innerHTML = '<div class="alert info">⏳ Cargando...</div>';
+    
+    try {
+        const querySnapshot = await window.fbGetDocs(
+            window.fbQuery(window.fbCollection(window.db, "user_access"))
+        );
+        
+        if (querySnapshot.empty) {
+            listaDiv.innerHTML = '<div class="alert mid">No hay usuarios registrados</div>';
+            return;
+        }
+        
+        let html = '';
+        querySnapshot.forEach(doc => {
+            const data = doc.data();
+            const estado = data.acceso_permitido ? '✅ Activo' : '⛔ Bloqueado';
+            const color = data.acceso_permitido ? 'var(--ok)' : 'var(--bad)';
+            
+            html += `
+                <div style="background: var(--cardBg); padding: 10px; margin-bottom: 6px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-weight: 600; font-size: 13px;">${data.email || 'Sin email'}</div>
+                        <div style="font-size: 10px; color: ${color}; margin-top: 2px;">${estado}</div>
+                    </div>
+                    <button class="small-btn ${data.acceso_permitido ? 'warn-btn' : 'success-btn'}" 
+                            onclick="window.toggleAccesoUsuario('${doc.id}', ${!data.acceso_permitido})">
+                        ${data.acceso_permitido ? '🔒 Bloquear' : '🔓 Permitir'}
+                    </button>
+                </div>
+            `;
+        });
+        
+        listaDiv.innerHTML = html;
+    } catch (e) {
+        console.error("Error:", e);
+        listaDiv.innerHTML = '<div class="alert bad">Error al cargar usuarios</div>';
+    }
+};
+
+// ═══ FUNCIÓN PARA ACTIVAR/DESACTIVAR ACCESO ═══
+window.toggleAccesoUsuario = async function(uidUsuario, permitir) {
+    if (!confirm(`¿${permitir ? 'Activar' : 'Desactivar'} acceso para este usuario?`)) return;
+    
+    try {
+        const querySnapshot = await window.fbGetDocs(
+            window.fbQuery(window.fbCollection(window.db, "user_access"))
+        );
+        
+        let docId = null;
+        querySnapshot.forEach(doc => {
+            if (doc.id === uidUsuario || doc.data().uid === uidUsuario) {
+                docId = doc.id;
+            }
+        });
+        
+        if (docId) {
+            await window.fbUpdateDoc(
+                window.fbDoc(window.db, "user_access", docId),
+                {
+                    acceso_permitido: permitir,
+                    ultima_modificacion: new Date().toISOString()
+                }
+            );
+            
+            const toast = document.getElementById('toast');
+            if (toast) {
+                toast.textContent = `✅ Acceso ${permitir ? 'ACTIVADO' : 'DESACTIVADO'}`;
+                toast.style.display = 'block';
+                setTimeout(() => toast.style.display = 'none', 2400);
+            }
+            
+            window.cargarListaUsuarios();
+        }
+    } catch (e) {
+        console.error("Error:", e);
+        alert("❌ Error al modificar acceso");
+    }
+};
+
+console.log("✅ Sistema de control de acceso instalado correctamente");
+</script>
 </body>
 </html>
