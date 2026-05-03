@@ -1931,7 +1931,12 @@ window.onUserChanged = async function(user) {
                 toast.style.color = '#fff';
                 toast.style.fontWeight = '700';
                 toast.style.fontSize = '13px';
-                toast.style.padding = '14px 18px';
+                toast.style.padding = '12px 14px';
+toast.style.maxWidth = '90vw';
+toast.style.wordBreak = 'break-word';
+toast.style.whiteSpace = 'normal';
+toast.style.textAlign = 'center';
+toast.style.lineHeight = '1.4';
                 toast.style.cursor = 'pointer';
                 toast.onclick = () => { toast.style.display = 'none'; };
             }
@@ -1943,27 +1948,35 @@ window.onUserChanged = async function(user) {
         
         // Aviso 1 día o menos
         if (diasRestantes !== null && diasRestantes <= 1 && !adminUIDs.includes(user.uid)) {
-            console.log("⚠️ MOSTRANDO AVISO - Días restantes:", diasRestantes);
-            const mensaje = diasRestantes === 0 
-                ? "⚠️ ¡Tu acceso vence HOY! Contacta al administrador."
-                : "⚠️ Tu acceso vence mañana. Contacta al administrador.";
-            
-            const toast = document.getElementById('toast');
-            if (toast) {
-                toast.textContent = mensaje;
-                toast.style.display = 'block';
-                toast.style.background = '#ef4444';
-                toast.style.color = '#fff';
-                toast.style.fontWeight = '700';
-                toast.style.fontSize = '13px';
-                toast.style.padding = '14px 18px';
-                toast.style.cursor = 'pointer';
-                toast.onclick = () => {
-                    toast.style.display = 'none';
-                    toast.style.background = '#1e293b';
-                };
-            }
-        }
+    console.log("⚠️ MOSTRANDO AVISO - Días restantes:", diasRestantes);
+    const mensaje = diasRestantes === 0 
+        ? "⚠️ ¡Tu acceso vence HOY! Contacta al administrador."
+        : "⚠️ Tu acceso vence mañana. Contacta al administrador.";
+    
+    const toast = document.getElementById('toast');
+    if (toast) {
+        toast.textContent = mensaje;
+        toast.style.display = 'block';
+        toast.style.background = '#ef4444';
+        toast.style.color = '#fff';
+        toast.style.fontWeight = '700';
+        toast.style.fontSize = '13px';
+        toast.style.padding = '12px 14px';
+        toast.style.maxWidth = '90vw';
+        toast.style.wordBreak = 'break-word';
+        toast.style.whiteSpace = 'normal';
+        toast.style.textAlign = 'center';
+        toast.style.lineHeight = '1.4';
+        toast.style.borderRadius = '14px';
+        toast.style.cursor = 'pointer';
+        toast.onclick = () => {
+            toast.style.display = 'none';
+            toast.style.background = '#1e293b';
+            toast.style.maxWidth = '85vw';
+            toast.style.whiteSpace = 'nowrap';
+        };
+    }
+}
         
         // Aviso 2-3 días
         if (diasRestantes !== null && diasRestantes >= 2 && diasRestantes <= 3 && !adminUIDs.includes(user.uid)) {
