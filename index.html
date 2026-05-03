@@ -555,20 +555,45 @@ function mostrarPanelAdmin() {
 }
 
 async function buscarUsuarioAdmin() {
-    const searchEmail = document.getElementById('adminSearchEmail')?.value;
-    if (!searchEmail) { toast("Ingresa un email"); return; }
+    const searchTerm = document.getElementById('adminSearchEmail')?.value;
+    if (!searchTerm) { toast("Ingresa un email"); return; }
+    
     try {
-        const q = window.fbQuery(window.fbCollection(window.db, "users"), window.fbWhere("email", "==", searchEmail));
-        const snapshot = await window.fbGetDocs(q);
+        // Obtener TODOS los usuarios (esto NO necesita índice)
+        const snapshot = await window.fbGetDocs(window.fbCollection(window.db, "users"));
         const resultados = document.getElementById('adminResultados');
-        resultados.innerHTML = "";
-        if (snapshot.empty) { resultados.innerHTML = '<div class="alert mid">❌ Usuario no encontrado</div>'; return; }
-        snapshot.forEach(doc => {
+        resultados.innerHTML = "<div class='alert info'>🔍 Buscando...</div>";
+        
+        let encontrado = false;
+        for (const doc of snapshot.docs) {
             const user = doc.data();
-            const isPremium = user.premium === true;
-            resultados.innerHTML = `<div class="item" style="margin-bottom: 8px;"><div><b>📧 ${user.email}</b></div><div>👤 ${user.displayName || "Sin nombre"}</div><div>🆔 ${doc.id.substring(0, 12)}...</div><div>⭐ Premium: ${isPremium ? "✅ ACTIVO" : "❌ INACTIVO"}</div>${user.premiumDate ? `<div>📅 Activado: ${new Date(user.premiumDate.toDate()).toLocaleDateString()}</div>` : ''}<button class="primary" style="margin-top: 8px;" onclick="activarPremiumManual('${doc.id}', '${user.email}')">${isPremium ? "🔄 Reactivar Premium" : "⭐ Activar Premium"}</button></div>`;
-        });
-    } catch (e) { toast("Error al buscar usuario"); }
+            if (user.email === searchTerm) {
+                encontrado = true;
+                const isPremium = user.premium === true;
+                resultados.innerHTML = `
+                    <div class="item" style="margin-top: 8px;">
+                        <div><b>📧 ${user.email}</b></div>
+                        <div>👤 ${user.displayName || "Sin nombre"}</div>
+                        <div>🆔 ${doc.id.substring(0, 12)}...</div>
+                        <div style="margin: 4px 0;">⭐ Premium: <strong style="color: ${isPremium ? 'var(--ok)' : 'var(--bad)'}">${isPremium ? "ACTIVO" : "INACTIVO"}</strong></div>
+                        ${user.premiumDate ? `<div>📅 Activado: ${new Date(user.premiumDate.toDate()).toLocaleDateString()}</div>` : ''}
+                        <button class="primary" style="margin-top: 8px; width: 100%;" onclick="activarPremiumManual('${doc.id}', '${user.email}')">
+                            ${isPremium ? "🔄 Reactivar Premium" : "⭐ Activar Premium"}
+                        </button>
+                    </div>
+                `;
+                break;
+            }
+        }
+        
+        if (!encontrado) {
+            resultados.innerHTML = '<div class="alert mid">❌ Usuario no encontrado. Verifica el email.</div>';
+        }
+    } catch (e) {
+        console.error("Error:", e);
+        resultados.innerHTML = '<div class="alert bad">❌ Error al buscar usuario</div>';
+        toast("Error al buscar usuario");
+    }
 }
 
 async function activarPremiumManual(userId, userEmail) {
