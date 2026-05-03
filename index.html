@@ -500,24 +500,50 @@ async function actualizarContadorPendientes(){
 // ═══ SISTEMA PREMIUM ═══
 async function verificarAccesoPremium() {
     if (!window.currentUser) return false;
+    
     try {
         const userDoc = await window.fbGetDoc(window.fbDoc(window.db, "users", window.currentUser.uid));
+        
         if (userDoc.exists()) {
-            esPremium = userDoc.data().premium === true;
+            const userData = userDoc.data();
+            // 👇 Verificar tanto premium como admin
+            esPremium = userData.premium === true || userData.premium === "true";
+            
+            console.log("📊 Verificación premium:", {
+                email: userData.email,
+                premium: userData.premium,
+                esPremium: esPremium
+            });
+            
             actualizarUIPorPremium(esPremium);
             return esPremium;
         }
         return false;
-    } catch (e) { return false; }
+    } catch (e) {
+        console.error("Error verificando premium:", e);
+        return false;
+    }
 }
 
 function actualizarUIPorPremium(premium) {
+    console.log("🎨 Actualizando UI - Premium:", premium);
+    
     const upgradeCard = document.getElementById('upgradeCard');
     const premiumBadge = document.getElementById('premiumBadge');
     const adminPanel = document.getElementById('adminPanelCard');
+    
     if (upgradeCard) upgradeCard.style.display = premium ? 'none' : 'block';
     if (premiumBadge) premiumBadge.style.display = premium ? 'flex' : 'none';
-    if (adminPanel && window.currentUser && window.currentUser.email === adminEmail) adminPanel.style.display = 'block';
+    
+    // Mostrar panel de admin SIEMPRE para el email admin, independientemente de premium
+    if (adminPanel && window.currentUser && window.currentUser.email === adminEmail) {
+        adminPanel.style.display = 'block';
+        console.log("👑 Panel de admin visible");
+    }
+    
+    if (premium) {
+        toast("⭐ ¡Premium activado! Disfruta de todas las funciones.");
+    }
 }
 
 function mostrarBannerUpgrade() {
