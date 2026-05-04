@@ -1421,7 +1421,7 @@ window.verHistorialCompleto=verHistorialCompleto;window.verDetalleMes=verDetalle
 
 console.log("✅ Banking PRO AI v30 - COMPLETO con Sincronización en Tiempo Real");
 </script>
-<!-- ═══════════════ SISTEMA DE PAGO NEQUI + CONTROL DE ACCESO v4 - CORREGIDO ═══════════════ -->
+<!-- ═══════════════ SISTEMA DE PAGO NEQUI + CONTROL DE ACCESO v5 - COMPLETO ═══════════════ -->
 <script>
 const adminUIDs = ["ehvt48aV7BUBDKUC8YXVaNRNjO63"];
 const NEQUI_ADMIN = "3024369603";
@@ -1666,7 +1666,7 @@ function mostrarPantallaBloqueo(userData) {
     document.body.appendChild(overlay);
 }
 
-// ═══ ELEGIR PLAN Y PAGAR (CORREGIDO) ═══
+// ═══ ELEGIR PLAN Y PAGAR ═══
 window.elegirPlan = function(plan, monto, elemento) {
     if (elemento) {
         document.querySelectorAll('#pantallaBloqueo [onclick*="elegirPlan"]').forEach(el => {
@@ -1696,7 +1696,6 @@ window.elegirPlan = function(plan, monto, elemento) {
                     `💰 *Monto:* $${monto.toLocaleString()} COP\n\n` +
                     `_Pago pendiente por Nequi_`;
     
-    // Guardar en Firestore
     if (window.db && window.auth?.currentUser) {
         const datosSolicitud = {
             uid: uid,
@@ -1720,13 +1719,10 @@ window.elegirPlan = function(plan, monto, elemento) {
             });
     } else {
         console.error('❌ No hay conexión a Firebase');
-        console.log('window.db:', !!window.db);
-        console.log('auth.currentUser:', !!window.auth?.currentUser);
         toastMsg('❌ Error de conexión.', '#ef4444');
         return;
     }
     
-    // Abrir WhatsApp
     window.open(`https://wa.me/57${NEQUI_ADMIN}?text=${encodeURIComponent(mensaje)}`, '_blank');
 };
 
@@ -1915,6 +1911,7 @@ window.agregarTiempo = async function(uid, email, dias) {
     window.cargarListaUsuarios();
 };
 
+// ═══ VER SOLICITUDES PENDIENTES (CON MODAL Y MARCAR COMO PAGADO) ═══
 window.verSolicitudesPendientes = async function() {
     if (!window.db) {
         alert('❌ Sin conexión a Firebase');
@@ -1923,30 +1920,143 @@ window.verSolicitudesPendientes = async function() {
     
     try {
         const snap = await window.fbGetDocs(window.fbQuery(window.fbCollection(window.db, "solicitudes_pago")));
-        console.log('📊 Total documentos en solicitudes_pago:', snap.size);
+        console.log('📊 Total documentos:', snap.size);
         
         const pendientes = [];
+        const completados = [];
+        
         snap.forEach(doc => { 
             const data = doc.data();
-            console.log('📄 Documento:', doc.id, data);
             if (data.estado === 'pendiente') {
                 pendientes.push({ id: doc.id, ...data }); 
+            } else {
+                completados.push({ id: doc.id, ...data });
             }
         });
         
-        if (pendientes.length === 0) { 
-            alert('📭 No hay solicitudes pendientes\n\nTotal documentos: ' + snap.size); 
-            return; 
+        let mensaje = '';
+        
+        if (pendientes.length > 0) {
+            mensaje += `📋 PENDIENTES (${pendientes.length}):\n\n`;
+            pendientes.forEach((s, i) => { 
+                mensaje += `${i+1}. ${s.nombre} - ${s.plan}\n`;
+                mensaje += `   💰 $${(s.monto || 0).toLocaleString()}\n`;
+                mensaje += `   📧 ${s.email}\n`;
+                mensaje += `   📅 ${new Date(s.fecha).toLocaleString()}\n`;
+                mensaje += `   🆔 ID: ${s.id}\n\n`;
+            });
+        } else {
+            mensaje += '📋 No hay solicitudes PENDIENTES.\n\n';
         }
         
-        let lista = `📋 Solicitudes pendientes (${pendientes.length}):\n\n`;
-        pendientes.forEach((s, i) => { 
-            lista += `${i+1}. ${s.nombre} - ${s.plan}\n   💰 $${(s.monto || 0).toLocaleString()}\n   📧 ${s.email}\n   📅 ${new Date(s.fecha).toLocaleString()}\n\n`; 
-        });
-        alert(lista);
+        if (completados.length > 0) {
+            mensaje += `✅ COMPLETADOS (${completados.length}):\n`;
+            completados.slice(-5).forEach((s) => {
+                mensaje += `• ${s.nombre} - ${s.plan} - $${(s.monto || 0).toLocaleString()}\n`;
+            });
+            if (completados.length > 5) {
+                mensaje += `... y ${completados.length - 5} más\n`;
+            }
+        }
+        
+        mensaje += '\n✏️ Para marcar como pagado, copia el ID y pégalo abajo';
+        
+        const anterior = document.getElementById('modalSolicitudes');
+        if (anterior) anterior.remove();
+        
+        const modalHTML = `
+            <div class="modal-overlay open" id="modalSolicitudes" onclick="if(event.target===this)this.remove()">
+                <div class="modal" style="max-width:450px;">
+                    <h3>📊 Solicitudes de Pago</h3>
+                    <div style="max-height:350px;overflow-y:auto;white-space:pre-line;font-size:12px;margin-bottom:12px;">${mensaje}</div>
+                    
+                    ${pendientes.length > 0 ? `
+                        <div style="display:flex;gap:4px;margin-bottom:6px;">
+                            <input type="text" id="solicitudIdInput" placeholder="Pega el ID aquí" style="flex:1;font-size:11px;padding:8px;">
+                            <button class="small-btn success-btn" onclick="window.marcarComoPagado(document.getElementById('solicitudIdInput').value)" style="white-space:nowrap;font-size:11px;">
+                                ✅ Marcar
+                            </button>
+                        </div>
+                        <button class="small-btn warn-btn" onclick="window.marcarTodasComoPagadas()" style="width:100%;font-size:10px;margin-bottom:8px;">
+                            📋 Marcar TODAS como pagadas
+                        </button>
+                    ` : ''}
+                    
+                    <button class="secondary" onclick="document.getElementById('modalSolicitudes').remove()" style="width:100%;">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        
     } catch(e) {
         console.error('❌ Error:', e);
-        alert('❌ Error al cargar: ' + e.message);
+        alert('❌ Error: ' + e.message);
+    }
+};
+
+// ═══ MARCAR SOLICITUD COMO PAGADA ═══
+window.marcarComoPagado = async function(solicitudId) {
+    if (!solicitudId || !solicitudId.trim()) {
+        alert('❌ Debes pegar el ID de la solicitud');
+        return;
+    }
+    
+    if (!confirm('¿Marcar esta solicitud como PAGADA?')) return;
+    
+    try {
+        await window.fbUpdateDoc(
+            window.fbDoc(window.db, "solicitudes_pago", solicitudId.trim()),
+            { 
+                estado: 'completado',
+                completadoAt: new Date().toISOString()
+            }
+        );
+        
+        toastMsg('✅ Solicitud marcada como pagada', '#22c55e');
+        
+        const modal = document.getElementById('modalSolicitudes');
+        if (modal) modal.remove();
+        
+        setTimeout(() => window.verSolicitudesPendientes(), 500);
+        
+    } catch(e) {
+        console.error('❌ Error:', e);
+        alert('❌ Error: ' + e.message + '\n\nVerifica que el ID sea correcto');
+    }
+};
+
+// ═══ MARCAR TODAS COMO PAGADAS ═══
+window.marcarTodasComoPagadas = async function() {
+    if (!confirm('¿Marcar TODAS las solicitudes pendientes como pagadas?')) return;
+    
+    try {
+        const snap = await window.fbGetDocs(window.fbQuery(window.fbCollection(window.db, "solicitudes_pago")));
+        let count = 0;
+        
+        for (const doc of snap.docs) {
+            if (doc.data().estado === 'pendiente') {
+                await window.fbUpdateDoc(
+                    window.fbDoc(window.db, "solicitudes_pago", doc.id),
+                    { 
+                        estado: 'completado',
+                        completadoAt: new Date().toISOString()
+                    }
+                );
+                count++;
+            }
+        }
+        
+        toastMsg(`✅ ${count} solicitudes marcadas como pagadas`, '#22c55e');
+        
+        const modal = document.getElementById('modalSolicitudes');
+        if (modal) modal.remove();
+        
+    } catch(e) {
+        console.error('❌ Error:', e);
+        alert('❌ Error: ' + e.message);
     }
 };
 
@@ -2079,9 +2189,9 @@ function agregarPanelAdmin() {
     cardDiv2.className = 'card';
     cardDiv2.innerHTML = `
         <div class="title">📊 Solicitudes de Pago</div>
-        <p class="small" style="color:var(--muted);margin-bottom:8px;">Usuarios que han solicitado activación por Nequi</p>
-        <button class="secondary" onclick="window.verSolicitudesPendientes()" style="width:100%;">📋 Ver solicitudes pendientes</button>
-        <div class="small" style="margin-top:6px;text-align:center;color:var(--muted);">💡 Después de recibir el pago, activa al usuario aquí arriba</div>
+        <p class="small" style="color:var(--muted);margin-bottom:8px;">Gestiona los pagos pendientes de los usuarios</p>
+        <button class="secondary" onclick="window.verSolicitudesPendientes()" style="width:100%;">📋 Ver solicitudes</button>
+        <div class="small" style="margin-top:6px;text-align:center;color:var(--muted);">💡 Copia el ID, pégalo y marca como pagado</div>
     `;
     
     const settingsTab = document.getElementById('tab-settings');
@@ -2096,11 +2206,12 @@ function agregarPanelAdmin() {
     setTimeout(() => window.cargarListaUsuarios(), 500);
 }
 
-console.log('✅ Sistema de pago Nequi + Banner permanente v4 - CORREGIDO');
+console.log('✅ Sistema de pago Nequi + Control de acceso v5 - COMPLETO');
 console.log('🆕 Nuevos: 7 días gratis');
 console.log('📌 Banner: permanente, no estorba');
 console.log('💰 Planes: 30d/$12.000 | 365d/$100.000');
 console.log('💚 Pago vía WhatsApp/Nequi:', NEQUI_ADMIN);
+console.log('✅ Marcar solicitudes como pagadas');
 </script>
 </body>
 </html>
