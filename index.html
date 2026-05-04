@@ -1421,7 +1421,7 @@ window.verHistorialCompleto=verHistorialCompleto;window.verDetalleMes=verDetalle
 
 console.log("✅ Banking PRO AI v30 - COMPLETO con Sincronización en Tiempo Real");
 </script>
-<!-- ═══════════════ SISTEMA DE PAGO NEQUI + CONTROL DE ACCESO v3 - BANNER PERMANENTE ═══════════════ -->
+<!-- ═══════════════ SISTEMA DE PAGO NEQUI + CONTROL DE ACCESO v4 - CORREGIDO ═══════════════ -->
 <script>
 const adminUIDs = ["ehvt48aV7BUBDKUC8YXVaNRNjO63"];
 const NEQUI_ADMIN = "3024369603";
@@ -1448,7 +1448,7 @@ function toastMsg(msg, color) {
     }
 }
 
-// ═══ BANNER PERMANENTE DE AVISO ═══
+// ═══ BANNER PERMANENTE ═══
 function mostrarBannerAviso(mensaje, color, dias) {
     const existente = document.getElementById('bannerAviso');
     if (existente) existente.remove();
@@ -1592,7 +1592,7 @@ window.fbRegister = async function(email, password) {
     return result;
 };
 
-// ═══ MOSTRAR PANTALLA DE BLOQUEO (SOLO CUANDO ESTÁ EXPIRADO) ═══
+// ═══ MOSTRAR PANTALLA DE BLOQUEO ═══
 function mostrarPantallaBloqueo(userData) {
     const appContent = document.getElementById('appContent');
     if (appContent) appContent.style.display = 'none';
@@ -1666,7 +1666,7 @@ function mostrarPantallaBloqueo(userData) {
     document.body.appendChild(overlay);
 }
 
-// ═══ ELEGIR PLAN Y PAGAR ═══
+// ═══ ELEGIR PLAN Y PAGAR (CORREGIDO) ═══
 window.elegirPlan = function(plan, monto, elemento) {
     if (elemento) {
         document.querySelectorAll('#pantallaBloqueo [onclick*="elegirPlan"]').forEach(el => {
@@ -1680,7 +1680,14 @@ window.elegirPlan = function(plan, monto, elemento) {
     if (!confirm(`¿Confirmar pago de $${monto.toLocaleString()} por el plan ${nombrePlan}?`)) return;
     
     const email = window.auth?.currentUser?.email || 'usuario@email.com';
-    const nombre = window.auth?.currentUser?.displayName || 'Usuario';
+    const nombre = window.auth?.currentUser?.displayName || email?.split('@')[0] || 'Usuario';
+    const uid = window.auth?.currentUser?.uid || 'sin-uid';
+    
+    console.log('💾 Guardando solicitud de pago...');
+    console.log('👤 Usuario:', nombre);
+    console.log('📧 Email:', email);
+    console.log('📦 Plan:', nombrePlan);
+    console.log('💰 Monto:', monto);
     
     const mensaje = `💳 *PAGO BANKING PRO AI*\n\n` +
                     `👤 *Usuario:* ${nombre}\n` +
@@ -1689,9 +1696,10 @@ window.elegirPlan = function(plan, monto, elemento) {
                     `💰 *Monto:* $${monto.toLocaleString()} COP\n\n` +
                     `_Pago pendiente por Nequi_`;
     
+    // Guardar en Firestore
     if (window.db && window.auth?.currentUser) {
-        window.fbAddDoc(window.fbCollection(window.db, "solicitudes_pago"), {
-            uid: window.auth.currentUser.uid,
+        const datosSolicitud = {
+            uid: uid,
             email: email,
             nombre: nombre,
             plan: nombrePlan,
@@ -1699,11 +1707,27 @@ window.elegirPlan = function(plan, monto, elemento) {
             duracion_dias: plan === '30dias' ? 30 : 365,
             estado: 'pendiente',
             fecha: new Date().toISOString()
-        }).catch(() => {});
+        };
+        
+        window.fbAddDoc(window.fbCollection(window.db, "solicitudes_pago"), datosSolicitud)
+            .then((docRef) => {
+                console.log('✅ Solicitud guardada con ID:', docRef.id);
+                toastMsg('✅ Solicitud enviada correctamente.', '#22c55e');
+            })
+            .catch((error) => {
+                console.error('❌ Error al guardar:', error);
+                toastMsg('❌ Error. Intenta de nuevo.', '#ef4444');
+            });
+    } else {
+        console.error('❌ No hay conexión a Firebase');
+        console.log('window.db:', !!window.db);
+        console.log('auth.currentUser:', !!window.auth?.currentUser);
+        toastMsg('❌ Error de conexión.', '#ef4444');
+        return;
     }
     
+    // Abrir WhatsApp
     window.open(`https://wa.me/57${NEQUI_ADMIN}?text=${encodeURIComponent(mensaje)}`, '_blank');
-    toastMsg('✅ Redirigiendo a WhatsApp. Tu acceso se activará en minutos.', '#22c55e');
 };
 
 // ═══ CERRAR SESIÓN DESDE BLOQUEO ═══
@@ -1892,16 +1916,38 @@ window.agregarTiempo = async function(uid, email, dias) {
 };
 
 window.verSolicitudesPendientes = async function() {
-    if (!window.db) return;
-    const snap = await window.fbGetDocs(window.fbQuery(window.fbCollection(window.db, "solicitudes_pago")));
-    const pendientes = [];
-    snap.forEach(doc => { if (doc.data().estado === 'pendiente') pendientes.push({ id: doc.id, ...doc.data() }); });
-    if (pendientes.length === 0) { alert('📭 No hay solicitudes pendientes'); return; }
-    let lista = '📋 Solicitudes pendientes:\n\n';
-    pendientes.forEach((s, i) => { 
-        lista += `${i+1}. ${s.nombre} - ${s.plan}\n   💰 $${s.monto.toLocaleString()}\n   📧 ${s.email}\n   📅 ${new Date(s.fecha).toLocaleString()}\n\n`; 
-    });
-    alert(lista);
+    if (!window.db) {
+        alert('❌ Sin conexión a Firebase');
+        return;
+    }
+    
+    try {
+        const snap = await window.fbGetDocs(window.fbQuery(window.fbCollection(window.db, "solicitudes_pago")));
+        console.log('📊 Total documentos en solicitudes_pago:', snap.size);
+        
+        const pendientes = [];
+        snap.forEach(doc => { 
+            const data = doc.data();
+            console.log('📄 Documento:', doc.id, data);
+            if (data.estado === 'pendiente') {
+                pendientes.push({ id: doc.id, ...data }); 
+            }
+        });
+        
+        if (pendientes.length === 0) { 
+            alert('📭 No hay solicitudes pendientes\n\nTotal documentos: ' + snap.size); 
+            return; 
+        }
+        
+        let lista = `📋 Solicitudes pendientes (${pendientes.length}):\n\n`;
+        pendientes.forEach((s, i) => { 
+            lista += `${i+1}. ${s.nombre} - ${s.plan}\n   💰 $${(s.monto || 0).toLocaleString()}\n   📧 ${s.email}\n   📅 ${new Date(s.fecha).toLocaleString()}\n\n`; 
+        });
+        alert(lista);
+    } catch(e) {
+        console.error('❌ Error:', e);
+        alert('❌ Error al cargar: ' + e.message);
+    }
 };
 
 window.sincronizarUsuariosExistentes = async function() {
@@ -1985,9 +2031,7 @@ window.onUserChanged = async function(user) {
             return;
         }
         
-        // ═══ BANNER PERMANENTE SEGÚN DÍAS RESTANTES ═══
-        
-        // Si queda 1 día o es HOY: banner ROJO permanente
+        // Banner permanente según días restantes
         if (diasRestantes !== null && diasRestantes <= 1) {
             const msg = diasRestantes === 0 
                 ? '⚠️ ¡Tu acceso vence HOY!'
@@ -1995,12 +2039,10 @@ window.onUserChanged = async function(user) {
             mostrarBannerAviso(msg, '#ef4444', diasRestantes);
         }
         
-        // Si quedan 2-3 días: banner NARANJA permanente
         if (diasRestantes !== null && diasRestantes >= 2 && diasRestantes <= 3) {
             mostrarBannerAviso(`📅 Tu acceso vence en ${diasRestantes} días`, '#f59e0b', diasRestantes);
         }
         
-        // Si quedan 4-5 días: banner AZUL sutil
         if (diasRestantes !== null && diasRestantes >= 4 && diasRestantes <= 5) {
             mostrarBannerAviso(`📅 Tu acceso vence en ${diasRestantes} días`, '#3b82f6', diasRestantes);
         }
@@ -2037,7 +2079,7 @@ function agregarPanelAdmin() {
     cardDiv2.className = 'card';
     cardDiv2.innerHTML = `
         <div class="title">📊 Solicitudes de Pago</div>
-        <p class="small" style="color:var(--muted);margin-bottom:8px;">Usuarios que han solicitado activación</p>
+        <p class="small" style="color:var(--muted);margin-bottom:8px;">Usuarios que han solicitado activación por Nequi</p>
         <button class="secondary" onclick="window.verSolicitudesPendientes()" style="width:100%;">📋 Ver solicitudes pendientes</button>
         <div class="small" style="margin-top:6px;text-align:center;color:var(--muted);">💡 Después de recibir el pago, activa al usuario aquí arriba</div>
     `;
@@ -2054,9 +2096,9 @@ function agregarPanelAdmin() {
     setTimeout(() => window.cargarListaUsuarios(), 500);
 }
 
-console.log('✅ Sistema de pago Nequi + Banner permanente v3 instalado');
-console.log('🆓 Nuevos: 7 días gratis');
-console.log('📌 Banner permanente: no estorba, no se quita solo');
+console.log('✅ Sistema de pago Nequi + Banner permanente v4 - CORREGIDO');
+console.log('🆕 Nuevos: 7 días gratis');
+console.log('📌 Banner: permanente, no estorba');
 console.log('💰 Planes: 30d/$12.000 | 365d/$100.000');
 console.log('💚 Pago vía WhatsApp/Nequi:', NEQUI_ADMIN);
 </script>
