@@ -1421,110 +1421,95 @@ window.verHistorialCompleto=verHistorialCompleto;window.verDetalleMes=verDetalle
 
 console.log("✅ Banking PRO AI v30 - COMPLETO con Sincronización en Tiempo Real");
 </script>
-<!-- ═══════════════ SISTEMA DE CONTROL DE ACCESO COMPLETO v7 - FINAL ═══════════════ -->
+<!-- ═══════════════ SISTEMA DE PAGO NEQUI + CONTROL DE ACCESO ═══════════════ -->
 <script>
 const adminUIDs = ["ehvt48aV7BUBDKUC8YXVaNRNjO63"];
+const NEQUI_ADMIN = "3024369603";
 
 // ═══ TOAST ═══
-function toastMsg(msg) {
+function toastMsg(msg, color) {
     const toast = document.getElementById('toast');
     if (toast) {
         toast.textContent = msg;
         toast.style.display = 'block';
-        toast.style.background = '#1e293b';
+        toast.style.background = color || '#1e293b';
         toast.style.color = '#fff';
         toast.style.fontWeight = '700';
         toast.style.fontSize = '12px';
         toast.style.padding = '10px 14px';
-        toast.style.cursor = 'default';
+        toast.style.maxWidth = '90vw';
+        toast.style.wordBreak = 'break-word';
+        toast.style.whiteSpace = 'normal';
+        toast.style.textAlign = 'center';
+        toast.style.lineHeight = '1.4';
+        toast.style.cursor = 'pointer';
         toast.onclick = () => { toast.style.display = 'none'; };
-        setTimeout(() => { toast.style.display = 'none'; }, 2400);
+        setTimeout(() => { toast.style.display = 'none'; }, 4000);
     }
 }
 
 // ═══ GUARDAR EN USERS ═══
 async function guardarEnUsers(uid, email, displayName) {
     if (!window.db) return;
-    
     try {
-        const snapUsers = await window.fbGetDocs(
-            window.fbQuery(window.fbCollection(window.db, "users"))
-        );
-        
+        const snapUsers = await window.fbGetDocs(window.fbQuery(window.fbCollection(window.db, "users")));
         let existe = false;
-        snapUsers.forEach(doc => {
-            if (doc.data().uid === uid || doc.id === uid) {
-                existe = true;
-            }
-        });
-        
+        snapUsers.forEach(doc => { if (doc.data().uid === uid || doc.id === uid) existe = true; });
         if (!existe) {
-            console.log("📝 Guardando en colección users:", email);
             await window.fbAddDoc(window.fbCollection(window.db, "users"), {
-                uid: uid,
-                email: email,
+                uid: uid, email: email,
                 displayName: displayName || email?.split('@')[0] || '',
                 createdAt: new Date().toISOString()
             });
         }
-    } catch(e) {
-        console.error("Error guardando en users:", e);
-    }
+    } catch(e) { console.error("Error guardando en users:", e); }
 }
 
-// ═══ REGISTRAR EN USER_ACCESS ═══
+// ═══ REGISTRAR EN USER_ACCESS (7 DÍAS POR DEFECTO) ═══
 async function registrarEnUserAccess(uid, email) {
     if (!window.db) return;
-    
     try {
-        const querySnapshot = await window.fbGetDocs(
-            window.fbQuery(window.fbCollection(window.db, "user_access"))
-        );
-        
+        const querySnapshot = await window.fbGetDocs(window.fbQuery(window.fbCollection(window.db, "user_access")));
         let existe = false;
-        querySnapshot.forEach(doc => {
-            if (doc.data().uid === uid) existe = true;
-        });
+        querySnapshot.forEach(doc => { if (doc.data().uid === uid) existe = true; });
         
         if (!existe) {
-            console.log("✅ Registrando automáticamente:", email);
+            const fechaExpiracion = new Date();
+            fechaExpiracion.setDate(fechaExpiracion.getDate() + 7); // 7 días gratis por defecto
+            
             await window.fbAddDoc(window.fbCollection(window.db, "user_access"), {
                 uid: uid,
                 email: email || "",
                 acceso_permitido: true,
-                duracion_acceso: "permanente",
+                duracion_acceso: "7_dias_gratis",
+                plan_actual: "Prueba gratis 7 días",
                 fecha_creacion: new Date().toISOString(),
-                fecha_expiracion: null
+                fecha_expiracion: fechaExpiracion.toISOString(),
+                es_gratis: true
             });
         }
-    } catch(e) {
-        console.error("Error registrando:", e);
-    }
+    } catch(e) { console.error("Error registrando:", e); }
 }
 
-// ═══ OBTENER O CREAR DOCUMENTO EN USER_ACCESS ═══
+// ═══ OBTENER O CREAR DOCUMENTO ═══
 async function obtenerOcrearDocId(uid, email) {
-    const querySnapshot = await window.fbGetDocs(
-        window.fbQuery(window.fbCollection(window.db, "user_access"))
-    );
-    
+    const querySnapshot = await window.fbGetDocs(window.fbQuery(window.fbCollection(window.db, "user_access")));
     let docId = null;
-    querySnapshot.forEach(doc => {
-        if (doc.data().uid === uid) docId = doc.id;
-    });
-    
+    querySnapshot.forEach(doc => { if (doc.data().uid === uid) docId = doc.id; });
     if (!docId) {
+        const fechaExpiracion = new Date();
+        fechaExpiracion.setDate(fechaExpiracion.getDate() + 7);
         const docRef = await window.fbAddDoc(window.fbCollection(window.db, "user_access"), {
-            uid: uid,
-            email: email || "",
+            uid: uid, email: email || "",
             acceso_permitido: true,
-            duracion_acceso: "permanente",
+            duracion_acceso: "7_dias_gratis",
+            plan_actual: "Prueba gratis 7 días",
             fecha_creacion: new Date().toISOString(),
-            fecha_expiracion: null
+            fecha_expiracion: fechaExpiracion.toISOString(),
+            es_gratis: true
         });
         docId = docRef.id;
     }
-    
     return docId;
 }
 
@@ -1550,82 +1535,185 @@ window.fbRegister = async function(email, password) {
     return result;
 };
 
-// ═══ CARGAR LISTA DE USUARIOS ═══
+// ═══ MOSTRAR PANTALLA DE BLOQUEO CON PLANES ═══
+function mostrarPantallaBloqueo(userData) {
+    // Ocultar app
+    const appContent = document.getElementById('appContent');
+    if (appContent) appContent.style.display = 'none';
+    
+    // Remover pantalla anterior si existe
+    const existente = document.getElementById('pantallaBloqueo');
+    if (existente) existente.remove();
+    
+    const diasRestantes = userData.diasRestantes || 0;
+    const estaExpirado = userData.expirado || false;
+    
+    const overlay = document.createElement('div');
+    overlay.id = 'pantallaBloqueo';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:linear-gradient(180deg,#0a0f1a,#111827);display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;';
+    
+    const card = document.createElement('div');
+    card.style.cssText = 'background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:28px 20px;max-width:400px;width:100%;text-align:center;color:#f1f5f9;font-family:Inter,sans-serif;';
+    
+    const titulo = estaExpirado ? '⏰ Acceso Expirado' : (diasRestantes <= 1 ? '⚠️ Acceso por Vencer' : '🔒 Acceso Restringido');
+    const subtitulo = estaExpirado 
+        ? 'Tu período de prueba ha finalizado.'
+        : `Tu acceso vence en ${diasRestantes} día(s).`;
+    
+    card.innerHTML = `
+        <div style="font-size:56px;margin-bottom:8px;">${estaExpirado ? '🔒' : '⏰'}</div>
+        <h2 style="font-size:22px;font-weight:800;margin-bottom:6px;color:#fff;">${titulo}</h2>
+        <p style="font-size:13px;color:#94a3b8;margin-bottom:16px;">${subtitulo}</p>
+        <p style="font-size:12px;color:#f59e0b;margin-bottom:20px;">Elige un plan para continuar usando Banking PRO AI</p>
+        
+        <!-- Planes -->
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+            <!-- Plan 30 días -->
+            <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:16px;padding:14px;cursor:pointer;" onclick="window.elegirPlan('30dias', 12000, this)">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div style="text-align:left;">
+                        <div style="font-weight:700;font-size:15px;color:#fff;">📅 30 Días</div>
+                        <div style="font-size:11px;color:#94a3b8;">Acceso completo por 1 mes</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-size:20px;font-weight:800;color:#3b82f6;">$12.000</div>
+                        <div style="font-size:9px;color:#64748b;">COP</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Plan 365 días -->
+            <div style="background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:16px;padding:14px;cursor:pointer;" onclick="window.elegirPlan('365dias', 100000, this)">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div style="text-align:left;">
+                        <div style="font-weight:700;font-size:15px;color:#fff;">🚀 365 Días</div>
+                        <div style="font-size:11px;color:#94a3b8;">Acceso completo por 1 año</div>
+                        <div style="background:rgba(34,197,94,.15);color:#22c55e;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;display:inline-block;margin-top:4px;">🔥 Más popular</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-size:20px;font-weight:800;color:#8b5cf6;">$100.000</div>
+                        <div style="font-size:9px;color:#64748b;">COP</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <button onclick="window.elegirPlan('30dias', 12000)" style="width:100%;padding:14px;border-radius:14px;font-size:14px;font-weight:700;border:none;cursor:pointer;background:linear-gradient(135deg,#00d4aa,#00a86b);color:#fff;margin-bottom:8px;">
+            💚 Pagar con Nequi
+        </button>
+        
+        <p style="font-size:10px;color:#64748b;">Al pagar serás redirigido a WhatsApp para coordinar el pago</p>
+        <p style="font-size:10px;color:#64748b;margin-top:4px;">Activación inmediata después del pago</p>
+    `;
+    
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+}
+
+// ═══ ELEGIR PLAN Y PAGAR ═══
+window.elegirPlan = function(plan, monto, elemento) {
+    // Resaltar seleccionado
+    if (elemento) {
+        document.querySelectorAll('#pantallaBloqueo [style*="cursor:pointer"]').forEach(el => {
+            el.style.border = el.style.border.replace('2px solid #3b82f6', '');
+            el.style.border = el.style.border || '1px solid rgba(255,255,255,.1)';
+        });
+        elemento.style.border = '2px solid #3b82f6';
+    }
+    
+    const nombrePlan = plan === '30dias' ? '30 Días' : '365 Días';
+    
+    if (!confirm(`¿Confirmar pago de $${monto.toLocaleString()} por el plan ${nombrePlan}?`)) return;
+    
+    const email = window.auth?.currentUser?.email || 'usuario@email.com';
+    const nombre = window.auth?.currentUser?.displayName || 'Usuario';
+    
+    const mensaje = `💳 *PAGO BANKING PRO AI*\n\n` +
+                    `👤 *Usuario:* ${nombre}\n` +
+                    `📧 *Correo:* ${email}\n` +
+                    `📦 *Plan:* ${nombrePlan}\n` +
+                    `💰 *Monto:* $${monto.toLocaleString()} COP\n\n` +
+                    `_Pago pendiente por Nequi_`;
+    
+    // Guardar solicitud en Firestore
+    if (window.db && window.auth?.currentUser) {
+        window.fbAddDoc(window.fbCollection(window.db, "solicitudes_pago"), {
+            uid: window.auth.currentUser.uid,
+            email: email,
+            nombre: nombre,
+            plan: nombrePlan,
+            monto: monto,
+            duracion_dias: plan === '30dias' ? 30 : 365,
+            estado: 'pendiente',
+            fecha: new Date().toISOString()
+        }).catch(() => {});
+    }
+    
+    window.open(`https://wa.me/57${NEQUI_ADMIN}?text=${encodeURIComponent(mensaje)}`, '_blank');
+    toastMsg('✅ Redirigiendo a WhatsApp. Tu acceso se activará en minutos.', '#22c55e');
+};
+
+// ═══ CERRAR SESIÓN DESDE PANTALLA DE BLOQUEO ═══
+window.cerrarSesionDesdeBloqueo = async function() {
+    try { await window.fbLogout(); } catch(e) {}
+    const bloqueo = document.getElementById('pantallaBloqueo');
+    if (bloqueo) bloqueo.remove();
+};
+
+// ═══ CARGAR LISTA DE USUARIOS (PANEL ADMIN) ═══
 window.cargarListaUsuarios = async function() {
     const listaDiv = document.getElementById('adminUserList');
     if (!listaDiv) return;
     
-    listaDiv.innerHTML = '<div class="alert info">⏳ Buscando en todas las fuentes...</div>';
+    listaDiv.innerHTML = '<div class="alert info">⏳ Cargando usuarios...</div>';
     
     try {
         const usuarios = [];
         const vistos = new Set();
         
-        // 1. user_access
         try {
-            const snapAccess = await window.fbGetDocs(
-                window.fbQuery(window.fbCollection(window.db, "user_access"))
-            );
-            
+            const snapAccess = await window.fbGetDocs(window.fbQuery(window.fbCollection(window.db, "user_access")));
             snapAccess.forEach(doc => {
                 const data = doc.data();
                 if (data.uid && !vistos.has(data.uid)) {
                     vistos.add(data.uid);
                     usuarios.push({
-                        uid: data.uid,
-                        email: data.email || 'Sin email',
+                        uid: data.uid, email: data.email || 'Sin email',
                         acceso_permitido: data.acceso_permitido !== false,
                         fecha_expiracion: data.fecha_expiracion || null,
-                        duracion: data.duracion_acceso || 'permanente',
-                        docId: doc.id
+                        duracion: data.duracion_acceso || '7_dias_gratis',
+                        plan_actual: data.plan_actual || 'Prueba gratis 7 días',
+                        docId: doc.id,
+                        es_gratis: data.es_gratis || false
                     });
                 }
             });
-            console.log("📦 user_access:", snapAccess.size, "documentos");
-        } catch(e) {
-            console.log("Error user_access:", e);
-        }
+        } catch(e) {}
         
-        // 2. users
         try {
-            const snapUsers = await window.fbGetDocs(
-                window.fbQuery(window.fbCollection(window.db, "users"))
-            );
-            
+            const snapUsers = await window.fbGetDocs(window.fbQuery(window.fbCollection(window.db, "users")));
             snapUsers.forEach(doc => {
                 const data = doc.data();
                 const uid = data.uid || doc.id;
                 if (uid && !vistos.has(uid)) {
                     vistos.add(uid);
                     usuarios.push({
-                        uid: uid,
-                        email: data.email || 'Sin email',
+                        uid: uid, email: data.email || 'Sin email',
                         displayName: data.displayName || '',
                         acceso_permitido: true,
                         fecha_expiracion: null,
-                        duracion: 'permanente',
+                        duracion: '7_dias_gratis',
+                        plan_actual: 'Prueba gratis 7 días',
                         docId: null,
-                        soloRegistro: true
+                        soloRegistro: true,
+                        es_gratis: true
                     });
                 }
             });
-            console.log("📦 users:", snapUsers.size, "documentos");
-        } catch(e) {
-            console.log("Error users:", e);
-        }
+        } catch(e) {}
         
         if (usuarios.length === 0) {
-            listaDiv.innerHTML = `
-                <div class="alert mid">No se encontraron usuarios</div>
-                <div class="small" style="margin-top:8px;text-align:center;">
-                    <b>Para que aparezcan usuarios:</b><br><br>
-                    1. Alguien debe registrarse en la app<br>
-                    2. O iniciar sesión con una cuenta existente<br><br>
-                    <button class="primary" onclick="window.sincronizarUsuariosExistentes()" style="margin-top:8px;font-size:12px;">
-                        🔄 Sincronizar usuarios existentes
-                    </button>
-                </div>
-            `;
+            listaDiv.innerHTML = '<div class="alert mid">No hay usuarios registrados</div>';
             return;
         }
         
@@ -1635,18 +1723,9 @@ window.cargarListaUsuarios = async function() {
         
         let html = `
             <div style="display:flex;gap:8px;margin-bottom:10px;">
-                <div class="kpi" style="flex:1;background:rgba(34,197,94,.1);">
-                    <span>✅ Activos</span>
-                    <strong style="color:var(--ok);">${activos}</strong>
-                </div>
-                <div class="kpi" style="flex:1;background:rgba(239,68,68,.1);">
-                    <span>⛔ Bloqueados</span>
-                    <strong style="color:var(--bad);">${bloqueados}</strong>
-                </div>
-                <div class="kpi" style="flex:1;">
-                    <span>👥 Total</span>
-                    <strong>${usuarios.length}</strong>
-                </div>
+                <div class="kpi" style="flex:1;background:rgba(34,197,94,.1);"><span>✅ Activos</span><strong style="color:var(--ok);">${activos}</strong></div>
+                <div class="kpi" style="flex:1;background:rgba(239,68,68,.1);"><span>⛔ Bloqueados</span><strong style="color:var(--bad);">${bloqueados}</strong></div>
+                <div class="kpi" style="flex:1;"><span>👥 Total</span><strong>${usuarios.length}</strong></div>
             </div>
         `;
         
@@ -1660,87 +1739,44 @@ window.cargarListaUsuarios = async function() {
             
             if (user.fecha_expiracion && permitido) {
                 const expiracion = new Date(user.fecha_expiracion);
-                if (ahora > expiracion) {
-                    permitido = false;
-                    expirado = true;
-                } else {
-                    diasRestantes = Math.ceil((expiracion - ahora) / (1000 * 60 * 60 * 24));
-                }
+                if (ahora > expiracion) { permitido = false; expirado = true; }
+                else { diasRestantes = Math.ceil((expiracion - ahora) / (1000 * 60 * 60 * 24)); }
             }
             
             let estado, color, icono;
-            if (esAdmin) {
-                estado = '👑 Administrador';
-                color = 'var(--accent)';
-                icono = '👑';
-            } else if (expirado) {
-                estado = '⏰ Expirado';
-                color = 'var(--warn)';
-                icono = '⏰';
-            } else if (!permitido) {
-                estado = '⛔ Bloqueado';
-                color = 'var(--bad)';
-                icono = '⛔';
-            } else if (diasRestantes === 0) {
-                estado = '⚠️ ¡Vence HOY!';
-                color = 'var(--bad)';
-                icono = '⚠️';
-            } else if (diasRestantes === 1) {
-                estado = '⚠️ 1 día restante';
-                color = 'var(--warn)';
-                icono = '⚠️';
-            } else if (diasRestantes !== null && diasRestantes <= 3) {
-                estado = `📅 ${diasRestantes} días restantes`;
-                color = 'var(--warn)';
-                icono = '📅';
-            } else if (diasRestantes !== null) {
-                estado = `✅ ${diasRestantes} días restantes`;
-                color = 'var(--ok)';
-                icono = '✅';
-            } else {
-                estado = '✅ Activo (Sin límite)';
-                color = 'var(--ok)';
-                icono = '✅';
-            }
+            if (esAdmin) { estado = '👑 Admin'; color = 'var(--accent)'; icono = '👑'; }
+            else if (expirado) { estado = '⏰ Expirado'; color = 'var(--bad)'; icono = '⏰'; }
+            else if (!permitido) { estado = '⛔ Bloqueado'; color = 'var(--bad)'; icono = '⛔'; }
+            else if (diasRestantes === 0) { estado = '⚠️ Vence HOY'; color = 'var(--bad)'; icono = '⚠️'; }
+            else if (diasRestantes === 1) { estado = '⚠️ 1 día'; color = 'var(--warn)'; icono = '⚠️'; }
+            else if (diasRestantes <= 3) { estado = `📅 ${diasRestantes}d`; color = 'var(--warn)'; icono = '📅'; }
+            else { estado = `✅ ${diasRestantes}d`; color = 'var(--ok)'; icono = '✅'; }
             
-            const fechaExp = user.fecha_expiracion 
-                ? new Date(user.fecha_expiracion).toLocaleDateString('es-CO', {day:'numeric', month:'short', year:'numeric'})
-                : 'Sin límite';
-            
+            const fechaExp = user.fecha_expiracion ? new Date(user.fecha_expiracion).toLocaleDateString('es-CO', {day:'numeric', month:'short'}) : 'Sin límite';
             const emailSeguro = (user.email || '').replace(/'/g, "\\'");
             
             html += `
-                <div style="background: var(--cardBg); padding: 10px; margin-bottom: 6px; border-radius: 12px; border-left: 3px solid ${color};">
-                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-                        <span style="font-size:20px;">${icono}</span>
+                <div style="background:var(--cardBg);padding:10px;margin-bottom:6px;border-radius:12px;border-left:3px solid ${color};">
+                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+                        <span style="font-size:18px;">${icono}</span>
                         <div style="flex:1;">
-                            <div style="font-weight:600;font-size:13px;">
-                                ${nombre}
-                                ${esAdmin ? '<span style="font-size:9px;color:var(--accent);">(Tú)</span>' : ''}
-                                ${user.soloRegistro ? '<span style="font-size:8px;color:var(--muted);">(Registrado)</span>' : ''}
-                            </div>
-                            <div style="font-size:10px;color:var(--muted);">${user.email}</div>
+                            <div style="font-weight:600;font-size:12px;">${nombre} ${esAdmin?'<span style="font-size:8px;color:var(--accent);">(Tú)</span>':''}</div>
+                            <div style="font-size:9px;color:var(--muted);">${user.email}</div>
                         </div>
                     </div>
-                    
-                    <div style="font-size:10px;color:${color};margin-bottom:4px;">${estado}</div>
-                    <div style="font-size:9px;color:var(--muted);margin-bottom:6px;">Expira: ${fechaExp}</div>
-                    
+                    <div style="font-size:9px;color:${color};margin-bottom:2px;">${estado} · ${user.plan_actual}</div>
+                    <div style="font-size:8px;color:var(--muted);margin-bottom:6px;">Expira: ${fechaExp}</div>
                     ${!esAdmin ? `
                         <div style="display:flex;gap:3px;flex-wrap:wrap;">
                             ${permitido ? `
-                                <button class="small-btn warn-btn" onclick="window.bloquearUsuarioPorUID('${user.uid}', '${emailSeguro}')" style="flex:1;font-size:9px;min-width:65px;">
-                                    🔒 Bloquear
-                                </button>
+                                <button class="small-btn warn-btn" onclick="window.bloquearUsuarioPorUID('${user.uid}','${emailSeguro}')" style="flex:1;font-size:9px;">🔒</button>
                             ` : `
-                                <button class="small-btn success-btn" onclick="window.permitirUsuarioPorUID('${user.uid}', '${emailSeguro}')" style="flex:1;font-size:9px;min-width:65px;">
-                                    🔓 Permitir
-                                </button>
+                                <button class="small-btn success-btn" onclick="window.permitirUsuarioPorUID('${user.uid}','${emailSeguro}')" style="flex:1;font-size:9px;">🔓</button>
                             `}
-                            <button class="small-btn" onclick="window.setTiempoPorUID('${user.uid}', '${emailSeguro}', 1)" style="font-size:9px;padding:4px 6px;">📅1d</button>
-                            <button class="small-btn" onclick="window.setTiempoPorUID('${user.uid}', '${emailSeguro}', 7)" style="font-size:9px;padding:4px 6px;">📅7d</button>
-                            <button class="small-btn" onclick="window.setTiempoPorUID('${user.uid}', '${emailSeguro}', 30)" style="font-size:9px;padding:4px 6px;">📅30d</button>
-                            <button class="small-btn success-btn" onclick="window.setTiempoPorUID('${user.uid}', '${emailSeguro}', 0)" style="font-size:9px;padding:4px 6px;">♾️</button>
+                            <button class="small-btn" onclick="window.setTiempoPorUID('${user.uid}','${emailSeguro}',7)" style="font-size:9px;padding:4px;">7d</button>
+                            <button class="small-btn" onclick="window.setTiempoPorUID('${user.uid}','${emailSeguro}',30)" style="font-size:9px;padding:4px;">30d</button>
+                            <button class="small-btn" onclick="window.setTiempoPorUID('${user.uid}','${emailSeguro}',365)" style="font-size:9px;padding:4px;">365d</button>
+                            <button class="small-btn success-btn" onclick="window.setTiempoPorUID('${user.uid}','${emailSeguro}',0)" style="font-size:9px;padding:4px;">♾️</button>
                         </div>
                     ` : ''}
                 </div>
@@ -1748,270 +1784,137 @@ window.cargarListaUsuarios = async function() {
         });
         
         listaDiv.innerHTML = html;
-        
     } catch(e) {
-        console.error("Error:", e);
-        listaDiv.innerHTML = `
-            <div class="alert bad">Error: ${e.message}</div>
-            <button class="primary" onclick="window.cargarListaUsuarios()" style="width:100%;margin-top:8px;">
-                🔄 Reintentar
-            </button>
-        `;
+        listaDiv.innerHTML = `<div class="alert bad">Error</div><button class="primary" onclick="window.cargarListaUsuarios()" style="width:100%;margin-top:8px;">🔄 Reintentar</button>`;
     }
 };
 
-// ═══ SINCRONIZAR USUARIOS EXISTENTES ═══
+// ═══ BOTONES DEL ADMIN ═══
+window.bloquearUsuarioPorUID = async function(uid, email) {
+    if (!confirm('¿Bloquear?')) return;
+    const docId = await obtenerOcrearDocId(uid, email);
+    await window.fbUpdateDoc(window.fbDoc(window.db, "user_access", docId), { acceso_permitido: false, ultima_modificacion: new Date().toISOString() });
+    toastMsg('🔒 Bloqueado');
+    window.cargarListaUsuarios();
+};
+
+window.permitirUsuarioPorUID = async function(uid, email) {
+    if (!confirm('¿Permitir?')) return;
+    const fechaExp = new Date(); fechaExp.setDate(fechaExp.getDate() + 7);
+    const docId = await obtenerOcrearDocId(uid, email);
+    await window.fbUpdateDoc(window.fbDoc(window.db, "user_access", docId), { acceso_permitido: true, fecha_expiracion: fechaExp.toISOString(), duracion_acceso: '7_dias', plan_actual: '7 Días' });
+    toastMsg('🔓 Permitido 7d');
+    window.cargarListaUsuarios();
+};
+
+window.setTiempoPorUID = async function(uid, email, dias) {
+    const msg = dias === 0 ? '¿Acceso PERMANENTE?' : `¿${dias} días?`;
+    if (!confirm(msg)) return;
+    const ahora = new Date();
+    const expiracion = dias === 0 ? null : new Date(ahora.getTime() + (dias * 24 * 60 * 60 * 1000)).toISOString();
+    const docId = await obtenerOcrearDocId(uid, email);
+    await window.fbUpdateDoc(window.fbDoc(window.db, "user_access", docId), { acceso_permitido: true, duracion_acceso: `${dias}_dias`, plan_actual: `${dias} Días`, fecha_expiracion: expiracion, ultima_modificacion: ahora.toISOString() });
+    toastMsg(dias === 0 ? '♾️ Permanente' : `⏰ ${dias} días`);
+    window.cargarListaUsuarios();
+};
+
+window.verSolicitudesPendientes = async function() {
+    if (!window.db) return;
+    const snap = await window.fbGetDocs(window.fbQuery(window.fbCollection(window.db, "solicitudes_pago")));
+    const pendientes = [];
+    snap.forEach(doc => { if (doc.data().estado === 'pendiente') pendientes.push({ id: doc.id, ...doc.data() }); });
+    if (pendientes.length === 0) { alert('📭 Sin solicitudes'); return; }
+    let lista = '📋 Solicitudes:\n\n';
+    pendientes.forEach((s, i) => { lista += `${i+1}. ${s.nombre} - ${s.plan} - $${s.monto.toLocaleString()}\n   ${s.email}\n\n`; });
+    alert(lista);
+};
+
+// ═══ SINCRONIZAR ═══
 window.sincronizarUsuariosExistentes = async function() {
-    const listaDiv = document.getElementById('adminUserList');
-    if (!listaDiv) return;
-    
-    listaDiv.innerHTML = '<div class="alert info">⏳ Sincronizando usuarios existentes...</div>';
-    
     try {
-        const snapUsers = await window.fbGetDocs(
-            window.fbQuery(window.fbCollection(window.db, "users"))
-        );
-        
+        const snapUsers = await window.fbGetDocs(window.fbQuery(window.fbCollection(window.db, "users")));
         let count = 0;
-        
         for (const doc of snapUsers.docs) {
             const data = doc.data();
             const uid = data.uid || doc.id;
             const email = data.email || '';
-            
             if (uid) {
-                const snapAccess = await window.fbGetDocs(
-                    window.fbQuery(window.fbCollection(window.db, "user_access"))
-                );
-                
+                const snapAccess = await window.fbGetDocs(window.fbQuery(window.fbCollection(window.db, "user_access")));
                 let existe = false;
-                snapAccess.forEach(adoc => {
-                    if (adoc.data().uid === uid) existe = true;
-                });
-                
+                snapAccess.forEach(adoc => { if (adoc.data().uid === uid) existe = true; });
                 if (!existe) {
-                    await window.fbAddDoc(window.fbCollection(window.db, "user_access"), {
-                        uid: uid,
-                        email: email,
-                        acceso_permitido: true,
-                        duracion_acceso: "permanente",
-                        fecha_creacion: new Date().toISOString(),
-                        fecha_expiracion: null
-                    });
+                    const fechaExp = new Date(); fechaExp.setDate(fechaExp.getDate() + 7);
+                    await window.fbAddDoc(window.fbCollection(window.db, "user_access"), { uid, email, acceso_permitido: true, duracion_acceso: "7_dias_gratis", plan_actual: "Prueba gratis 7 días", fecha_creacion: new Date().toISOString(), fecha_expiracion: fechaExp.toISOString(), es_gratis: true });
                     count++;
-                    console.log("✅ Sincronizado:", email);
                 }
             }
         }
-        
-        toastMsg(`✅ ${count} usuarios sincronizados`);
+        toastMsg(`✅ ${count} sincronizados`, '#22c55e');
         window.cargarListaUsuarios();
-    } catch(e) {
-        console.error("Error:", e);
-        listaDiv.innerHTML = `
-            <div class="alert bad">Error: ${e.message}</div>
-            <button class="primary" onclick="window.cargarListaUsuarios()" style="width:100%;margin-top:8px;">
-                🔄 Reintentar
-            </button>
-        `;
-    }
-};
-
-// ═══ BLOQUEAR USUARIO ═══
-window.bloquearUsuarioPorUID = async function(uid, email) {
-    if (!confirm('¿Bloquear este usuario?')) return;
-    
-    const docId = await obtenerOcrearDocId(uid, email);
-    if (docId) {
-        await window.fbUpdateDoc(window.fbDoc(window.db, "user_access", docId), {
-            acceso_permitido: false,
-            fecha_expiracion: null,
-            ultima_modificacion: new Date().toISOString()
-        });
-        toastMsg('🔒 Usuario bloqueado');
-        window.cargarListaUsuarios();
-    }
-};
-
-// ═══ PERMITIR USUARIO ═══
-window.permitirUsuarioPorUID = async function(uid, email) {
-    if (!confirm('¿Permitir acceso a este usuario?')) return;
-    
-    const docId = await obtenerOcrearDocId(uid, email);
-    if (docId) {
-        await window.fbUpdateDoc(window.fbDoc(window.db, "user_access", docId), {
-            acceso_permitido: true,
-            fecha_expiracion: null,
-            duracion_acceso: 'permanente',
-            ultima_modificacion: new Date().toISOString()
-        });
-        toastMsg('🔓 Usuario permitido (sin límite)');
-        window.cargarListaUsuarios();
-    }
-};
-
-// ═══ CONFIGURAR TIEMPO ═══
-window.setTiempoPorUID = async function(uid, email, dias) {
-    const msg = dias === 0 ? '¿Dar acceso PERMANENTE?' : `¿Permitir acceso por ${dias} día(s)?`;
-    if (!confirm(msg)) return;
-    
-    const ahora = new Date();
-    const expiracion = dias === 0 ? null : new Date(ahora.getTime() + (dias * 24 * 60 * 60 * 1000)).toISOString();
-    
-    const docId = await obtenerOcrearDocId(uid, email);
-    if (docId) {
-        await window.fbUpdateDoc(window.fbDoc(window.db, "user_access", docId), {
-            acceso_permitido: true,
-            duracion_acceso: dias === 0 ? 'permanente' : `${dias}_dias`,
-            fecha_expiracion: expiracion,
-            ultima_modificacion: ahora.toISOString()
-        });
-        
-        toastMsg(dias === 0 ? '♾️ Acceso PERMANENTE' : `⏰ Acceso por ${dias} día(s)`);
-        window.cargarListaUsuarios();
-    }
+    } catch(e) { console.error(e); }
 };
 
 // ═══ VERIFICACIÓN AL INICIAR SESIÓN ═══
-// ═══ VERIFICACIÓN AL INICIAR SESIÓN (SIMPLIFICADO) ═══
 const onUserChangedOriginal = window.onUserChanged;
 window.onUserChanged = async function(user) {
     if (user) {
         await registrarEnUserAccess(user.uid, user.email);
         await guardarEnUsers(user.uid, user.email, user.displayName);
         
-        const querySnapshot = await window.fbGetDocs(
-            window.fbQuery(window.fbCollection(window.db, "user_access"))
-        );
+        const querySnapshot = await window.fbGetDocs(window.fbQuery(window.fbCollection(window.db, "user_access")));
         
         let bloqueado = false;
         let diasRestantes = null;
+        let expirado = false;
+        let docId = null;
         
         querySnapshot.forEach(doc => {
             if (doc.data().uid === user.uid) {
                 const data = doc.data();
+                docId = doc.id;
                 
-                console.log("🔍 Verificando usuario:", data.email);
-                console.log("  acceso_permitido:", data.acceso_permitido);
-                console.log("  fecha_expiracion:", data.fecha_expiracion);
+                if (data.acceso_permitido === false) bloqueado = true;
                 
-                // Verificar bloqueo
-                if (data.acceso_permitido === false) {
-                    bloqueado = true;
-                    console.log("  ❌ BLOQUEADO");
-                }
-                
-                // Verificar expiración
                 if (data.fecha_expiracion && data.acceso_permitido !== false) {
                     const ahora = new Date();
                     const expiracion = new Date(data.fecha_expiracion);
-                    diasRestantes = Math.ceil((expiracion - ahora) / (1000 * 60 * 60 * 24));
-                    console.log("  ⏰ Días restantes:", diasRestantes);
-                    
                     if (ahora > expiracion) {
                         bloqueado = true;
-                        console.log("  ❌ EXPIRADO");
-                        window.fbUpdateDoc(window.fbDoc(window.db, "user_access", doc.id), {
-                            acceso_permitido: false,
-                            ultima_modificacion: ahora.toISOString()
-                        }).catch(() => {});
+                        expirado = true;
+                        window.fbUpdateDoc(window.fbDoc(window.db, "user_access", doc.id), { acceso_permitido: false, ultima_modificacion: ahora.toISOString() }).catch(() => {});
+                    } else {
+                        diasRestantes = Math.ceil((expiracion - ahora) / (1000 * 60 * 60 * 24));
                     }
                 }
             }
         });
         
-        // Bloqueado
-        if (bloqueado && !adminUIDs.includes(user.uid)) {
-            console.log("🚫 Usuario bloqueado, cerrando sesión");
-            const toast = document.getElementById('toast');
-            if (toast) {
-                toast.textContent = "⛔ Acceso bloqueado. Contacta al administrador.";
-                toast.style.display = 'block';
-                toast.style.background = '#ef4444';
-                toast.style.color = '#fff';
-                toast.style.fontWeight = '700';
-                toast.style.fontSize = '13px';
-                toast.style.padding = '12px 14px';
-toast.style.maxWidth = '90vw';
-toast.style.wordBreak = 'break-word';
-toast.style.whiteSpace = 'normal';
-toast.style.textAlign = 'center';
-toast.style.lineHeight = '1.4';
-                toast.style.cursor = 'pointer';
-                toast.onclick = () => { toast.style.display = 'none'; };
-            }
-            setTimeout(async () => {
-                try { await window.fbLogout(); } catch(e) {}
-            }, 3000);
+        // Admin siempre tiene acceso
+        if (adminUIDs.includes(user.uid)) {
+            if (onUserChangedOriginal) onUserChangedOriginal(user);
             return;
         }
         
-        // Aviso 1 día o menos
-        if (diasRestantes !== null && diasRestantes <= 1 && !adminUIDs.includes(user.uid)) {
-    console.log("⚠️ MOSTRANDO AVISO - Días restantes:", diasRestantes);
-    const mensaje = diasRestantes === 0 
-        ? "⚠️ ¡Tu acceso vence HOY! Contacta al administrador."
-        : "⚠️ Tu acceso vence mañana. Contacta al administrador.";
-    
-    const toast = document.getElementById('toast');
-    if (toast) {
-        toast.textContent = mensaje;
-        toast.style.display = 'block';
-        toast.style.background = '#ef4444';
-        toast.style.color = '#fff';
-        toast.style.fontWeight = '700';
-        toast.style.fontSize = '13px';
-        toast.style.padding = '12px 14px';
-        toast.style.maxWidth = '90vw';
-        toast.style.wordBreak = 'break-word';
-        toast.style.whiteSpace = 'normal';
-        toast.style.textAlign = 'center';
-        toast.style.lineHeight = '1.4';
-        toast.style.borderRadius = '14px';
-        toast.style.cursor = 'pointer';
-        toast.onclick = () => {
-            toast.style.display = 'none';
-            toast.style.background = '#1e293b';
-            toast.style.maxWidth = '85vw';
-            toast.style.whiteSpace = 'nowrap';
-        };
-    }
-}
+        // Mostrar pantalla de bloqueo si está bloqueado o le queda 1 día o menos
+        if (bloqueado || expirado || (diasRestantes !== null && diasRestantes <= 1)) {
+            mostrarPantallaBloqueo({ diasRestantes, expirado, bloqueado });
+            return;
+        }
         
-        // Aviso 2-3 días
-        if (diasRestantes !== null && diasRestantes >= 2 && diasRestantes <= 3 && !adminUIDs.includes(user.uid)) {
-            console.log("📅 MOSTRANDO AVISO - Días restantes:", diasRestantes);
-            const toast = document.getElementById('toast');
-            if (toast) {
-                toast.textContent = `📅 Tu acceso vence en ${diasRestantes} días`;
-                toast.style.display = 'block';
-                toast.style.background = '#f59e0b';
-                toast.style.color = '#fff';
-                toast.style.fontWeight = '600';
-                toast.style.fontSize = '12px';
-                toast.style.padding = '10px 14px';
-                toast.style.cursor = 'pointer';
-                toast.onclick = () => { toast.style.display = 'none'; };
-                setTimeout(() => {
-                    toast.style.display = 'none';
-                    toast.style.background = '#1e293b';
-                }, 6000);
-            }
+        // Si le quedan 2-3 días, mostrar aviso sutil
+        if (diasRestantes !== null && diasRestantes <= 3) {
+            toastMsg(`📅 Tu acceso vence en ${diasRestantes} días. Renueva para continuar.`, '#f59e0b');
         }
     }
     
-    if (onUserChangedOriginal) {
-        onUserChangedOriginal(user);
-    }
+    if (onUserChangedOriginal) onUserChangedOriginal(user);
 };
 
-// ═══ PANEL DE ADMINISTRACIÓN EN AJUSTES ═══
+// ═══ PANEL DE ADMINISTRACIÓN ═══
 const goTabOriginal = window.goTab;
 window.goTab = function(tab, btn) {
     goTabOriginal(tab, btn);
-    if (tab === 'settings') {
-        setTimeout(agregarPanelAdmin, 300);
-    }
+    if (tab === 'settings') setTimeout(agregarPanelAdmin, 300);
 };
 
 function agregarPanelAdmin() {
@@ -2024,21 +1927,16 @@ function agregarPanelAdmin() {
     
     cardDiv.innerHTML = `
         <div class="title">👥 Administrar Usuarios</div>
-        <p class="small" style="color: var(--muted); margin-bottom: 8px;">
-            ⏰ Configura tiempos de acceso | 🔒 Bloquea usuarios
-        </p>
-        <div id="adminUserList" style="margin-bottom: 8px; max-height: 500px; overflow-y: auto;">
-            <div class="alert info">⏳ Cargando...</div>
-        </div>
-        <button class="secondary" onclick="window.cargarListaUsuarios()" style="width: 100%; margin-top: 8px;">
-            🔄 Actualizar Lista
-        </button>
-        <button class="warn-btn" onclick="window.sincronizarUsuariosExistentes()" style="width: 100%; margin-top: 4px; font-size: 12px;">
-            🔄 Sincronizar usuarios existentes
-        </button>
-        <div class="small" style="margin-top: 6px; text-align: center; color: var(--muted);">
-            💡 Nuevos: Permitidos | ⚠️ Aviso al quedar 1 día
-        </div>
+        <div id="adminUserList" style="margin-bottom:8px;max-height:500px;overflow-y:auto;"><div class="alert info">⏳ Cargando...</div></div>
+        <button class="secondary" onclick="window.cargarListaUsuarios()" style="width:100%;margin-top:8px;">🔄 Actualizar</button>
+        <button class="warn-btn" onclick="window.sincronizarUsuariosExistentes()" style="width:100%;margin-top:4px;font-size:12px;">🔄 Sincronizar</button>
+    `;
+    
+    const cardDiv2 = document.createElement('div');
+    cardDiv2.className = 'card';
+    cardDiv2.innerHTML = `
+        <div class="title">📊 Solicitudes de Pago</div>
+        <button class="secondary" onclick="window.verSolicitudesPendientes()" style="width:100%;">📋 Ver pendientes</button>
     `;
     
     const settingsTab = document.getElementById('tab-settings');
@@ -2046,13 +1944,17 @@ function agregarPanelAdmin() {
         const primeraCard = settingsTab.querySelector('.card');
         if (primeraCard && primeraCard.nextSibling) {
             primeraCard.parentNode.insertBefore(cardDiv, primeraCard.nextSibling);
+            primeraCard.parentNode.insertBefore(cardDiv2, primeraCard.nextSibling);
         }
     }
     
     setTimeout(() => window.cargarListaUsuarios(), 500);
 }
 
-console.log("✅ Sistema de control de acceso v7 - FINAL");
+console.log('✅ Sistema de pago Nequi + Control de acceso instalado');
+console.log('🆓 Nuevos usuarios: 7 días gratis');
+console.log('💰 Planes: 30d/$12.000 | 365d/$100.000');
+console.log('💚 Pago vía Nequi:', NEQUI_ADMIN);
 </script>
 </body>
 </html>
