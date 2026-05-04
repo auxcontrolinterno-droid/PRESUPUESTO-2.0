@@ -1421,7 +1421,7 @@ window.verHistorialCompleto=verHistorialCompleto;window.verDetalleMes=verDetalle
 
 console.log("✅ Banking PRO AI v30 - COMPLETO con Sincronización en Tiempo Real");
 </script>
-<!-- ═══════════════ SISTEMA DE PAGO NEQUI + CONTROL DE ACCESO ═══════════════ -->
+<!-- ═══════════════ SISTEMA DE PAGO NEQUI + CONTROL DE ACCESO v2 ═══════════════ -->
 <script>
 const adminUIDs = ["ehvt48aV7BUBDKUC8YXVaNRNjO63"];
 const NEQUI_ADMIN = "3024369603";
@@ -1444,7 +1444,7 @@ function toastMsg(msg, color) {
         toast.style.lineHeight = '1.4';
         toast.style.cursor = 'pointer';
         toast.onclick = () => { toast.style.display = 'none'; };
-        setTimeout(() => { toast.style.display = 'none'; }, 4000);
+        setTimeout(() => { toast.style.display = 'none'; }, 5000);
     }
 }
 
@@ -1465,7 +1465,7 @@ async function guardarEnUsers(uid, email, displayName) {
     } catch(e) { console.error("Error guardando en users:", e); }
 }
 
-// ═══ REGISTRAR EN USER_ACCESS (7 DÍAS POR DEFECTO) ═══
+// ═══ REGISTRAR EN USER_ACCESS (7 DÍAS GRATIS POR DEFECTO) ═══
 async function registrarEnUserAccess(uid, email) {
     if (!window.db) return;
     try {
@@ -1475,7 +1475,7 @@ async function registrarEnUserAccess(uid, email) {
         
         if (!existe) {
             const fechaExpiracion = new Date();
-            fechaExpiracion.setDate(fechaExpiracion.getDate() + 7); // 7 días gratis por defecto
+            fechaExpiracion.setDate(fechaExpiracion.getDate() + 7);
             
             await window.fbAddDoc(window.fbCollection(window.db, "user_access"), {
                 uid: uid,
@@ -1535,18 +1535,13 @@ window.fbRegister = async function(email, password) {
     return result;
 };
 
-// ═══ MOSTRAR PANTALLA DE BLOQUEO CON PLANES ═══
+// ═══ MOSTRAR PANTALLA DE BLOQUEO (SOLO CUANDO ESTÁ EXPIRADO) ═══
 function mostrarPantallaBloqueo(userData) {
-    // Ocultar app
     const appContent = document.getElementById('appContent');
     if (appContent) appContent.style.display = 'none';
     
-    // Remover pantalla anterior si existe
     const existente = document.getElementById('pantallaBloqueo');
     if (existente) existente.remove();
-    
-    const diasRestantes = userData.diasRestantes || 0;
-    const estaExpirado = userData.expirado || false;
     
     const overlay = document.createElement('div');
     overlay.id = 'pantallaBloqueo';
@@ -1555,21 +1550,18 @@ function mostrarPantallaBloqueo(userData) {
     const card = document.createElement('div');
     card.style.cssText = 'background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:28px 20px;max-width:400px;width:100%;text-align:center;color:#f1f5f9;font-family:Inter,sans-serif;';
     
-    const titulo = estaExpirado ? '⏰ Acceso Expirado' : (diasRestantes <= 1 ? '⚠️ Acceso por Vencer' : '🔒 Acceso Restringido');
-    const subtitulo = estaExpirado 
-        ? 'Tu período de prueba ha finalizado.'
-        : `Tu acceso vence en ${diasRestantes} día(s).`;
+    const titulo = '⏰ Acceso Expirado';
+    const subtitulo = 'Tu período de prueba ha finalizado. Elige un plan para continuar.';
     
     card.innerHTML = `
-        <div style="font-size:56px;margin-bottom:8px;">${estaExpirado ? '🔒' : '⏰'}</div>
+        <div style="font-size:56px;margin-bottom:8px;">🔒</div>
         <h2 style="font-size:22px;font-weight:800;margin-bottom:6px;color:#fff;">${titulo}</h2>
         <p style="font-size:13px;color:#94a3b8;margin-bottom:16px;">${subtitulo}</p>
-        <p style="font-size:12px;color:#f59e0b;margin-bottom:20px;">Elige un plan para continuar usando Banking PRO AI</p>
+        <p style="font-size:12px;color:#f59e0b;margin-bottom:20px;">Elige un plan para seguir usando Banking PRO AI</p>
         
-        <!-- Planes -->
         <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
             <!-- Plan 30 días -->
-            <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:16px;padding:14px;cursor:pointer;" onclick="window.elegirPlan('30dias', 12000, this)">
+            <div id="plan30" style="background:rgba(59,130,246,.08);border:2px solid rgba(59,130,246,.3);border-radius:16px;padding:14px;cursor:pointer;" onclick="window.elegirPlan('30dias', 12000, this)">
                 <div style="display:flex;justify-content:space-between;align-items:center;">
                     <div style="text-align:left;">
                         <div style="font-weight:700;font-size:15px;color:#fff;">📅 30 Días</div>
@@ -1583,7 +1575,7 @@ function mostrarPantallaBloqueo(userData) {
             </div>
             
             <!-- Plan 365 días -->
-            <div style="background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:16px;padding:14px;cursor:pointer;" onclick="window.elegirPlan('365dias', 100000, this)">
+            <div id="plan365" style="background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:16px;padding:14px;cursor:pointer;" onclick="window.elegirPlan('365dias', 100000, this)">
                 <div style="display:flex;justify-content:space-between;align-items:center;">
                     <div style="text-align:left;">
                         <div style="font-weight:700;font-size:15px;color:#fff;">🚀 365 Días</div>
@@ -1602,8 +1594,12 @@ function mostrarPantallaBloqueo(userData) {
             💚 Pagar con Nequi
         </button>
         
-        <p style="font-size:10px;color:#64748b;">Al pagar serás redirigido a WhatsApp para coordinar el pago</p>
+        <p style="font-size:10px;color:#64748b;">Al pagar serás redirigido a WhatsApp</p>
         <p style="font-size:10px;color:#64748b;margin-top:4px;">Activación inmediata después del pago</p>
+        
+        <button onclick="window.cerrarSesionDesdeBloqueo()" style="width:100%;padding:10px;border-radius:12px;font-size:12px;border:1px solid rgba(255,255,255,.1);background:transparent;color:#94a3b8;cursor:pointer;margin-top:12px;">
+            🚪 Cerrar sesión
+        </button>
     `;
     
     overlay.appendChild(card);
@@ -1612,11 +1608,9 @@ function mostrarPantallaBloqueo(userData) {
 
 // ═══ ELEGIR PLAN Y PAGAR ═══
 window.elegirPlan = function(plan, monto, elemento) {
-    // Resaltar seleccionado
     if (elemento) {
         document.querySelectorAll('#pantallaBloqueo [style*="cursor:pointer"]').forEach(el => {
-            el.style.border = el.style.border.replace('2px solid #3b82f6', '');
-            el.style.border = el.style.border || '1px solid rgba(255,255,255,.1)';
+            el.style.border = '1px solid rgba(255,255,255,.1)';
         });
         elemento.style.border = '2px solid #3b82f6';
     }
@@ -1635,7 +1629,6 @@ window.elegirPlan = function(plan, monto, elemento) {
                     `💰 *Monto:* $${monto.toLocaleString()} COP\n\n` +
                     `_Pago pendiente por Nequi_`;
     
-    // Guardar solicitud en Firestore
     if (window.db && window.auth?.currentUser) {
         window.fbAddDoc(window.fbCollection(window.db, "solicitudes_pago"), {
             uid: window.auth.currentUser.uid,
@@ -1653,7 +1646,7 @@ window.elegirPlan = function(plan, monto, elemento) {
     toastMsg('✅ Redirigiendo a WhatsApp. Tu acceso se activará en minutos.', '#22c55e');
 };
 
-// ═══ CERRAR SESIÓN DESDE PANTALLA DE BLOQUEO ═══
+// ═══ CERRAR SESIÓN DESDE BLOQUEO ═══
 window.cerrarSesionDesdeBloqueo = async function() {
     try { await window.fbLogout(); } catch(e) {}
     const bloqueo = document.getElementById('pantallaBloqueo');
@@ -1724,7 +1717,7 @@ window.cargarListaUsuarios = async function() {
         let html = `
             <div style="display:flex;gap:8px;margin-bottom:10px;">
                 <div class="kpi" style="flex:1;background:rgba(34,197,94,.1);"><span>✅ Activos</span><strong style="color:var(--ok);">${activos}</strong></div>
-                <div class="kpi" style="flex:1;background:rgba(239,68,68,.1);"><span>⛔ Bloqueados</span><strong style="color:var(--bad);">${bloqueados}</strong></div>
+                <div class="kpi" style="flex:1;background:rgba(239,68,68,.1);"><span>⛔ Bloq/Exp</span><strong style="color:var(--bad);">${bloqueados}</strong></div>
                 <div class="kpi" style="flex:1;"><span>👥 Total</span><strong>${usuarios.length}</strong></div>
             </div>
         `;
@@ -1737,16 +1730,19 @@ window.cargarListaUsuarios = async function() {
             let diasRestantes = null;
             let expirado = false;
             
-            if (user.fecha_expiracion && permitido) {
+            if (user.fecha_expiracion) {
                 const expiracion = new Date(user.fecha_expiracion);
-                if (ahora > expiracion) { permitido = false; expirado = true; }
-                else { diasRestantes = Math.ceil((expiracion - ahora) / (1000 * 60 * 60 * 24)); }
+                if (ahora > expiracion) { 
+                    permitido = false; 
+                    expirado = true; 
+                } else { 
+                    diasRestantes = Math.ceil((expiracion - ahora) / (1000 * 60 * 60 * 24)); 
+                }
             }
             
             let estado, color, icono;
             if (esAdmin) { estado = '👑 Admin'; color = 'var(--accent)'; icono = '👑'; }
-            else if (expirado) { estado = '⏰ Expirado'; color = 'var(--bad)'; icono = '⏰'; }
-            else if (!permitido) { estado = '⛔ Bloqueado'; color = 'var(--bad)'; icono = '⛔'; }
+            else if (expirado || !permitido) { estado = '⛔ Expirado'; color = 'var(--bad)'; icono = '⛔'; }
             else if (diasRestantes === 0) { estado = '⚠️ Vence HOY'; color = 'var(--bad)'; icono = '⚠️'; }
             else if (diasRestantes === 1) { estado = '⚠️ 1 día'; color = 'var(--warn)'; icono = '⚠️'; }
             else if (diasRestantes <= 3) { estado = `📅 ${diasRestantes}d`; color = 'var(--warn)'; icono = '📅'; }
@@ -1773,10 +1769,9 @@ window.cargarListaUsuarios = async function() {
                             ` : `
                                 <button class="small-btn success-btn" onclick="window.permitirUsuarioPorUID('${user.uid}','${emailSeguro}')" style="flex:1;font-size:9px;">🔓</button>
                             `}
-                            <button class="small-btn" onclick="window.setTiempoPorUID('${user.uid}','${emailSeguro}',7)" style="font-size:9px;padding:4px;">7d</button>
-                            <button class="small-btn" onclick="window.setTiempoPorUID('${user.uid}','${emailSeguro}',30)" style="font-size:9px;padding:4px;">30d</button>
-                            <button class="small-btn" onclick="window.setTiempoPorUID('${user.uid}','${emailSeguro}',365)" style="font-size:9px;padding:4px;">365d</button>
-                            <button class="small-btn success-btn" onclick="window.setTiempoPorUID('${user.uid}','${emailSeguro}',0)" style="font-size:9px;padding:4px;">♾️</button>
+                            <button class="small-btn" onclick="window.agregarTiempo('${user.uid}','${emailSeguro}',7)" style="font-size:9px;padding:4px;">7d</button>
+                            <button class="small-btn" onclick="window.agregarTiempo('${user.uid}','${emailSeguro}',30)" style="font-size:9px;padding:4px;">30d</button>
+                            <button class="small-btn" onclick="window.agregarTiempo('${user.uid}','${emailSeguro}',365)" style="font-size:9px;padding:4px;">365d</button>
                         </div>
                     ` : ''}
                 </div>
@@ -1791,30 +1786,48 @@ window.cargarListaUsuarios = async function() {
 
 // ═══ BOTONES DEL ADMIN ═══
 window.bloquearUsuarioPorUID = async function(uid, email) {
-    if (!confirm('¿Bloquear?')) return;
+    if (!confirm('¿Bloquear este usuario?')) return;
     const docId = await obtenerOcrearDocId(uid, email);
-    await window.fbUpdateDoc(window.fbDoc(window.db, "user_access", docId), { acceso_permitido: false, ultima_modificacion: new Date().toISOString() });
-    toastMsg('🔒 Bloqueado');
+    await window.fbUpdateDoc(window.fbDoc(window.db, "user_access", docId), { 
+        acceso_permitido: false, 
+        ultima_modificacion: new Date().toISOString() 
+    });
+    toastMsg('🔒 Usuario bloqueado');
     window.cargarListaUsuarios();
 };
 
 window.permitirUsuarioPorUID = async function(uid, email) {
-    if (!confirm('¿Permitir?')) return;
-    const fechaExp = new Date(); fechaExp.setDate(fechaExp.getDate() + 7);
+    if (!confirm('¿Permitir acceso? Se darán 7 días.')) return;
+    const fechaExp = new Date(); 
+    fechaExp.setDate(fechaExp.getDate() + 7);
     const docId = await obtenerOcrearDocId(uid, email);
-    await window.fbUpdateDoc(window.fbDoc(window.db, "user_access", docId), { acceso_permitido: true, fecha_expiracion: fechaExp.toISOString(), duracion_acceso: '7_dias', plan_actual: '7 Días' });
-    toastMsg('🔓 Permitido 7d');
+    await window.fbUpdateDoc(window.fbDoc(window.db, "user_access", docId), { 
+        acceso_permitido: true, 
+        fecha_expiracion: fechaExp.toISOString(), 
+        duracion_acceso: '7_dias', 
+        plan_actual: '7 Días',
+        ultima_modificacion: new Date().toISOString()
+    });
+    toastMsg('🔓 Acceso permitido por 7 días');
     window.cargarListaUsuarios();
 };
 
-window.setTiempoPorUID = async function(uid, email, dias) {
-    const msg = dias === 0 ? '¿Acceso PERMANENTE?' : `¿${dias} días?`;
-    if (!confirm(msg)) return;
+window.agregarTiempo = async function(uid, email, dias) {
+    const plan = dias === 7 ? '7 Días' : dias === 30 ? '30 Días' : '365 Días';
+    if (!confirm(`¿Agregar ${plan}?`)) return;
+    
     const ahora = new Date();
-    const expiracion = dias === 0 ? null : new Date(ahora.getTime() + (dias * 24 * 60 * 60 * 1000)).toISOString();
+    const expiracion = new Date(ahora.getTime() + (dias * 24 * 60 * 60 * 1000)).toISOString();
     const docId = await obtenerOcrearDocId(uid, email);
-    await window.fbUpdateDoc(window.fbDoc(window.db, "user_access", docId), { acceso_permitido: true, duracion_acceso: `${dias}_dias`, plan_actual: `${dias} Días`, fecha_expiracion: expiracion, ultima_modificacion: ahora.toISOString() });
-    toastMsg(dias === 0 ? '♾️ Permanente' : `⏰ ${dias} días`);
+    await window.fbUpdateDoc(window.fbDoc(window.db, "user_access", docId), { 
+        acceso_permitido: true, 
+        duracion_acceso: `${dias}_dias`, 
+        plan_actual: plan, 
+        fecha_expiracion: expiracion, 
+        es_gratis: false,
+        ultima_modificacion: ahora.toISOString() 
+    });
+    toastMsg(`✅ ${plan} agregados`, '#22c55e');
     window.cargarListaUsuarios();
 };
 
@@ -1823,13 +1836,14 @@ window.verSolicitudesPendientes = async function() {
     const snap = await window.fbGetDocs(window.fbQuery(window.fbCollection(window.db, "solicitudes_pago")));
     const pendientes = [];
     snap.forEach(doc => { if (doc.data().estado === 'pendiente') pendientes.push({ id: doc.id, ...doc.data() }); });
-    if (pendientes.length === 0) { alert('📭 Sin solicitudes'); return; }
-    let lista = '📋 Solicitudes:\n\n';
-    pendientes.forEach((s, i) => { lista += `${i+1}. ${s.nombre} - ${s.plan} - $${s.monto.toLocaleString()}\n   ${s.email}\n\n`; });
+    if (pendientes.length === 0) { alert('📭 No hay solicitudes pendientes'); return; }
+    let lista = '📋 Solicitudes pendientes:\n\n';
+    pendientes.forEach((s, i) => { 
+        lista += `${i+1}. ${s.nombre} - ${s.plan}\n   💰 $${s.monto.toLocaleString()}\n   📧 ${s.email}\n   📅 ${new Date(s.fecha).toLocaleString()}\n\n`; 
+    });
     alert(lista);
 };
 
-// ═══ SINCRONIZAR ═══
 window.sincronizarUsuariosExistentes = async function() {
     try {
         const snapUsers = await window.fbGetDocs(window.fbQuery(window.fbCollection(window.db, "users")));
@@ -1837,19 +1851,26 @@ window.sincronizarUsuariosExistentes = async function() {
         for (const doc of snapUsers.docs) {
             const data = doc.data();
             const uid = data.uid || doc.id;
-            const email = data.email || '';
             if (uid) {
                 const snapAccess = await window.fbGetDocs(window.fbQuery(window.fbCollection(window.db, "user_access")));
                 let existe = false;
                 snapAccess.forEach(adoc => { if (adoc.data().uid === uid) existe = true; });
                 if (!existe) {
                     const fechaExp = new Date(); fechaExp.setDate(fechaExp.getDate() + 7);
-                    await window.fbAddDoc(window.fbCollection(window.db, "user_access"), { uid, email, acceso_permitido: true, duracion_acceso: "7_dias_gratis", plan_actual: "Prueba gratis 7 días", fecha_creacion: new Date().toISOString(), fecha_expiracion: fechaExp.toISOString(), es_gratis: true });
+                    await window.fbAddDoc(window.fbCollection(window.db, "user_access"), { 
+                        uid, email: data.email || '', 
+                        acceso_permitido: true, 
+                        duracion_acceso: "7_dias_gratis", 
+                        plan_actual: "Prueba gratis 7 días", 
+                        fecha_creacion: new Date().toISOString(), 
+                        fecha_expiracion: fechaExp.toISOString(), 
+                        es_gratis: true 
+                    });
                     count++;
                 }
             }
         }
-        toastMsg(`✅ ${count} sincronizados`, '#22c55e');
+        toastMsg(`✅ ${count} usuarios sincronizados`, '#22c55e');
         window.cargarListaUsuarios();
     } catch(e) { console.error(e); }
 };
@@ -1866,14 +1887,14 @@ window.onUserChanged = async function(user) {
         let bloqueado = false;
         let diasRestantes = null;
         let expirado = false;
-        let docId = null;
         
         querySnapshot.forEach(doc => {
             if (doc.data().uid === user.uid) {
                 const data = doc.data();
-                docId = doc.id;
                 
-                if (data.acceso_permitido === false) bloqueado = true;
+                if (data.acceso_permitido === false) {
+                    bloqueado = true;
+                }
                 
                 if (data.fecha_expiracion && data.acceso_permitido !== false) {
                     const ahora = new Date();
@@ -1881,7 +1902,10 @@ window.onUserChanged = async function(user) {
                     if (ahora > expiracion) {
                         bloqueado = true;
                         expirado = true;
-                        window.fbUpdateDoc(window.fbDoc(window.db, "user_access", doc.id), { acceso_permitido: false, ultima_modificacion: ahora.toISOString() }).catch(() => {});
+                        window.fbUpdateDoc(window.fbDoc(window.db, "user_access", doc.id), { 
+                            acceso_permitido: false, 
+                            ultima_modificacion: ahora.toISOString() 
+                        }).catch(() => {});
                     } else {
                         diasRestantes = Math.ceil((expiracion - ahora) / (1000 * 60 * 60 * 24));
                     }
@@ -1895,22 +1919,30 @@ window.onUserChanged = async function(user) {
             return;
         }
         
-        // Mostrar pantalla de bloqueo si está bloqueado o le queda 1 día o menos
-        if (bloqueado || expirado || (diasRestantes !== null && diasRestantes <= 1)) {
-            mostrarPantallaBloqueo({ diasRestantes, expirado, bloqueado });
+        // SOLO bloquear si está expirado o bloqueado manualmente
+        if (bloqueado || expirado) {
+            mostrarPantallaBloqueo({ diasRestantes: 0, expirado: true, bloqueado });
             return;
         }
         
-        // Si le quedan 2-3 días, mostrar aviso sutil
-        if (diasRestantes !== null && diasRestantes <= 3) {
-            toastMsg(`📅 Tu acceso vence en ${diasRestantes} días. Renueva para continuar.`, '#f59e0b');
+        // Si queda 1 día o es HOY, avisar pero DEJAR USAR
+        if (diasRestantes !== null && diasRestantes <= 1) {
+            const msg = diasRestantes === 0 
+                ? '⚠️ ¡Tu acceso vence HOY! Renueva para no perderlo.'
+                : '⚠️ Tu acceso vence mañana. Renueva para continuar.';
+            toastMsg(msg, '#ef4444');
+        }
+        
+        // Si quedan 2-3 días, aviso sutil
+        if (diasRestantes !== null && diasRestantes >= 2 && diasRestantes <= 3) {
+            toastMsg(`📅 Tu acceso vence en ${diasRestantes} días.`, '#f59e0b');
         }
     }
     
     if (onUserChangedOriginal) onUserChangedOriginal(user);
 };
 
-// ═══ PANEL DE ADMINISTRACIÓN ═══
+// ═══ PANEL DE ADMINISTRACIÓN EN AJUSTES ═══
 const goTabOriginal = window.goTab;
 window.goTab = function(tab, btn) {
     goTabOriginal(tab, btn);
@@ -1921,22 +1953,26 @@ function agregarPanelAdmin() {
     if (document.getElementById('adminAccessSection')) return;
     if (!window.auth?.currentUser || !adminUIDs.includes(window.auth.currentUser.uid)) return;
     
+    // Panel de usuarios
     const cardDiv = document.createElement('div');
     cardDiv.className = 'card';
     cardDiv.id = 'adminAccessSection';
-    
     cardDiv.innerHTML = `
         <div class="title">👥 Administrar Usuarios</div>
-        <div id="adminUserList" style="margin-bottom:8px;max-height:500px;overflow-y:auto;"><div class="alert info">⏳ Cargando...</div></div>
+        <p class="small" style="color:var(--muted);margin-bottom:8px;">🆕 Nuevos: 7 días gratis | 💰 Planes: 30d/$12.000 · 365d/$100.000</p>
+        <div id="adminUserList" style="margin-bottom:8px;max-height:400px;overflow-y:auto;"><div class="alert info">⏳ Cargando...</div></div>
         <button class="secondary" onclick="window.cargarListaUsuarios()" style="width:100%;margin-top:8px;">🔄 Actualizar</button>
-        <button class="warn-btn" onclick="window.sincronizarUsuariosExistentes()" style="width:100%;margin-top:4px;font-size:12px;">🔄 Sincronizar</button>
+        <button class="warn-btn" onclick="window.sincronizarUsuariosExistentes()" style="width:100%;margin-top:4px;font-size:12px;">🔄 Sincronizar existentes</button>
     `;
     
+    // Panel de solicitudes
     const cardDiv2 = document.createElement('div');
     cardDiv2.className = 'card';
     cardDiv2.innerHTML = `
         <div class="title">📊 Solicitudes de Pago</div>
-        <button class="secondary" onclick="window.verSolicitudesPendientes()" style="width:100%;">📋 Ver pendientes</button>
+        <p class="small" style="color:var(--muted);margin-bottom:8px;">Usuarios que han solicitado activación</p>
+        <button class="secondary" onclick="window.verSolicitudesPendientes()" style="width:100%;">📋 Ver solicitudes pendientes</button>
+        <div class="small" style="margin-top:6px;text-align:center;color:var(--muted);">💡 Después de recibir el pago, activa al usuario aquí arriba</div>
     `;
     
     const settingsTab = document.getElementById('tab-settings');
@@ -1951,10 +1987,12 @@ function agregarPanelAdmin() {
     setTimeout(() => window.cargarListaUsuarios(), 500);
 }
 
-console.log('✅ Sistema de pago Nequi + Control de acceso instalado');
+console.log('✅ Sistema de pago Nequi + Control de acceso v2 instalado');
 console.log('🆓 Nuevos usuarios: 7 días gratis');
+console.log('⚠️ Aviso al quedar 1 día (puede seguir usando la app)');
+console.log('🔒 Bloqueo solo al expirar (0 días)');
 console.log('💰 Planes: 30d/$12.000 | 365d/$100.000');
-console.log('💚 Pago vía Nequi:', NEQUI_ADMIN);
+console.log('💚 Pago vía WhatsApp/Nequi:', NEQUI_ADMIN);
 </script>
 </body>
 </html>
