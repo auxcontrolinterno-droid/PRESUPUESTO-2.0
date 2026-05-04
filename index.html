@@ -1421,7 +1421,7 @@ window.verHistorialCompleto=verHistorialCompleto;window.verDetalleMes=verDetalle
 
 console.log("✅ Banking PRO AI v30 - COMPLETO con Sincronización en Tiempo Real");
 </script>
-<!-- ═══════════════ SISTEMA DE PAGO NEQUI + CONTROL DE ACCESO v2 ═══════════════ -->
+<!-- ═══════════════ SISTEMA DE PAGO NEQUI + CONTROL DE ACCESO v3 - BANNER PERMANENTE ═══════════════ -->
 <script>
 const adminUIDs = ["ehvt48aV7BUBDKUC8YXVaNRNjO63"];
 const NEQUI_ADMIN = "3024369603";
@@ -1444,7 +1444,64 @@ function toastMsg(msg, color) {
         toast.style.lineHeight = '1.4';
         toast.style.cursor = 'pointer';
         toast.onclick = () => { toast.style.display = 'none'; };
-        setTimeout(() => { toast.style.display = 'none'; }, 5000);
+        setTimeout(() => { toast.style.display = 'none'; }, 4000);
+    }
+}
+
+// ═══ BANNER PERMANENTE DE AVISO ═══
+function mostrarBannerAviso(mensaje, color, dias) {
+    const existente = document.getElementById('bannerAviso');
+    if (existente) existente.remove();
+    
+    const banner = document.createElement('div');
+    banner.id = 'bannerAviso';
+    banner.style.cssText = `
+        position: fixed;
+        top: 40px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9998;
+        background: ${color};
+        color: #fff;
+        padding: 8px 14px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        font-family: Inter, sans-serif;
+        text-align: center;
+        max-width: 90vw;
+        box-shadow: 0 4px 15px rgba(0,0,0,.3);
+        cursor: pointer;
+        animation: slideDown 0.3s ease;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    `;
+    
+    if (dias <= 3) {
+        banner.innerHTML = `${mensaje} <span style="background:rgba(255,255,255,.2);padding:2px 8px;border-radius:10px;font-size:10px;">Renovar →</span>`;
+        banner.onclick = () => {
+            banner.remove();
+            mostrarPantallaBloqueo({ diasRestantes: dias, expirado: false, bloqueado: false });
+        };
+    } else {
+        banner.textContent = mensaje;
+        banner.onclick = () => { banner.remove(); };
+    }
+    
+    document.body.appendChild(banner);
+    
+    if (!document.querySelector('#bannerStyle')) {
+        const style = document.createElement('style');
+        style.id = 'bannerStyle';
+        style.textContent = `
+            @keyframes slideDown {
+                from { transform: translateX(-50%) translateY(-100px); opacity: 0; }
+                to { transform: translateX(-50%) translateY(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
     }
 }
 
@@ -1543,6 +1600,9 @@ function mostrarPantallaBloqueo(userData) {
     const existente = document.getElementById('pantallaBloqueo');
     if (existente) existente.remove();
     
+    const banner = document.getElementById('bannerAviso');
+    if (banner) banner.style.display = 'none';
+    
     const overlay = document.createElement('div');
     overlay.id = 'pantallaBloqueo';
     overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:linear-gradient(180deg,#0a0f1a,#111827);display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;';
@@ -1550,18 +1610,19 @@ function mostrarPantallaBloqueo(userData) {
     const card = document.createElement('div');
     card.style.cssText = 'background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:28px 20px;max-width:400px;width:100%;text-align:center;color:#f1f5f9;font-family:Inter,sans-serif;';
     
-    const titulo = '⏰ Acceso Expirado';
-    const subtitulo = 'Tu período de prueba ha finalizado. Elige un plan para continuar.';
+    const titulo = userData.expirado ? '⏰ Acceso Expirado' : '⚠️ Acceso por Vencer';
+    const subtitulo = userData.expirado 
+        ? 'Tu período de prueba ha finalizado.'
+        : `Tu acceso vence en ${userData.diasRestantes || 0} día(s).`;
     
     card.innerHTML = `
-        <div style="font-size:56px;margin-bottom:8px;">🔒</div>
+        <div style="font-size:56px;margin-bottom:8px;">${userData.expirado ? '🔒' : '⏰'}</div>
         <h2 style="font-size:22px;font-weight:800;margin-bottom:6px;color:#fff;">${titulo}</h2>
         <p style="font-size:13px;color:#94a3b8;margin-bottom:16px;">${subtitulo}</p>
         <p style="font-size:12px;color:#f59e0b;margin-bottom:20px;">Elige un plan para seguir usando Banking PRO AI</p>
         
         <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
-            <!-- Plan 30 días -->
-            <div id="plan30" style="background:rgba(59,130,246,.08);border:2px solid rgba(59,130,246,.3);border-radius:16px;padding:14px;cursor:pointer;" onclick="window.elegirPlan('30dias', 12000, this)">
+            <div style="background:rgba(59,130,246,.08);border:2px solid rgba(59,130,246,.3);border-radius:16px;padding:14px;cursor:pointer;" onclick="window.elegirPlan('30dias', 12000, this)">
                 <div style="display:flex;justify-content:space-between;align-items:center;">
                     <div style="text-align:left;">
                         <div style="font-weight:700;font-size:15px;color:#fff;">📅 30 Días</div>
@@ -1574,8 +1635,7 @@ function mostrarPantallaBloqueo(userData) {
                 </div>
             </div>
             
-            <!-- Plan 365 días -->
-            <div id="plan365" style="background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:16px;padding:14px;cursor:pointer;" onclick="window.elegirPlan('365dias', 100000, this)">
+            <div style="background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:16px;padding:14px;cursor:pointer;" onclick="window.elegirPlan('365dias', 100000, this)">
                 <div style="display:flex;justify-content:space-between;align-items:center;">
                     <div style="text-align:left;">
                         <div style="font-weight:700;font-size:15px;color:#fff;">🚀 365 Días</div>
@@ -1609,7 +1669,7 @@ function mostrarPantallaBloqueo(userData) {
 // ═══ ELEGIR PLAN Y PAGAR ═══
 window.elegirPlan = function(plan, monto, elemento) {
     if (elemento) {
-        document.querySelectorAll('#pantallaBloqueo [style*="cursor:pointer"]').forEach(el => {
+        document.querySelectorAll('#pantallaBloqueo [onclick*="elegirPlan"]').forEach(el => {
             el.style.border = '1px solid rgba(255,255,255,.1)';
         });
         elemento.style.border = '2px solid #3b82f6';
@@ -1913,7 +1973,7 @@ window.onUserChanged = async function(user) {
             }
         });
         
-        // Admin siempre tiene acceso
+        // Admin siempre tiene acceso total
         if (adminUIDs.includes(user.uid)) {
             if (onUserChangedOriginal) onUserChangedOriginal(user);
             return;
@@ -1925,17 +1985,24 @@ window.onUserChanged = async function(user) {
             return;
         }
         
-        // Si queda 1 día o es HOY, avisar pero DEJAR USAR
+        // ═══ BANNER PERMANENTE SEGÚN DÍAS RESTANTES ═══
+        
+        // Si queda 1 día o es HOY: banner ROJO permanente
         if (diasRestantes !== null && diasRestantes <= 1) {
             const msg = diasRestantes === 0 
-                ? '⚠️ ¡Tu acceso vence HOY! Renueva para no perderlo.'
-                : '⚠️ Tu acceso vence mañana. Renueva para continuar.';
-            toastMsg(msg, '#ef4444');
+                ? '⚠️ ¡Tu acceso vence HOY!'
+                : '⚠️ Tu acceso vence mañana';
+            mostrarBannerAviso(msg, '#ef4444', diasRestantes);
         }
         
-        // Si quedan 2-3 días, aviso sutil
+        // Si quedan 2-3 días: banner NARANJA permanente
         if (diasRestantes !== null && diasRestantes >= 2 && diasRestantes <= 3) {
-            toastMsg(`📅 Tu acceso vence en ${diasRestantes} días.`, '#f59e0b');
+            mostrarBannerAviso(`📅 Tu acceso vence en ${diasRestantes} días`, '#f59e0b', diasRestantes);
+        }
+        
+        // Si quedan 4-5 días: banner AZUL sutil
+        if (diasRestantes !== null && diasRestantes >= 4 && diasRestantes <= 5) {
+            mostrarBannerAviso(`📅 Tu acceso vence en ${diasRestantes} días`, '#3b82f6', diasRestantes);
         }
     }
     
@@ -1987,10 +2054,9 @@ function agregarPanelAdmin() {
     setTimeout(() => window.cargarListaUsuarios(), 500);
 }
 
-console.log('✅ Sistema de pago Nequi + Control de acceso v2 instalado');
-console.log('🆓 Nuevos usuarios: 7 días gratis');
-console.log('⚠️ Aviso al quedar 1 día (puede seguir usando la app)');
-console.log('🔒 Bloqueo solo al expirar (0 días)');
+console.log('✅ Sistema de pago Nequi + Banner permanente v3 instalado');
+console.log('🆓 Nuevos: 7 días gratis');
+console.log('📌 Banner permanente: no estorba, no se quita solo');
 console.log('💰 Planes: 30d/$12.000 | 365d/$100.000');
 console.log('💚 Pago vía WhatsApp/Nequi:', NEQUI_ADMIN);
 </script>
